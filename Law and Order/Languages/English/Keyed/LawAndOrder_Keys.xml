@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+  <!-- Main Tab -->
+  <LawAndOrder_ActiveCriminals>Active Criminals</LawAndOrder_ActiveCriminals>
+  <LawAndOrder_Imprisoned>Imprisoned</LawAndOrder_Imprisoned>
+  <LawAndOrder_Historical>Historical</LawAndOrder_Historical>
+
+  <!-- Criminal List -->
+  <LawAndOrder_CriminalsCount>Criminals</LawAndOrder_CriminalsCount>
+  <LawAndOrder_Crimes>crimes</LawAndOrder_Crimes>
+  <LawAndOrder_SelectCriminal>Select a criminal to view details</LawAndOrder_SelectCriminal>
+
+  <!-- Status Section -->
+  <LawAndOrder_Status>Status</LawAndOrder_Status>
+  <LawAndOrder_StatusDead>Deceased</LawAndOrder_StatusDead>
+  <LawAndOrder_StatusImprisoned>Imprisoned</LawAndOrder_StatusImprisoned>
+  <LawAndOrder_StatusColonist>Colonist</LawAndOrder_StatusColonist>
+  <LawAndOrder_StatusFaction>Member of {0}</LawAndOrder_StatusFaction>
+  <LawAndOrder_StatusUnknown>Unknown</LawAndOrder_StatusUnknown>
+  <LawAndOrder_TrialStatus>Trial Status</LawAndOrder_TrialStatus>
+  <LawAndOrder_NotScheduled>Not Scheduled</LawAndOrder_NotScheduled>
+
+  <!-- Crimes Section -->
+  <LawAndOrder_CrimesCommitted>Crimes Committed</LawAndOrder_CrimesCommitted>
+  <LawAndOrder_NoCrimes>No crimes recorded</LawAndOrder_NoCrimes>
+  <LawAndOrder_Victim>Victim</LawAndOrder_Victim>
+  <LawAndOrder_Damage>Damage</LawAndOrder_Damage>
+  <LawAndOrder_DaysAgo>Days ago</LawAndOrder_DaysAgo>
+
+  <!-- Action Buttons -->
+  <LawAndOrder_ScheduleHearing>Schedule Hearing</LawAndOrder_ScheduleHearing>
+  <LawAndOrder_Release>Release</LawAndOrder_Release>
+  <LawAndOrder_Pardon>Pardon</LawAndOrder_Pardon>
+  <LawAndOrder_ViewInfo>View Info</LawAndOrder_ViewInfo>
+
+  <!-- Messages -->
+  <LawAndOrder_NoCourtroom>Cannot schedule hearing: No courtroom available. Build a courtroom to proceed.</LawAndOrder_NoCourtroom>
+  <LawAndOrder_HearingScheduled>Hearing scheduled for {0}</LawAndOrder_HearingScheduled>
+  <LawAndOrder_Released>{0} has been released from prison</LawAndOrder_Released>
+  <LawAndOrder_Pardoned>{0} has been pardoned of all crimes</LawAndOrder_Pardoned>
+
+</LanguageData>

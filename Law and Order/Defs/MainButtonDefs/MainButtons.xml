@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <MainButtonDef>
+    <defName>LawAndOrder_Justice</defName>
+    <label>Justice</label>
+    <description>Manage criminals, schedule hearings, and oversee the justice system.</description>
+    <tabWindowClass>Law_and_Order.Source.UI.MainTabWindow_Justice</tabWindowClass>
+    <iconPath>UI/Commands/LaunchReport</iconPath> <!-- Placeholder: Replace with custom icon later -->
+    <order>60</order>
+    <defaultHotKey>J</defaultHotKey>
+  </MainButtonDef>
+</Defs>

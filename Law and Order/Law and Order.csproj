@@ -29,6 +29,7 @@
 		<MakeDir Directories="$(ModOutputPath)\About" Condition="Exists('$(ProjectDir)About')" />
 		<MakeDir Directories="$(ModOutputPath)\Defs" Condition="Exists('$(ProjectDir)Defs')" />
 		<MakeDir Directories="$(ModOutputPath)\Texture" Condition="Exists('$(ProjectDir)Texture')" />
+		<MakeDir Directories="$(ModOutputPath)\Languages" Condition="Exists('$(ProjectDir)Languages')" />
 
 		<!-- Copy DLL to Assemblies folder -->
 		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ModOutputPath)\Assemblies" SkipUnchangedFiles="false" />
@@ -50,6 +51,12 @@
 			<TextureFiles Include="$(ProjectDir)Texture\**\*.*" />
 		</ItemGroup>
 		<Copy SourceFiles="@(TextureFiles)" DestinationFolder="$(ModOutputPath)\Texture\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)Texture')" />
+
+		<!-- Copy Languages folder -->
+		<ItemGroup>
+			<LanguageFiles Include="$(ProjectDir)Languages\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(LanguageFiles)" DestinationFolder="$(ModOutputPath)\Languages\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)Languages')" />
 
 		<Message Text="Mod files copied to $(ModOutputPath)" Importance="high" />
 	</Target>

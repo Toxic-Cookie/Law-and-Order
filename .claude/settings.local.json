@@ -4,7 +4,17 @@
       "Bash(ls:*)",
       "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Rimworld\\V_1_6\\Assembly-CSharp\")",
       "Bash(findstr:*)",
-      "Read(//c/Users/Giovanni/source/repos/Rimworld/V_1_6/Assembly-CSharp/**)"
+      "Read(//c/Users/Giovanni/source/repos/Rimworld/V_1_6/Assembly-CSharp/**)",
+      "Bash(dotnet build:*)",
+      "Bash(powershell:*)",
+      "Bash(certutil -encodehex \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\" temp.hex 4)",
+      "Bash(del temp.hex)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\")",
+      "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/**)",
+      "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/**)",
+      "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/Keyed/**)"
     ],
     "deny": [],
     "ask": []
