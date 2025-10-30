@@ -21,9 +21,9 @@ namespace Law_and_Order.Source.Examples
         {
             static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, float totalDamageDealt)
             {
-                // Get the victim pawn
-                Pawn victim = dinfo.IntendedTarget as Pawn;
-                
+                // Get the victim pawn (the pawn who owns this health tracker)
+                Pawn victim = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+
                 // Get the attacker
                 Pawn attacker = dinfo.Instigator as Pawn;
 

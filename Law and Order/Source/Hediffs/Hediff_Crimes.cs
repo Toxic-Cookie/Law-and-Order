@@ -188,12 +188,7 @@ namespace Law_and_Order.Source.Hediffs
 
                 var stringBuilder = new System.Text.StringBuilder();
 
-                foreach (var crime in crimes)
-                {
-                    stringBuilder.AppendLine($"- {crime} (Committed {crime.DaysAgo} days ago)");
-                }
-
-                return stringBuilder.ToString() + $"\nTotal crimes: {crimes.Count}\n" + $"Recent (7 days): {GetRecentCrimes(7).Count}";
+                return stringBuilder.ToString() + $"\nTotal crimes: {crimes.Count}\n" + $"Recent (7 days): {GetRecentCrimes(7).Count}\n" + $"(View Justice tab for more info)";
             }
         }
 
