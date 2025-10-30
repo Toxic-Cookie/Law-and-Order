@@ -1,0 +1,1681 @@
+### Quickstarter
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+The Quickstarter system automates the process of loading or generating a map when the game begins, streamlining the initial game setup for players.
+
+```APIDOC
+Quickstarter:
+  Automatically load or generate a map at game start.
+  Simplifies initial game setup.
+```
+
+--------------------------------
+
+### Classic Detour Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Detouring
+
+Demonstrates classic detouring by directly providing source and destination MethodInfo objects to DetourProvider.CompatibleDetour. This method throws an exception on failure.
+
+```cs
+var source = typeof(Widgets).GetMethod("ButtonText", Helpers.AllBindingFlags, null, new[]{typeof(Rect), typeof(string), typeof(bool), typeof(bool), typeof(bool)}, null);
+var destination = typeof(Detours).GetMethod("ButtonText", Helpers.AllBindingFlags);
+DetourProvider.CompatibleDetour(source, destination);
+```
+
+--------------------------------
+
+### HugsLib Detour Conversion Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+Illustrates how to convert traditional detours to Harmony patches, referencing examples from the HugsLib Detouring wiki. Assumes the user has a class extending ModBase; otherwise, manual Harmony bootstrapping is required.
+
+```C#
+// Example conversion from detour to Harmony patch
+// Requires a class extending ModBase or manual Harmony bootstrapping.
+// Refer to HugsLib wiki for specific detour examples and their Harmony equivalents.
+```
+
+--------------------------------
+
+### GUI Injection Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+Demonstrates how to inject custom GUI elements into existing windows using `WindowInjection`. This example shows how to add a button labeled 'Hello' to the `Dialog_SaveFileList_Load` window. The `DrawSaveDialogButton` method is called by HugsLib when the specified window is opened, receiving the window and its available rectangle.
+
+```cs
+[WindowInjection(typeof(Dialog_SaveFileList_Load))]
+private static void DrawSaveDialogButton(Window window, Rect inRect) {
+	var buttonSize = new Vector2(120f, 40f);
+	if (Widgets.ButtonText(new Rect(0, inRect.height - buttonSize.y, buttonSize.x, buttonSize.y), "Hello")) {
+		// do stuff				
+	}
+}
+```
+
+--------------------------------
+
+### Basic Postfix Patch
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+Demonstrates how to create a postfix patch to execute code after a method completes. This example hooks into the `Page_ModsConfig.PreOpen` method to log when the Mods dialog opens. Patches must be in separate static classes, and the patch method must be static. The `__instance` parameter provides a reference to the object the method was called on.
+
+```cs
+// original method: public override void PreOpen()
+[HarmonyPatch(typeof(Page_ModsConfig), "PreOpen")]
+public static class ModsConfig_PreOpen_Patch {
+	[HarmonyPostfix]
+	public static void DetectModsDialogOpening(Page_ModsConfig __instance) {
+		Log.Message("Dialog opened: " + __instance);
+	}
+}
+```
+
+--------------------------------
+
+### UtilityWorldObject to WorldComponent Migration Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+Demonstrates the conversion process from using `UtilityWorldObject` to the recommended `WorldComponent` for storing world-specific data in Rimworld mods using HugsLib. It shows both the definition and access patterns for the old and new methods.
+
+```C#
+```csharp
+// definition
+public class WorldData : UtilityWorldObject {
+    private int data;
+    public override void ExposeData() {
+        base.ExposeData();
+        Scribe_Values.Look(ref data, "data");
+    }
+}
+// access
+var worldData = UtilityWorldObjectManager.GetUtilityWorldObject<WorldData>();
+```
+
+Becomes:
+
+```csharp"
+// definition
+public class WorldData : WorldComponent {
+    private int data;
+    public WorldData(World world) : base(world) {
+    }
+    public override void ExposeData() {
+        Scribe_Values.Look(ref data, "data");
+    }
+}
+// access
+var worldData = Find.World.GetComponent<WorldData>()
+```
+```
+
+--------------------------------
+
+### Quickstarter Functionality
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Quickstarter
+
+The Quickstarter system automatically loads a save file or generates a new map upon game startup, significantly speeding up the development cycle for Rimworld mods. It is only active in Dev mode and integrates with the vanilla 'quicktest' command-line argument for map generation.
+
+--------------------------------
+
+### Detour Instance Method Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Detouring
+
+This example shows how to detour an instance method using HugsLib. It modifies the inspect string displayed for pawns. The target method must be static, declared as an extension method of the original method's parent type, and include an additional first argument for the instance reference (similar to 'this').
+
+```cs
+[DetourMethod(typeof(Pawn), "GetInspectString")]
+private static string GetInspectString(this Pawn self) {
+	return self.Label + " test";
+}
+```
+
+--------------------------------
+
+### Introduction to Patching
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+This guide explains how to hook into and modify game methods using HugsLib's patching system. It's essential for altering game behavior or adding new functionality.
+
+```APIDOC
+Patching:
+  Hook into and modify game methods.
+  Replaces Detouring system (A16).
+  See also: Detouring (A16), GUI Injection (A16).
+```
+
+--------------------------------
+
+### UpdateFeatureDef XML Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Mod-Update-News
+
+Example of an XML file defining update news items for a mod using HugsLib's UpdateFeatureDef. It includes a base definition and specific items for different versions, showcasing content formatting and versioning.
+
+```XML
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+	<HugsLib.UpdateFeatureDef Abstract="true" Name="UpdateFeatureBase">
+		<modNameReadable>Mod Name</modNameReadable>
+		<modIdentifier>ModName</modIdentifier>
+		<linkUrl>https://ludeon.com/forums/index.php?topic=17218</linkUrl>
+	</HugsLib.UpdateFeatureDef>
+	
+	<HugsLib.UpdateFeatureDef ParentName="UpdateFeatureBase">
+		<defName>ModName_1_1_0</defName>
+		<assemblyVersion>1.1.0</assemblyVersion>
+		<content>A basic news item with text content only.</content>
+	</HugsLib.UpdateFeatureDef>
+	
+	<HugsLib.UpdateFeatureDef ParentName="UpdateFeatureBase">
+		<defName>ModName_1_2_0</defName>
+		<assemblyVersion>1.2.0</assemblyVersion>
+		<content>First paragraph.|img:Things/Item/Meal/Fine,Things/Item/Meal/Lavish,Things/Item/Meal/Simple|caption:This is a caption.|Another paragraph with &lt;b&gt;rich text&lt;/b&gt;.</content>
+	</HugsLib.UpdateFeatureDef>
+</Defs>
+```
+
+--------------------------------
+
+### WorldComponent Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/World-Data-Storage
+
+Demonstrates how to define and access a WorldComponent for storing world-specific data. WorldComponent is the recommended approach for new Rimworld versions.
+
+```C#
+// definition
+public class WorldData : WorldComponent {
+    private int data;
+    public WorldData(World world) : base(world) {
+    }
+    public override void ExposeData() {
+        Scribe_Values.Look(ref data, "data");
+    }
+}
+
+// access
+var worldData = Find.World.GetComponent<WorldData>()
+```
+
+--------------------------------
+
+### Harmony Patch Types Explained
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+Explains the different types of patches available in the Harmony library for modifying RimWorld's base game methods. Covers Prefix, Postfix, and Infix patches, their execution order, capabilities, and compatibility considerations.
+
+```APIDOC
+Patch Types:
+
+- Prefix:
+  - Executes before the original method.
+  - Can modify method arguments and cancel original method execution.
+  - Can be prevented from executing by other prefixes on the same method.
+
+- Postfix:
+  - Executes after the original method.
+  - Can modify the return value.
+  - Always executes, regardless of prefixes.
+  - Preferred for hooking into execution flow without altering behavior.
+
+- Infix (Transpiler):
+  - Modifies the method's code instruction by instruction.
+  - Advanced topic requiring knowledge of .NET CIL.
+  - Neither affects nor is affected by prefixes and postfixes.
+```
+
+--------------------------------
+
+### Handling Key Input with OnGUI
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+Provides an example of how to listen for key press events within the OnGUI method of a ModBase class. This is useful for custom key bindings.
+
+```cs
+public override void OnGUI() {
+    base.OnGUI();
+    if (Event.current.type == EventType.KeyDown) {
+        if (KeyBindingDefOf.Misc1.JustPressed) {
+            // Your action here when Misc1 key is pressed
+            Logger.Message("Misc1 key pressed!");
+        }
+    }
+}
+```
+
+--------------------------------
+
+### Detour Static Method Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Detouring
+
+This example demonstrates how to detour a static method in Rimworld using HugsLib. It replaces the text of a button drawn by Widgets.ButtonText. The target method must match the original's argument count, types, and return type. It's recommended to declare target methods in a separate static class.
+
+```cs
+[DetourMethod(typeof(Widgets), "ButtonText")]
+public static bool ButtonText(Rect rect, string label, bool drawBackground, bool doMouseoverSound, bool active) {
+	const string newLabel = "Test";
+	return Widgets.ButtonText(rect, newLabel, drawBackground, doMouseoverSound, Widgets.NormalOptionColor, active);
+}
+```
+
+--------------------------------
+
+### Postfix Patch for Dialog_FileList
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+This example demonstrates how to use a Harmony postfix to add a button to the file list dialog. It targets the parent class `Dialog_FileList` and checks if the current instance is `Dialog_SaveFileList_Load` to ensure the button is only drawn in the correct context. The original method `DoWindowContents` is patched.
+
+```cs
+// orginal method: public override void DoWindowContents(Rect inRect)
+[HarmonyPatch(typeof (Dialog_FileList), "DoWindowContents")]
+public static class FileList_DoWindowContents_Patch {
+	[HarmonyPostfix]
+	public static void DrawHelloButton(Dialog_FileList __instance, Rect inRect) {
+		if (!(__instance is Dialog_SaveFileList_Load)) return;
+		var buttonSize = new Vector2(120f, 40f);
+		if (Widgets.ButtonText(new Rect(0, inRect.height - buttonSize.y, buttonSize.x, buttonSize.y), "Hello")) {
+			// do stuff			
+		}		
+	}
+}
+```
+
+--------------------------------
+
+### Replacing GUI Elements
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/GUI-Injection
+
+Demonstrates how to draw a new element over an existing one by matching size and position, ensuring only the last drawn element is interactable. Includes an example of drawing a background texture.
+
+```cs
+var prevGuiColor = GUI.color;
+GUI.color = new ColorInt(21, 25, 29).ToColor; // window background color
+GUI.DrawTexture(targetRect, BaseContent.WhiteTex);
+GUI.color = prevGuiColor;
+```
+
+--------------------------------
+
+### Logging with HugsLib Logger
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+Shows how to use the Logger property provided by ModBase to write messages to the Rimworld console. Includes examples for Message, Error, Warning, and Trace methods.
+
+```cs
+public override void Initialize() {
+    base.Initialize();
+    Logger.Message("This is a regular message.");
+    Logger.Warning("This is a warning message.");
+    Logger.Error("This is an error message.");
+    // Logger.Trace("This message only appears in Dev mode.");
+}
+```
+
+--------------------------------
+
+### ModBase Reference
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+ModBase is the foundational class for all mods utilizing the HugsLib library. It serves as the starting point for integrating library functionalities into your mod.
+
+```APIDOC
+ModBase:
+  A base class for mods using HugsLib.
+  Provides access to library facilities.
+```
+
+--------------------------------
+
+### UtilityWorldObject Example
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/World-Data-Storage
+
+Illustrates the usage of UtilityWorldObject for storing map-independent mod data. It shows how to create a custom UWO, override ExposeData for saving, and use PostAdd for initial setup.
+
+```C#
+public class StorageTest : ModBase {
+	public override string ModIdentifier {
+		get { return "StorageTest"; }
+	}
+
+	public override void WorldLoaded() {
+		var obj = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
+		Logger.Message(obj.testInt.ToString());
+		Logger.Message(obj.testString);
+		obj.testInt++;
+		obj.testString += "+";
+	}
+
+	private class WorldDataStore : UtilityWorldObject {
+		public int testInt;
+		public string testString;
+		
+		public override void PostAdd() {
+			base.PostAdd();
+			testInt = 1;
+			testString = "+";
+		}
+
+		public override void ExposeData() {
+			base.ExposeData();
+			Scribe_Values.LookValue(ref testInt, "testInt", 0);
+			Scribe_Values.LookValue(ref testString, "testString", "");
+		}
+	}
+}
+```
+
+--------------------------------
+
+### Requiring a Minimum HugsLib Version
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+This guide explains how to ensure your mod uses a compatible version of HugsLib, allowing you to safely leverage newer library features and avoid potential conflicts.
+
+```APIDOC
+Minimum HugsLib Version:
+  Safely use new library features.
+  Ensures compatibility with HugsLib.
+```
+
+--------------------------------
+
+### Custom Context Menu Entries
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Illustrates how to add custom entries to a setting's context menu. These entries, often used for presets, allow users to quickly set predefined values by clicking on menu items. The example shows setting an integer value within a specified range.
+
+```cs
+var dangerLevel = Settings.GetHandle("dangerLevel", "Danger level", "Description here...", 
+    0, Validators.IntRangeValidator(0, 100));
+dangerLevel.ContextMenuEntries = new[] {
+    new ContextMenuEntry("Preset: Low", () => dangerLevel.Value = 10),
+    new ContextMenuEntry("Preset: Medium", () => dangerLevel.Value = 50),
+    new ContextMenuEntry("Preset: High", () => dangerLevel.Value = 80)
+};
+```
+
+--------------------------------
+
+### GUI Injection (A16)
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+This guide explains GUI Injection for Alpha 16, a method for adding callbacks to the drawing routines of any game window. This functionality has been replaced by patching.
+
+```APIDOC
+GUI Injection (A16):
+  Add callbacks to the drawing method of any window.
+  Replaced by patching.
+  See also: Introduction to Patching.
+```
+
+--------------------------------
+
+### Postfix Patch for Property Getters
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+Illustrates how to patch property getters using `HarmonyPatch` with `PropertyMethod.Getter`. This example modifies the `CanLayNow` property of `CompEggLayer` to make chickens lay eggs 100 times faster. It uses reflection via `AccessTools` to access a private field. The `__result` parameter, when marked with `ref`, allows modification of the property's return value.
+
+```cs
+// original property: public bool CanLayNow
+[HarmonyPatch(typeof(CompEggLayer))]
+[HarmonyPatch("CanLayNow", PropertyMethod.Getter)]
+public static class EggLayer_CanLayNow_Patch {
+	private static readonly FieldInfo eggProgressField = AccessTools.Field(typeof(CompEggLayer), "eggProgress");
+
+	[HarmonyPostfix]
+	public static void ExtraFastEggs(CompEggLayer __instance, ref bool __result) {
+		__result = (float)eggProgressField.GetValue(__instance) * 100f > 1f;
+	}
+}
+```
+
+--------------------------------
+
+### HugsLib API: Mod Settings Events
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+Details the `ModSettingManager.BeforeModSettingsSaved` and `AfterModSettingsSaved` events. Explains their utility for tracking settings changes, identifying saving mods, and confirming when settings have been flushed to disk.
+
+```APIDOC
+ModSettingManager.BeforeModSettingsSaved: event
+  Raised before mod settings are saved. Useful for identifying mods saving settings and their handles.
+  Properties to access: ModSettingManager.ModSettingsPacks, ModSettingsPack.Handles.
+  Event is raised only if SettingHandle.HasUnsavedChanges is true for at least one handle.
+
+ModSettingManager.AfterModSettingsSaved: event
+  Raised after the settings XML file has been flushed to disk.
+  All handles will have their HasUnsavedChanges property reset to false after this event.
+```
+
+--------------------------------
+
+### Indestructible Property Detour
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Detouring
+
+Detours the 'HitPoints' property of the 'Thing' class to prevent it from going below 1, making things indestructible. This example uses reflection and demonstrates property detouring.
+
+```cs
+public class Indestructible : Thing {
+	public static FieldInfo hitPointsIntField = typeof(Thing).GetField("hitPointsInt", Helpers.AllBindingFlags); 
+	[DetourProperty(typeof (Thing), "HitPoints", DetourProperty.Both)]
+	public int _HitPoints {
+		get { return (int)hitPointsIntField.GetValue(this); }
+		set {
+			if (value < 1) value = 1;
+			hitPointsIntField.SetValue(this, value);
+		}
+	}
+}
+```
+
+--------------------------------
+
+### Prefix Patch to Modify Arguments
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Introduction-to-Patching
+
+Shows how to create a prefix patch to modify method arguments before the original method executes. This example patches `Widgets.ButtonText` to change the button label to 'Test'. When patching overloaded methods, parameter types must be specified in the `HarmonyPatch` attribute. The `ref` keyword allows modification of the argument passed to the original method. Prefix methods must return a boolean; `true` allows execution, `false` cancels it.
+
+```cs
+// original method: public static bool ButtonText(Rect rect, string label, bool drawBackground = true, bool doMouseoverSound = false, bool active = true)
+[HarmonyPatch(typeof(Widgets), "ButtonText", new []{typeof(Rect), typeof(string), typeof(bool), typeof(bool), typeof(bool)})]
+public static class Widgets_ButtonText_Patch {
+	[HarmonyPrefix]
+	public static bool ReplaceAllButtonLabels(ref string label) {
+		label = "Test";
+		return true;
+	}
+}
+```
+
+--------------------------------
+
+### HugsLib API: ModBase Identifiers
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+Explains the usage of `ModBase.LogIdentifier` and `ModBase.SettingsIdentifier` for uniquely identifying mods in logs and settings. Covers optional usage and fallback to `ModBase.ModIdentifier` or `PackageId`.
+
+```APIDOC
+ModBase.LogIdentifier: string (optional)
+  Used to identify ModBase mods in the logs.
+
+ModBase.SettingsIdentifier: string (optional)
+  Used to uniquely identify HugsLib mod settings.
+
+ModBase.ModIdentifier: string (optional)
+  Can be used as a fallback for both LogIdentifier and SettingsIdentifier.
+
+If none of the above are defined, the mod's PackageId is used as the identifier.
+```
+
+--------------------------------
+
+### HugsLib Version Check
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+Enables mods to declare a minimum required version of HugsLib. If the player's version is lower, an update prompt is displayed. See the wiki for setup.
+
+```C#
+// Example of specifying a minimum HugsLib version in About/About.xml
+// <HugsLib<MinVersion>1.0.0</MinVersion>
+
+// Example of checking the version programmatically (conceptual)
+// HugsLib.Core.HugsLibController.Instance.CheckVersion("1.0.0");
+```
+
+--------------------------------
+
+### Detour Fallback Handler for Pawn_RelationsTracker
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Detouring
+
+Provides a fallback mechanism for detouring the 'Notify_RescuedBy' method in 'Pawn_RelationsTracker'. If the detour fails (e.g., already taken), it displays a message box to the player.
+
+```cs
+public static class DetourFallbackTest {
+	[DetourMethod(typeof(Pawn_RelationsTracker), "Notify_RescuedBy")]
+	internal static void _Notify_RescuedBy(this Pawn_RelationsTracker t, Pawn rescuer) {
+		// do usual detour stuff
+	}
+
+	[DetourFallback("_Notify_RescuedBy")]
+	public static void DetourFallbackHandler(MemberInfo attemptedDestination, MethodInfo existingDestination, Exception detourException) {
+		if (existingDestination != null) {
+			LongEventHandler.QueueLongEvent(() => {
+				Find.WindowStack.Add(new Dialog_MessageBox(string.Format("ModName: a required method was already detoured to {0}", existingDestination.FullName())));
+			}, null, false, null);
+		}
+	}
+}
+```
+
+--------------------------------
+
+### Manual Saving of SettingHandle Values
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+Custom setting values within SettingHandle now require manual saving. If no other settings are modified, calling ModSettingsManager.SaveChanges() will not persist these custom values. Use SettingHandle.ForceSaveChanges() to ensure changes are saved.
+
+```C#
+SettingHandle.ForceSaveChanges()
+```
+
+--------------------------------
+
+### Specify Minimum HugsLib Version
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Requiring-a-Minimum-HugsLib-Version
+
+This XML snippet defines the minimum required version for HugsLib. When your mod starts, HugsLib checks this version and notifies the player if an update is necessary, preventing potential loading issues.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<VersionInfo>
+	<requiredLibraryVersion>8.0.0</requiredLibraryVersion>
+</VersionInfo>
+```
+
+--------------------------------
+
+### Mod Update News Defs Location
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+Mod Update News defs must now be placed in the `/News` folder within the mod's root directory for processing. This change allows non-HugsLib mods to utilize the update news system. Images referenced in UpdateFeatureDef are first searched in `/News` and then in `/Textures`.
+
+```XML
+<UpdateFeatureDef>
+  <content>img:images/fancy</content>
+</UpdateFeatureDef>
+```
+
+--------------------------------
+
+### Harmony ID for HugsLib Patched Mods
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+The Harmony ID for automatically-patched HugsLib mods is now the mod's PackageId. Previously, it was `HugsLib.ModIdentifier`. Developers can still override this by returning false in `ModBase.HarmonyAutoPatch` and providing a custom identifier.
+
+```C#
+public override bool HarmonyAutoPatch() => false;
+// Use your own identifier here
+```
+
+--------------------------------
+
+### SettingHandle.NeverVisible Reset Behavior
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.0-for-Rimworld-1.1-update-guide
+
+The `SettingHandle.NeverVisible` property no longer prevents a setting from being reset. To achieve reset immunity, use `SettingHandle.CanBeReset = false`. This also disables the right-click reset option in the Mod Settings window.
+
+```C#
+SettingHandle.CanBeReset = false
+```
+
+--------------------------------
+
+### HugsLib Events Overview
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+Illustrates the different event methods that can be overridden in a ModBase class to hook into HugsLib's lifecycle. Includes EarlyInitalize, Initialize, DefsLoaded, Update, FixedUpdate, and OnGUI.
+
+```cs
+// Optional: For early initialization, requires [EarlyInit] attribute
+// public override void EarlyInitalize() {
+//     base.EarlyInitalize();
+// }
+
+public override void Initialize() {
+    base.Initialize();
+    // Called once on mod initialization
+}
+
+public override void DefsLoaded() {
+    base.DefsLoaded();
+    // Called after all Defs are loaded
+}
+
+public override void Update() {
+    base.Update();
+    // Called every frame
+}
+
+public override void FixedUpdate() {
+    base.FixedUpdate();
+    // Called on each physics update
+}
+
+public override void OnGUI() {
+    base.OnGUI();
+    // Called when the Unity GUI system redraws or receives an input event
+}
+```
+
+--------------------------------
+
+### Adding Mod Settings
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+This section details how to implement custom settings for your mod, allowing players to modify various aspects of your mod's behavior through an in-game interface.
+
+```APIDOC
+Mod Settings:
+  Easily add custom settings to your mod.
+  Allows player modification of mod behavior.
+```
+
+--------------------------------
+
+### Mod Spotter
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+Mod Spotter helps identify players who are experiencing your mod for the first time. This can be useful for providing tailored onboarding experiences.
+
+```APIDOC
+Mod Spotter:
+  Identify first-time players of your mod.
+  Facilitates tailored onboarding.
+```
+
+--------------------------------
+
+### Optional HugsLib Integration for Settings
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Demonstrates how to implement settings that only load if HugsLib is present by catching TypeLoadException. This allows mods to have configurable options without a hard dependency.
+
+```cs
+[StaticConstructorOnStartup]
+public class TestMod {
+	private static Func<bool> getSettingValue;
+
+	static TestMod() {
+		// load order does not matter- HugsLib initializes before StaticConstructorOnStartup
+		InitializeSetting();
+		Log.Message("Setting value: " + getSettingValue());
+	}
+
+	private static void InitializeSetting() {
+		const bool defaultValue = true;
+		// Need a wrapper method/lambda to be able to catch the TypeLoadException when HugsLib isn't present
+		try {
+			((Action) (() => {
+				var settings = HugsLibController.Instance.Settings.GetModSettings("TestModIdentifier");
+				// add a mod name to display in the Mods Settings menu
+				settings.EntryName = "Test Mod";
+				// handle can't be saved as a SettingHandle<> type; otherwise the compiler generated closure class will throw a typeloadexception
+				object handle = settings.GetHandle("testSetting", "Setting label", "Setting description", defaultValue);
+				getSettingValue = () => (SettingHandle<bool>) handle;
+			}))();
+			return;
+		} catch (TypeLoadException) {
+		}
+		getSettingValue = () => defaultValue;
+	}
+}
+```
+
+--------------------------------
+
+### EarlyInit Attribute
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+An attribute to instantiate a `ModBase` class at the earliest possible time during game startup. This also allows Harmony patches to be applied earlier, making it suitable for patching vanilla loading and Def generation code.
+
+```csharp
+[EarlyInit]
+public class YourModController : ModBase {
+	public override string ModIdentifier {
+		get { return "MyModId"; }
+	}
+
+	public override void EarlyInitalize() {
+		Logger.Message("I am early!");
+	}
+}
+```
+
+--------------------------------
+
+### HugsLib Mod Foundation and Events
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/blob/master/README.md
+
+This C# snippet outlines the core functionality provided by HugsLib as a mod foundation. It lists the events that extending classes can receive from the library controller, such as Initialize, DefsLoaded, Tick, Update, and various map/scene-related events. This allows mods to hook into different stages of the Rimworld game loop.
+
+```csharp
+// Extending classes have access to custom logging, settings, and receive the following events from the library controller:
+// Initialize, DefsLoaded, Tick, Update, FixedUpdate, OnGUI, WorldLoaded, MapGenerated, MapComponentsInitializing, MapLoaded, MapDiscarded, SceneLoaded, SettingsChanged.
+```
+
+--------------------------------
+
+### Basic Window Injection
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/GUI-Injection
+
+Adds a button to the 'Load game' dialog using the `WindowInjection` attribute. The method receives the window and its content area as parameters.
+
+```cs
+[WindowInjection(typeof(Dialog_SaveFileList_Load))]
+private static void DrawSaveDialogButton(Window window, Rect inRect) {
+	var buttonSize = new Vector2(120f, 40f);
+	if (Widgets.ButtonText(new Rect(0, inRect.height - buttonSize.y, buttonSize.x, buttonSize.y), "Hello")) {
+		// do stuff		
+	}
+}
+```
+
+--------------------------------
+
+### SettingHandleConvertibleUtility Namespace Change
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-9.0-for-Rimworld-1.3-API-Changes
+
+The XML serialization methods for custom SettingHandles have been moved from the `HugsLib.Source.Settings` namespace to the `HugsLib.Settings` namespace.
+
+```csharp
+namespace HugsLib.Settings {
+    // XML serialization methods for custom SettingHandles
+}
+```
+
+--------------------------------
+
+### Vanilla Tick Method
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Custom-Tick-Scheduling
+
+Demonstrates the standard Rimworld method for executing code at specific tick intervals within a Thing. It uses the Tick() method and HashOffset to distribute work, but can degrade performance with many instances.
+
+```cs
+public override void Tick() {
+	if ((Find.TickManager.TicksGame + thingIDNumber.HashOffset()) % 60 == 0) {
+		// logic here
+	}
+}
+```
+
+--------------------------------
+
+### Mod Settings - Custom Context Menu Entries
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+Enables the assignment of custom entries to the context menu for `SettingHandle` and `ModSettingsPack`. This allows for more interactive and informative settings menus.
+
+```csharp
+public class SettingHandle
+{
+    // ... other fields
+    public List<ContextAction> customContextMenuEntries;
+    // ...
+}
+
+public class ModSettingsPack
+{
+    // ... other fields
+    public List<ContextAction> customContextMenuEntries;
+    // ...
+}
+
+public class ContextAction
+{
+    public string label;
+    public Action action;
+}
+```
+
+--------------------------------
+
+### Custom Setting Type with Manual Serialization
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Demonstrates creating a custom setting type by extending SettingHandleConvertible and manually handling string conversion for a List<int>.
+
+```cs
+public override void DefsLoaded() {
+	var custom = Settings.GetHandle<CustomHandleType>("customType", "Label", null);
+	if(custom .Value == null) custom.Value = new CustomHandleType();
+}
+private class CustomHandleType : SettingHandleConvertible {
+	public List<int> nums = new List<int>();
+	
+	public override bool ShouldBeSaved {
+		get { return nums.Count > 0; } 
+	}
+	
+	public override void FromString(string settingValue) {
+		nums = settingValue.Split('|').Select(int.Parse).ToList();
+		Log.Message(nums.Join(","));
+	}
+
+	public override string ToString() {
+		return nums != null ? nums.Join("|") : "";
+	}
+}
+```
+
+--------------------------------
+
+### Create Enum Setting
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Shows how to create an enum setting with multiple options. It requires a string identifier prefix for translating the enum values in the settings dialog.
+
+```cs
+private enum HandleEnum { DefaultValue, ValueOne, ValueTwo }
+public override void DefsLoaded() {
+	var enumHandle = Settings.GetHandle("enumThing", 
+		"enumSetting_title".Translate(), 
+		"enumSetting_desc".Translate(), 
+		HandleEnum.DefaultValue, 
+		null, "enumSetting_");
+}
+```
+
+--------------------------------
+
+### HugsLib Mod Spotter API
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Mod-Spotter
+
+Provides methods to interact with the HugsLib Mod Spotter. Use `HugsLibController.instance.ModSpotter` to access these functionalities. PackageIds are case-insensitive.
+
+```APIDOC
+ModSpotter:
+  FirstTimeSeen(packageId: string): bool
+    Checks if the specified mod PackageId has been seen for the first time in the current game run.
+    Parameters:
+      packageId: The unique identifier of the mod (case-insensitive).
+    Returns:
+      true if this is the first time the mod is loaded with HugsLib, false otherwise.
+
+  SetFirstTimeSeen(packageId: string, seen: bool): void
+    Manually sets the 'first time seen' status for a given mod PackageId. This change is temporary and lasts only until the game restarts.
+    Parameters:
+      packageId: The unique identifier of the mod (case-insensitive).
+      seen: A boolean value indicating whether to mark the mod as seen (true) or not (false).
+    Usage:
+      Primarily useful for testing purposes.
+```
+
+--------------------------------
+
+### ModSettingsPack Methods
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Details key methods available on the ModSettingsPack object, which is returned by ModBase.Settings or obtained via HugsLibController.SettingsManager.GetModSettings. These include GetHandle for retrieving existing handles, ValueExists to check for setting availability, and PeekValue to read setting values.
+
+```APIDOC
+ModSettingsPack:
+  GetHandle(string name)
+    - Returns an existing SettingHandle with the specified name, or null if none exists.
+
+  ValueExists(string name)
+    - Returns true if a setting value is available for the given name. This includes values claimed by handles or loaded but not yet claimed.
+
+  PeekValue(string name)
+    - Returns the string value of a setting. If the value is claimed by a handle, it returns the handle's value; otherwise, it returns the loaded value.
+
+  ContextMenuEntries:
+    - Allows assigning custom actions to a settings category's context menu, similar to SettingHandle.ContextMenuEntries.
+```
+
+--------------------------------
+
+### Manual Window Injection
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/GUI-Injection
+
+Shows how to add a window injection manually using `WindowInjectionManager.AddInjection`. This method requires a unique `injectionId` for identification and debugging purposes.
+
+```cs
+WindowInjectionManager.AddInjection("namespace.typeName.methodName", typeof(TargetWindow), YourInjectionMethod);
+```
+
+--------------------------------
+
+### Dialog_VanillaModSettings Namespace Change
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-9.0-for-Rimworld-1.3-API-Changes
+
+The Dialog_VanillaModSettings class has been moved from the `Rimworld` namespace to the `HugsLib.Settings` namespace.
+
+```csharp
+namespace HugsLib.Settings {
+    public class Dialog_VanillaModSettings : Dialog_ModSettings {
+        // ...
+    }
+}
+```
+
+--------------------------------
+
+### Requesting ModSettingsPack for Non-Library Mods
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Shows how mods that do not extend ModBase can still implement custom settings by requesting a ModSettingsPack. This involves using HugsLibController.SettingsManager.GetModSettings with a unique mod identifier and an optional label for the Mod Settings dialog.
+
+```cs
+HugsLibController.SettingsManager.GetModSettings("modIdentifier", modLabel);
+```
+
+--------------------------------
+
+### ModBase Class Structure
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+Demonstrates the basic structure of a Rimworld mod class extending HugsLib's ModBase. It includes overriding the ModIdentifier property and the Initialize method.
+
+```cs
+using HugsLib;
+using HugsLib.Utils;
+
+namespace YourModName {
+    public class YourMod : ModBase {
+        public override string ModIdentifier {
+            get { return "YourModName"; }
+        }
+
+        public override void Initialize() {
+            base.Initialize();
+            // Your initialization code here
+        }
+    }
+}
+```
+
+--------------------------------
+
+### Mod Update News - Target Audience Customization
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+Allows customization of when mod update news is shown to players. By default, news is not shown to first-time players. This can be controlled using the `targetAudience` field in `UpdateFeatureDef`s.
+
+```csharp
+public class UpdateFeatureDef
+{
+    // ... other fields
+    public TargetAudience targetAudience;
+    // ...
+}
+
+public enum TargetAudience
+{
+    FirstTimePlayer,
+    ReturningPlayer,
+    All
+}
+```
+
+--------------------------------
+
+### Create Boolean Setting
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Demonstrates how to create a boolean toggle setting using HugsLib's ModBase. The setting is identified by a unique name, has a translatable title and description, and a default value.
+
+```cs
+public class SettingTest : ModBase {
+	public override string ModIdentifier {
+		get { return "SettingTest"; }
+	}
+	private SettingHandle<bool> toggle;
+	public override void DefsLoaded() {
+		toggle = Settings.GetHandle<
+			bool>(
+			"myToggle", 
+			"toggleSetting_title".Translate(), 
+			"toggleSetting_desc".Translate(), 
+			false);
+	}
+}
+```
+
+--------------------------------
+
+### HugsLibUtility.AwaitUnityWebResponse Deprecation
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-9.0-for-Rimworld-1.3-API-Changes
+
+The HugsLibUtility.AwaitUnityWebResponse method has been made internal and is scheduled for removal. It is recommended to use System.Net.WebClient for making web requests.
+
+```csharp
+// Made internal, scheduled for removal. Use System.Net.WebClient to make web requests.
+```
+
+--------------------------------
+
+### Detouring (A16)
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+This documentation covers the Detouring system available in Alpha 16, which allowed replacing base game methods with custom implementations. This system has been superseded by the Harmony library.
+
+```APIDOC
+Detouring (A16):
+  Replace methods in the base game with your own.
+  Replaced by Harmony library.
+  See also: Introduction to Patching.
+```
+
+--------------------------------
+
+### HugsLib Dependency in About.xml
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/blob/master/README.md
+
+This XML snippet shows how to declare a dependency on HugsLib in a Rimworld mod's About.xml file. It specifies the package ID, display name, and download URLs for Steam Workshop and direct downloads. It also includes a 'loadAfter' tag to ensure HugsLib is loaded before the dependent mod.
+
+```xml
+<modDependencies>
+	<li>
+		<packageId>UnlimitedHugs.HugsLib</packageId>
+		<displayName>HugsLib</displayName>
+		<downloadUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/releases/latest</downloadUrl>
+		<steamWorkshopUrl>steam://url/CommunityFilePage/818773962</steamWorkshopUrl>
+	</li>
+</modDependencies>
+<loadAfter>
+	<li>UnlimitedHugs.HugsLib</li>
+</loadAfter>
+```
+
+--------------------------------
+
+### Mod Spotter Functionality
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+A feature allowing mods to detect their first run by the player. Refer to the wiki for detailed implementation instructions.
+
+```C#
+// Example usage of Mod Spotter (conceptual)
+// Refer to HugsLib wiki for actual implementation details.
+public class MyMod : Mod
+{
+    public MyMod(ModContentPack content)
+        : base(content)
+    {
+        // Check if this is the first time the mod is being run
+        if (HugsLib.ModSpotter.IsFirstRun(this.Content.PackageId)) {
+            // Perform first-run initialization
+            Log.Message("Welcome, player! This is your first time running MyMod.");
+        }
+    }
+}
+```
+
+--------------------------------
+
+### ImmediateWindow Injection
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/GUI-Injection
+
+Injects a label into a specific `ImmediateWindow` by checking its unique ID. This method ensures the injection only applies to the intended window instance.
+
+```cs
+[WindowInjection(typeof(ImmediateWindow))]
+private static void DrawImmediateWindowLabel(Window window, Rect inRect) {
+	var win = window as ImmediateWindow;
+	if(window.ID != -984688) return;
+	GenUI.SetLabelAlign(TextAnchor.LowerRight);
+	Widgets.Label(new Rect(inRect.width-300, inRect.height-40, 300, 40), "Hello");
+	GenUI.ResetLabelAlign();
+}
+```
+
+--------------------------------
+
+### ApplicationQuit Event
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+An event that is triggered when the game is about to exit, allowing mods to perform cleanup or save operations. Consult the wiki for event details.
+
+```C#
+// Example of subscribing to the ApplicationQuit event
+using HugsLib.Events;
+
+public class MyMod : Mod
+{
+    public MyMod(ModContentPack content)
+        : base(content)
+    {
+        // Subscribe to the event
+        ApplicationEvents.Quit.Register(OnApplicationQuit);
+    }
+
+    private void OnApplicationQuit()
+    {
+        // Perform actions before the game exits
+        Log.Message("Game is quitting. Performing cleanup...");
+    }
+
+    // Remember to unregister if necessary, e.g., in a Harmony Unpatch method
+    // public override void Dispose() {
+    //     ApplicationEvents.Quit.Unregister(OnApplicationQuit);
+    //     base.Dispose();
+    // }
+}
+```
+
+--------------------------------
+
+### MapComponent EnsureIsActive Extension
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/World-Data-Storage
+
+Shows how to use the `EnsureIsActive` extension method for MapComponent. This ensures that a MapComponent is properly initialized and saved, even if it wasn't present at map creation.
+
+```C#
+public class InjectedMapComponent : MapComponent {
+	public InjectedMapComponent(Map map) : base(map) {
+		this.EnsureIsActive();
+	}
+}
+```
+
+--------------------------------
+
+### Dev Mode Tools for News Management
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Mod-Update-News
+
+Details the developer mode tools available in the extended update news window. These tools allow for managing the last seen news item version, opening the news popup, setting the 'new player' status, and reloading news definitions using the F5 key.
+
+```text
+Available tools in extended update news window (Options > Mod Options > All mod update news):
+- Set last seen news item version for your mod
+- Open the news popup
+- Set the "new player" status
+
+Keyboard shortcut:
+- F5: Reload all news defs
+```
+
+--------------------------------
+
+### Formatting News Items with Pipes and Images
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Mod-Update-News
+
+Demonstrates how to use pipe characters (|) to separate paragraphs or image/caption sections, and the 'img:' tag to insert images from the /News or /Textures folders. Supports comma-separated image sequences and image captions.
+
+```text
+Paragraph example: One|Two|Three
+
+Image insertion: img:pics/cat
+
+Image sequence: img:imgOne,imgTwo,imgThree
+
+Image with caption: img:imageName|caption:This is a caption.
+```
+
+--------------------------------
+
+### Custom Setting Type with Serialization Utilities
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Shows how to use HugsLib's utility methods (DeserializeValuesFromString, SerializeValuesToString) for automatic serialization of custom setting types with XML annotations.
+
+```cs
+[Serializable]
+public class CustomHandleType : SettingHandleConvertible {
+	[XmlElement] public List<int> nums = new List<int>();
+
+	public override void FromString(string settingValue) {
+		SettingHandleConvertibleUtility.DeserializeValuesFromString(settingValue, this);
+		Log.Message(nums.Join(","));
+	}
+
+	public override string ToString() {
+		return SettingHandleConvertibleUtility.SerializeValuesToString(this);
+	}
+}
+```
+
+--------------------------------
+
+### Manifest.xml Version Logging
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+Logs the version found in a mod's About/Manifest.xml file with a specific tag `[mv:version]` in the log publisher. This is useful for mods using Manifest.xml for versioning.
+
+```XML
+<!-- Example About/Manifest.xml -->
+<Manifest>
+  <version>1.2.3</version>
+  <author>Your Name</author>
+  <packageId>YourMod.PackageId</packageId>
+  <!-- Other manifest details -->
+</Manifest>
+
+<!-- Log output example:
+[Info][HugsLib] [mv:1.2.3] YourMod.PackageId loaded.
+-->
+```
+
+--------------------------------
+
+### Custom Tick Scheduling
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+This feature allows for the scheduling of efficient logic updates for your game entities (Things). It optimizes performance by managing when specific code executes.
+
+```APIDOC
+Custom Tick Scheduling:
+  Schedule efficient logic updates for Things.
+  Optimizes game performance.
+```
+
+--------------------------------
+
+### HugsLib Events
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+Callbacks for various game states and events in RimWorld, allowing mods to hook into different stages of the game lifecycle. These include scene loading, world initialization, map events, game ticks, settings changes, and application shutdown.
+
+```APIDOC
+SceneLoaded:
+  Called after a Unity scene change.
+  Receives a `UnityEngine.SceneManagement.Scene` argument.
+  Relevant scenes: `Entry` (menu), `Play` (game).
+  Use `Verse.GenScene` to check the current scene.
+  Note: Not all systems may be initialized.
+
+WorldLoaded:
+  Called after the game starts and the world is initialized.
+  Maps may not be initialized yet.
+  Useful for accessing `UtilityWorldObject`s.
+  Not called on the 'select landing spot' world map.
+
+MapComponentsInitializing:
+  Called during map initialization, after `Verse.Map.ConstructComponents()`.
+  Receives a `Verse.Map` argument.
+  Good for accessing data before map loading is complete.
+  Called before the map is populated from save data.
+
+MapGenerated:
+  Called after a new map finishes generating.
+  Equivalent to overriding `MapComponent.MapGenerated` without needing a `MapComponent`.
+
+MapLoaded:
+  Called after map loading/generation is complete and `Verse.MapDrawer.RegenerateEverythingNow` executes.
+  Receives a `Verse.Map` argument.
+  Suitable for map-specific initialization.
+  May be called multiple times if multiple maps are active.
+
+MapDiscarded:
+  Called after a map is abandoned or becomes inaccessible.
+  Useful for cleaning up map-related data in `World` and `UtilityWorldObject`s.
+
+Tick:
+  Called every game tick.
+  Receives the current tick number (`int`).
+  Called even when on the world map, but not on the 'select landing spot' map.
+
+SettingsChanged:
+  Called after the Mod Settings dialog is closed.
+  The changed setting may belong to another mod.
+
+ApplicationQuit:
+  Called before the game process shuts down.
+  Useful for saving non-critical settings or custom data.
+  Triggered by 'Quit to OS', window close button, Alt+F4.
+  Not 100% reliable due to forced terminations or crashes.
+  Modified settings are saved after this call.
+```
+
+--------------------------------
+
+### Mod Settings - Full Width Custom Drawer
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+Introduces `SettingHandle.CustomDrawerFullWidth`, a new drawer type that provides complete control over how a setting is displayed in the mod settings window, allowing for custom layouts and controls.
+
+```csharp
+public class SettingHandle
+{
+    // ... other fields
+    public Func<Rect, bool> CustomDrawerFullWidth;
+    // ...
+}
+```
+
+--------------------------------
+
+### Log Publisher Path Improvements
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+Enhances the log publisher to display full paths for nested patched methods, improving clarity for debugging. This replaces abbreviated internal names with complete method signatures.
+
+```C#
+// Example of how the log publisher might display patched methods:
+// Before: JobDriver_Repair.<>c.<MakeNewToils>b__4_2
+// After: RimWorld.JobDriver_Repair.<MakeNewToils>b__4_2
+```
+
+--------------------------------
+
+### SettingHandle Properties
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Details the properties of the SettingHandle class, which control various aspects of how a setting is managed and displayed within the mod settings menu.
+
+```APIDOC
+SettingHandle:
+  Name: string
+    Description: The unique Id of the setting, specified as the first argument to ModSettingsPack.GetHandle. Must be unique to the mod that created it.
+
+  Validator: function(string): bool
+    Description: A method to validate player-assigned or XML-loaded values. Receives a string argument and returns a bool indicating validity. If validation fails on load, the default value is used. If validation fails when the player changes the setting, the change is rejected.
+    Example: Settings.GetHandle("intSpinner", "title", "desc", 0, Validators.IntRangeValidator(0, 30));
+
+  VisibilityPredicate: function(): bool
+    Description: An optional method that returns true if the setting should be displayed in the menu. Useful for conditional visibility (e.g., Dev mode only).
+
+  CustomDrawer: function(Rect): bool
+    Description: A delegate to draw a custom control for editing the setting's value. Receives the screen area (Rect) for drawing and must return true if the value changed. Assign SettingHandle.Value when the setting changes.
+
+  CustomDrawerFullWidth: function(Rect): bool
+    Description: Similar to CustomDrawer, but takes over all drawing for the setting entry, including the title label and hover menu. The editing control occupies the right half of the Rect.
+
+  CustomDrawerHeight: number
+    Description: Specifies the height of the setting entry when using CustomDrawer or CustomDrawerFullWidth. Defaults to 32px.
+
+  NeverVisible: bool
+    Description: If true, the handle will never appear in the settings menu. Useful for hidden serialized data. Defaults to false.
+
+  Unsaved: bool
+    Description: If true, the handle's value will not be saved to the XML file. Useful for buttons or temporary settings. Defaults to false.
+
+  CanBeReset: bool
+    Description: If true, the handle will have a reset option in its context menu. Defaults to true.
+
+  SpinnerIncrement: number
+    Description: For int handles, specifies the increment/decrement value for the +/- buttons.
+```
+
+--------------------------------
+
+### ValueChanged Event Handling
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Adding-Mod-Settings
+
+Demonstrates how to subscribe to the ValueChanged event for a setting handle. This event is triggered immediately after a setting's value changes, allowing for real-time updates or actions. The callback receives the changed handle, and the new value can be accessed directly or by casting the handle.
+
+```cs
+var callbackSetting = Settings.GetHandle<int>("intSetting", "Title", "Description");
+callbackSetting.ValueChanged += handle => {
+	Logger.Message("Int setting received new value: " + callbackSetting.Value);
+};
+callbackSetting.Value = 3;
+```
+
+--------------------------------
+
+### HugsLib API Changes
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+Documentation detailing API changes introduced in HugsLib version 9.0 for Rimworld 1.3. This is crucial for updating mods to maintain compatibility.
+
+```APIDOC
+HugsLib 9.0 for Rimworld 1.3 API Changes:
+  Details API modifications for HugsLib v9.0.
+  Essential for updating mods for Rimworld 1.3.
+```
+
+--------------------------------
+
+### SettingHandle.ValueChanged Event
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-9.0-for-Rimworld-1.3-API-Changes
+
+A new SettingHandle.ValueChanged event has been added, replacing the obsolete SettingHandle<T>.OnValueChanged delegate. This event is used by the Mod Settings window to automatically display updated values when setting handle values are changed via code while the window is open.
+
+```csharp
+public class SettingHandle<T> {
+    public event System.Action<T> ValueChanged;
+
+    // ... existing code ...
+
+    protected virtual void OnValueChanged(T newValue) {
+        ValueChanged?.Invoke(newValue);
+    }
+}
+```
+
+--------------------------------
+
+### HugsLib DoLaterScheduler for Frame-Based Events
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Custom-Tick-Scheduling
+
+Demonstrates using HugsLib's DoLaterScheduler to execute callbacks based on frame updates. This is useful for running code on the main thread or waiting for specific Unity events, with options for recurring calls.
+
+```cs
+var numFrames = 0;
+Action everyFrame = null;
+everyFrame = () => {
+	if (numFrames < 60) {
+		HugsLibController.Instance.DoLater.DoNextUpdate(everyFrame);
+		numFrames++;
+	} else {
+		// finally, do a thing
+	}
+};
+everyFrame();
+```
+
+```cs
+HugsLibController.Instance.DoLater.DoNextTick(callback);
+```
+
+```cs
+HugsLibController.Instance.DoLater.DoNextOnGUI(callback);
+```
+
+--------------------------------
+
+### UpdateFeatureManager.InspectActiveMod Removal
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-9.0-for-Rimworld-1.3-API-Changes
+
+The UpdateFeatureManager.InspectActiveMod method has been removed. Use XML files in the `/news` folder to display mod update news instead.
+
+```csharp
+// Method removed. Use XML files in the /news folder to show mod update news instead.
+```
+
+--------------------------------
+
+### HugsLib Tick Delay Scheduler
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Custom-Tick-Scheduling
+
+Shows how to schedule a one-time or recurring callback using HugsLib's TickDelayScheduler. Callbacks can be associated with a Thing for conditional execution and can be unscheduled to cancel.
+
+```cs
+HugsLibController.Instance.TickDelayScheduler.ScheduleCallback(() => {
+	// logic here
+}, 10, this, false);
+```
+
+```cs
+HugsLibController.Instance.TickDelayScheduler.TryUnscheduleCallback(MyMethod);
+```
+
+--------------------------------
+
+### Mod Update News
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+Learn how to notify players about significant updates or changes in your mod. This feature helps keep users informed about new content or important fixes.
+
+```APIDOC
+Mod Update News:
+  Notify players about major mod changes.
+  Improves player communication.
+```
+
+--------------------------------
+
+### Mod Settings - Auto-Flagging Modified Custom Drawers
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+When using a custom drawer for `SettingHandleConvertible`, the handle is now automatically flagged as modified if the custom drawer returns `true`. This simplifies the process of saving changes made through custom UI elements.
+
+```csharp
+public abstract class SettingHandleConvertible
+{
+    // ... other fields
+    public bool HasUnsavedChanges { get; set; }
+    // ...
+
+    protected virtual bool DrawCustomDrawer(Rect area)
+    {
+        // If CustomDrawerFullWidth returns true, HasUnsavedChanges is automatically set.
+        // ...
+        return false; 
+    }
+}
+```
+
+--------------------------------
+
+### World Data Storage (pre-1.0)
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Home
+
+A system for storing mod data within a Rimworld save file, independent of individual maps. This documentation is for versions prior to Rimworld 1.0.
+
+```APIDOC
+World Data Storage (pre-1.0):
+  Store mod data in save files independently of maps.
+  Relevant for Rimworld versions before 1.0.
+```
+
+--------------------------------
+
+### HugsLib Distributed Tick Scheduler
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Custom-Tick-Scheduling
+
+Utilizes HugsLib's DistributedTickScheduler to register Thing instances for periodic ticks at a specified interval (e.g., every 30 ticks). This method efficiently distributes updates across many objects, requiring vanilla ticks to be disabled in XML.
+
+```cs
+public class CustomThing : Thing {
+	public override void SpawnSetup(Map map, bool respawningAfterLoad) {
+		base.SpawnSetup(map, respawningAfterLoad);
+		HugsLibController.Instance.DistributedTicker.RegisterTickability(CustomTick, 30, this);
+	}
+
+	private void CustomTick() {
+		// logic here
+	}
+}
+```
+
+```xml
+<tickerType>Never</tickerType>
+```
+
+```cs
+HugsLibController.Instance.DistributedTicker.UnregisterTickability(this);
+```
+
+--------------------------------
+
+### Execute Callback After Map Load (C#)
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/Custom-Tick-Scheduling
+
+Executes a callback the next time a map has finished loading. Receives the loaded map instance as argument. This is useful for performing actions that require a fully loaded map.
+
+```C#
+### `DoNextMapLoaded`
+Executes a callback the next time a map has finished loading. Receives the loaded map instance as argument.
+```
+
+--------------------------------
+
+### Disabling Harmony Auto-Patching
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/ModBase-Reference
+
+Explains how to disable the automatic creation of a Harmony instance and application of patches by overriding the HarmonyAutoPatch property.
+
+```cs
+public override bool HarmonyAutoPatch {
+    get { return false; }
+}
+```
+
+--------------------------------
+
+### Mod Settings - CanBeReset Property
+
+Source: https://github.com/unlimitedhugs/rimworldhugslib/wiki/HugsLib-7.2-Update-Notes
+
+The `CanBeReset` property for settings is now respected when resetting all settings for a mod. This allows developers to exclude specific settings from being reset.
+
+```csharp
+public class SettingHandle<T>
+{
+    // ... other fields
+    public bool CanBeReset = true;
+    // ...
+}
+```

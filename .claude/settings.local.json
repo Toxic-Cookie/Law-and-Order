@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Rimworld\\V_1_6\\Assembly-CSharp\")",
+      "Bash(findstr:*)",
+      "Read(//c/Users/Giovanni/source/repos/Rimworld/V_1_6/Assembly-CSharp/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<RimWorldModsPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods</RimWorldModsPath>
+		<ModFolderName>Law and Order</ModFolderName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4628-beta" />
+		<PackageReference Include="Lib.Harmony" Version="2.4.1" />
+		<PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="12.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Defs\" />
+		<Folder Include="llms\" />
+		<Folder Include="Texture\" />
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<PropertyGroup>
+			<ModOutputPath>$(RimWorldModsPath)\$(ModFolderName)</ModOutputPath>
+		</PropertyGroup>
+
+		<!-- Create directories -->
+		<MakeDir Directories="$(ModOutputPath)\Assemblies" />
+		<MakeDir Directories="$(ModOutputPath)\About" Condition="Exists('$(ProjectDir)About')" />
+		<MakeDir Directories="$(ModOutputPath)\Defs" Condition="Exists('$(ProjectDir)Defs')" />
+		<MakeDir Directories="$(ModOutputPath)\Texture" Condition="Exists('$(ProjectDir)Texture')" />
+
+		<!-- Copy DLL to Assemblies folder -->
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ModOutputPath)\Assemblies" SkipUnchangedFiles="false" />
+
+		<!-- Copy About folder -->
+		<ItemGroup>
+			<AboutFiles Include="$(ProjectDir)About\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(AboutFiles)" DestinationFolder="$(ModOutputPath)\About\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)About')" />
+
+		<!-- Copy Defs folder -->
+		<ItemGroup>
+			<DefsFiles Include="$(ProjectDir)Defs\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(DefsFiles)" DestinationFolder="$(ModOutputPath)\Defs\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)Defs')" />
+
+		<!-- Copy Texture folder -->
+		<ItemGroup>
+			<TextureFiles Include="$(ProjectDir)Texture\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(TextureFiles)" DestinationFolder="$(ModOutputPath)\Texture\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)Texture')" />
+
+		<Message Text="Mod files copied to $(ModOutputPath)" Importance="high" />
+	</Target>
+
+</Project>
