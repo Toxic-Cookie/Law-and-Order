@@ -61,7 +61,11 @@ namespace Law_and_Order.Source.Utils
             try
             {
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
-                criminalRecord?.AddCrime(crimeType, victim, targetThing, damageDealt, additionalInfo);
+                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo);
+                criminalRecord?.AddCrime(crime);
+
+                // Automatically add debt for this crime
+                DebtUtils.AddDebtForCrime(criminal, crime);
 
                 // Optional: Debug logging
                 if (Prefs.DevMode)
