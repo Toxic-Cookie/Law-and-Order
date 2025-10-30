@@ -272,15 +272,15 @@ namespace Law_and_Order.Source.UI
             var crimes = record.Crimes.ToList();
             crimes.Reverse(); // Show most recent first
 
-            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, crimes.Count * 70f);
+            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, crimes.Count * 100f);
             Widgets.BeginScrollView(rect, ref selectedCriminalScrollPos, viewRect);
 
             float yPos = 0f;
             foreach (var crime in crimes)
             {
-                Rect crimeRect = new Rect(0f, yPos, viewRect.width, 65f);
+                Rect crimeRect = new Rect(0f, yPos, viewRect.width, 95f);
                 DrawCrimeEntry(crimeRect, crime);
-                yPos += 70f;
+                yPos += 100f;
             }
 
             Widgets.EndScrollView();
@@ -296,17 +296,17 @@ namespace Law_and_Order.Source.UI
             // Crime type
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
-            Widgets.Label(innerRect, crime.crimeType.ToString());
+            Rect titleRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 20f);
+            Widgets.Label(titleRect, crime.crimeType.ToString());
 
             // Details
             Text.Font = GameFont.Tiny;
-            Rect detailsRect = innerRect;
-            detailsRect.y += 20f;
+            Rect detailsRect = new Rect(innerRect.x, innerRect.y + 22f, innerRect.width, innerRect.height - 22f);
 
             string details = "";
             if (crime.victim != null)
             {
-                details += $"{"LawAndOrder_Victim".Translate()}: {crime.victim.NameShortColored.Resolve()}\n";
+                details += $"{"LawAndOrder_Victim".Translate()}: {crime.victim.NameShortColored.ToString()}\n";
             }
             if (crime.damageDealt > 0)
             {
