@@ -168,6 +168,19 @@ namespace Law_and_Order.Source.UI
             }
 
             Widgets.Label(crimeCountRect, crimeText);
+
+            // Debt display
+            var debtRecord = DebtUtils.TryGetDebtRecord(criminal);
+            if (debtRecord != null && debtRecord.CurrentDebt > 0)
+            {
+                Rect debtRect = crimeCountRect;
+                debtRect.y += 12f;
+                string debtText = $"Debt: {debtRecord.CurrentDebt:F0} silver";
+                GUI.color = new Color(0.9f, 0.6f, 0.2f);
+                Widgets.Label(debtRect, debtText);
+                GUI.color = Color.white;
+            }
+
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
         }
@@ -254,6 +267,26 @@ namespace Law_and_Order.Source.UI
             textRect.y += 20f;
             Widgets.Label(textRect, $"{"LawAndOrder_TrialStatus".Translate()}: {"LawAndOrder_NotScheduled".Translate()}");
 
+            // Debt information
+            var debtRecord = DebtUtils.TryGetDebtRecord(selectedCriminal);
+            if (debtRecord != null)
+            {
+                textRect.y += 20f;
+                if (debtRecord.CurrentDebt > 0)
+                {
+                    GUI.color = new Color(0.9f, 0.6f, 0.2f);
+                    int estimatedDays = debtRecord.EstimatedDaysOfLabor();
+                    Widgets.Label(textRect, $"Debt: {debtRecord.CurrentDebt:F0} silver (~{estimatedDays} days labor)");
+                    GUI.color = Color.white;
+                }
+                else if (debtRecord.TotalDebtOwed > 0)
+                {
+                    GUI.color = new Color(0.2f, 0.8f, 0.2f);
+                    Widgets.Label(textRect, $"Debt: Fully Paid ({debtRecord.TotalDebtOwed:F0} silver)");
+                    GUI.color = Color.white;
+                }
+            }
+
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
@@ -293,11 +326,23 @@ namespace Law_and_Order.Source.UI
 
             Rect innerRect = rect.ContractedBy(5f);
 
-            // Crime type
+            // Crime type and debt
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
-            Rect titleRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 20f);
+            Rect titleRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.7f, 20f);
             Widgets.Label(titleRect, crime.crimeType.ToString());
+
+            // Calculate and display debt for this crime
+            float crimeDebt = DebtUtils.CalculateDebtForCrime(crime);
+            if (crimeDebt > 0)
+            {
+                Rect debtRect = new Rect(innerRect.x + innerRect.width * 0.7f, innerRect.y, innerRect.width * 0.3f, 20f);
+                Text.Anchor = TextAnchor.UpperRight;
+                GUI.color = new Color(0.9f, 0.6f, 0.2f);
+                Widgets.Label(debtRect, $"{crimeDebt:F0} silver");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+            }
 
             // Details
             Text.Font = GameFont.Tiny;

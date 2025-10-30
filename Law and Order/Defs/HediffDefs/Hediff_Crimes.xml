@@ -14,4 +14,19 @@
     <maxSeverity>1.0</maxSeverity>
     <initialSeverity>1.0</initialSeverity>
   </HediffDef>
+
+  <HediffDef>
+    <defName>LawAndOrder_Debt</defName>
+    <hediffClass>Law_and_Order.Source.Hediffs.Hediff_Debt</hediffClass>
+    <label>debt</label>
+    <description>Financial debt owed to the colony as a result of crimes committed. This debt can be worked off through forced labor or other means of restitution.</description>
+    <defaultLabelColor>(0.9, 0.6, 0.2)</defaultLabelColor>
+    <isBad>true</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <makesSickThought>false</makesSickThought>
+    <tendable>false</tendable>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <maxSeverity>1.0</maxSeverity>
+    <initialSeverity>1.0</initialSeverity>
+  </HediffDef>
 </Defs>
