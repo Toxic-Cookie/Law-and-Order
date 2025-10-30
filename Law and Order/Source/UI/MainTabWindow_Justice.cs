@@ -59,9 +59,10 @@ namespace Law_and_Order.Source.UI
 
         public override void DoWindowContents(Rect inRect)
         {
-            // Draw tabs at the top
-            TabDrawer.DrawTabs(new Rect(inRect.x, inRect.y, inRect.width, 32f), tabs);
-            inRect.yMin += 40f;
+            // Adjust rect for tabs and draw them
+            // TabDrawer will draw the tabs ABOVE this rect
+            inRect.yMin += 45f;
+            TabDrawer.DrawTabs<TabRecord>(inRect, tabs, 200f);
 
             // Split into left panel (criminal list) and right panel (details)
             Rect leftPanel = inRect;
