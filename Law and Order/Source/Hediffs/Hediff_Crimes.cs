@@ -16,12 +16,15 @@ namespace Law_and_Order.Source.Hediffs
         public Thing targetThing;
         public float damageDealt;
         public string additionalInfo;
+        public bool wasVictimDowned; // Was the victim downed by this crime?
+        public bool wasVictimKilled; // Was the victim killed by this crime?
+        public float debtAmount; // Actual debt incurred by this crime (stored at time of crime)
 
         public Crime()
         {
         }
 
-        public Crime(CrimeType type, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null)
+        public Crime(CrimeType type, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, float debtAmount = 0f)
         {
             this.crimeType = type;
             this.tickCommitted = Find.TickManager.TicksGame;
@@ -29,6 +32,9 @@ namespace Law_and_Order.Source.Hediffs
             this.targetThing = targetThing;
             this.damageDealt = damageDealt;
             this.additionalInfo = additionalInfo;
+            this.wasVictimDowned = wasVictimDowned;
+            this.wasVictimKilled = wasVictimKilled;
+            this.debtAmount = debtAmount;
         }
 
         public void ExposeData()
@@ -39,6 +45,9 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_References.Look(ref targetThing, "targetThing");
             Scribe_Values.Look(ref damageDealt, "damageDealt", 0f);
             Scribe_Values.Look(ref additionalInfo, "additionalInfo");
+            Scribe_Values.Look(ref wasVictimDowned, "wasVictimDowned", false);
+            Scribe_Values.Look(ref wasVictimKilled, "wasVictimKilled", false);
+            Scribe_Values.Look(ref debtAmount, "debtAmount", 0f);
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCommitted) / GenDate.TicksPerDay;

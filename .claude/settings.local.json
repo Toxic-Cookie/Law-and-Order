@@ -14,7 +14,8 @@
       "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\")",
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/**)",
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/**)",
-      "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/Keyed/**)"
+      "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/Keyed/**)",
+      "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\")"
     ],
     "deny": [],
     "ask": []

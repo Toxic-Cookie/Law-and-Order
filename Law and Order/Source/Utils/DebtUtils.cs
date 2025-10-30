@@ -1,6 +1,7 @@
 using Verse;
 using RimWorld;
 using Law_and_Order.Source.Hediffs;
+using Law_and_Order.Source.Settings;
 
 namespace Law_and_Order.Source.Utils
 {
@@ -10,24 +11,6 @@ namespace Law_and_Order.Source.Utils
     public static class DebtUtils
     {
         public static HediffDef DebtDef => LawAndOrder_HediffDefOf.LawAndOrder_Debt;
-
-        // Base debt values for different crime types
-        private const float ARMED_TRESPASSING = 150f;
-        private const float ARSON_BASE = 250f;
-        private const float THEFT_MULTIPLIER = 1.5f;
-        private const float CONTRABAND_PER_DRUG = 50f;
-        private const float ASSAULT = 350f;
-        private const float DOWNED_COLONIST = 750f;
-        private const float ASSAULT_ANIMAL = 100f;
-        private const float KILL_ANIMAL_MULTIPLIER = 2f;
-        private const float KILL_BONDED_ANIMAL_MULTIPLIER = 3f;
-        private const float KILL_BONDED_ANIMAL_BONUS = 500f;
-        private const float MURDER = 5000f;
-        private const float PROPERTY_DESTRUCTION_MULTIPLIER = 1.2f;
-
-        // Sentencing modifiers
-        private const float BANNED_WEAPON_MODIFIER = 1.25f;
-        private const float REPEAT_OFFENDER_MODIFIER = 1.5f;
 
         /// <summary>
         /// Get or create the debt hediff for a pawn
@@ -79,12 +62,12 @@ namespace Law_and_Order.Source.Utils
             switch (crime.crimeType)
             {
                 case CrimeType.Trespassing:
-                    debt = ARMED_TRESPASSING;
+                    debt = LawAndOrderSettings.ArmedTrespassing.Value;
                     reason = "Armed Trespassing";
                     break;
 
                 case CrimeType.Arson:
-                    debt = ARSON_BASE;
+                    debt = LawAndOrderSettings.ArsonBase.Value;
                     // Additional cost for destroyed items could be added here if tracked
                     if (crime.targetThing != null && crime.targetThing.Destroyed)
                     {
@@ -100,58 +83,59 @@ namespace Law_and_Order.Source.Utils
                 case CrimeType.Theft:
                     if (crime.targetThing != null)
                     {
-                        debt = crime.targetThing.MarketValue * THEFT_MULTIPLIER;
+                        debt = crime.targetThing.MarketValue * LawAndOrderSettings.TheftMultiplier.Value;
                         reason = $"Theft of {crime.targetThing.Label}";
                     }
                     break;
 
                 case CrimeType.Assault:
-                    // Check if target was downed
-                    if (crime.victim != null && crime.victim.Downed)
+                    // Check if target was downed (use stored flag, not current state)
+                    if (crime.wasVictimDowned)
                     {
-                        debt = DOWNED_COLONIST;
-                        reason = $"Downed {crime.victim.LabelShort}";
+                        debt = LawAndOrderSettings.DownedColonist.Value;
+                        reason = $"Downed {crime.victim?.LabelShort ?? "colonist"}";
                     }
                     else if (crime.victim?.RaceProps?.Animal ?? false)
                     {
-                        debt = ASSAULT_ANIMAL;
+                        debt = LawAndOrderSettings.AssaultAnimal.Value;
                         reason = $"Assault on {crime.victim.LabelShort}";
                     }
                     else
                     {
-                        debt = ASSAULT;
+                        debt = LawAndOrderSettings.Assault.Value;
                         reason = crime.victim != null ? $"Assault on {crime.victim.LabelShort}" : "Assault";
                     }
                     break;
 
                 case CrimeType.Murder:
-                    debt = MURDER;
+                    debt = LawAndOrderSettings.Murder.Value;
                     reason = crime.victim != null ? $"Murder of {crime.victim.LabelShort}" : "Murder";
                     break;
 
                 case CrimeType.AnimalAbuse:
-                    if (crime.victim != null && crime.victim.Dead)
+                    // Check if animal was killed (use stored flag, not current state)
+                    if (crime.wasVictimKilled)
                     {
                         // Killed animal
-                        float baseValue = crime.victim.MarketValue;
+                        float baseValue = crime.victim?.MarketValue ?? 0f;
 
                         // Check if bonded
-                        bool isBonded = crime.victim.relations?.GetFirstDirectRelationPawn(PawnRelationDefOf.Bond, x => x.IsColonist) != null;
+                        bool isBonded = crime.victim?.relations?.GetFirstDirectRelationPawn(PawnRelationDefOf.Bond, x => x.IsColonist) != null;
 
                         if (isBonded)
                         {
-                            debt = (baseValue * KILL_BONDED_ANIMAL_MULTIPLIER) + KILL_BONDED_ANIMAL_BONUS;
-                            reason = $"Killed bonded animal ({crime.victim.LabelShort})";
+                            debt = (baseValue * LawAndOrderSettings.KillBondedAnimalMultiplier.Value) + LawAndOrderSettings.KillBondedAnimalBonus.Value;
+                            reason = $"Killed bonded animal ({crime.victim?.LabelShort ?? "animal"})";
                         }
                         else
                         {
-                            debt = baseValue * KILL_ANIMAL_MULTIPLIER;
-                            reason = $"Killed {crime.victim.LabelShort}";
+                            debt = baseValue * LawAndOrderSettings.KillAnimalMultiplier.Value;
+                            reason = $"Killed {crime.victim?.LabelShort ?? "animal"}";
                         }
                     }
                     else
                     {
-                        debt = ASSAULT_ANIMAL;
+                        debt = LawAndOrderSettings.AssaultAnimal.Value;
                         reason = crime.victim != null ? $"Harmed {crime.victim.LabelShort}" : "Animal Abuse";
                     }
                     break;
@@ -160,14 +144,14 @@ namespace Law_and_Order.Source.Utils
                 case CrimeType.Vandalism:
                     if (crime.targetThing != null)
                     {
-                        debt = crime.targetThing.MarketValue * PROPERTY_DESTRUCTION_MULTIPLIER;
+                        debt = crime.targetThing.MarketValue * LawAndOrderSettings.PropertyDestructionMultiplier.Value;
                         reason = $"Destroyed {crime.targetThing.Label}";
                     }
                     break;
 
                 case CrimeType.Kidnapping:
                     // This is a serious crime, treated similarly to assault/downed
-                    debt = DOWNED_COLONIST * 1.5f;
+                    debt = LawAndOrderSettings.DownedColonist.Value * 1.5f;
                     reason = crime.victim != null ? $"Kidnapped {crime.victim.LabelShort}" : "Kidnapping";
                     break;
             }
@@ -198,14 +182,16 @@ namespace Law_and_Order.Source.Utils
 
             if (usedBannedWeapon)
             {
-                totalDebt *= BANNED_WEAPON_MODIFIER;
-                modifiers += " [Banned Weapon +25%]";
+                totalDebt *= LawAndOrderSettings.BannedWeaponModifier.Value;
+                int percent = (int)((LawAndOrderSettings.BannedWeaponModifier.Value - 1f) * 100f);
+                modifiers += $" [Banned Weapon +{percent}%]";
             }
 
             if (isRepeatOffender)
             {
-                totalDebt *= REPEAT_OFFENDER_MODIFIER;
-                modifiers += " [Repeat Offender +50%]";
+                totalDebt *= LawAndOrderSettings.RepeatOffenderModifier.Value;
+                int percent = (int)((LawAndOrderSettings.RepeatOffenderModifier.Value - 1f) * 100f);
+                modifiers += $" [Repeat Offender +{percent}%]";
             }
 
             var debtRecord = GetOrCreateDebtRecord(criminal);
@@ -276,12 +262,12 @@ namespace Law_and_Order.Source.Utils
             // Apply modifiers to total
             if (usedBannedWeapon)
             {
-                totalDebt *= BANNED_WEAPON_MODIFIER;
+                totalDebt *= LawAndOrderSettings.BannedWeaponModifier.Value;
             }
 
             if (isRepeatOffender)
             {
-                totalDebt *= REPEAT_OFFENDER_MODIFIER;
+                totalDebt *= LawAndOrderSettings.RepeatOffenderModifier.Value;
             }
 
             return totalDebt;

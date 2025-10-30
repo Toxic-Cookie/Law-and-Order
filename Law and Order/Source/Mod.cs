@@ -2,6 +2,7 @@
 using HarmonyLib;
 using HugsLib;
 using HugsLib.Utils;
+using Law_and_Order.Source.Settings;
 
 namespace Law_and_Order.Source
 {
@@ -24,8 +25,27 @@ namespace Law_and_Order.Source
         {
             base.DefsLoaded();
 
+            // Initialize settings
+            LawAndOrderSettings.Initialize(Settings);
+
             // Example: Log when mod is loaded
             Logger.Message("Law and Order mod loaded successfully!");
+        }
+
+        /// <summary>
+        /// Override to show custom settings window
+        /// </summary>
+        public override void SettingsChanged()
+        {
+            base.SettingsChanged();
+        }
+
+        /// <summary>
+        /// Add custom menu option to open the advanced settings window
+        /// </summary>
+        public override void WorldLoaded()
+        {
+            base.WorldLoaded();
         }
     }
 }

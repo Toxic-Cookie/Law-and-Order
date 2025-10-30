@@ -40,4 +40,55 @@
   <LawAndOrder_Released>{0} has been released from prison</LawAndOrder_Released>
   <LawAndOrder_Pardoned>{0} has been pardoned of all crimes</LawAndOrder_Pardoned>
 
+  <!-- Settings -->
+  <!-- Crimes Against Colony -->
+  <LawAndOrder_Setting_ArmedTrespassing_Title>Armed Trespassing</LawAndOrder_Setting_ArmedTrespassing_Title>
+  <LawAndOrder_Setting_ArmedTrespassing_Desc>Base debt for participating in a raid against the colony.</LawAndOrder_Setting_ArmedTrespassing_Desc>
+
+  <LawAndOrder_Setting_ArsonBase_Title>Arson (Base)</LawAndOrder_Setting_ArsonBase_Title>
+  <LawAndOrder_Setting_ArsonBase_Desc>Base debt for using fire as a weapon. Additional cost is added for destroyed items.</LawAndOrder_Setting_ArsonBase_Desc>
+
+  <LawAndOrder_Setting_TheftMultiplier_Title>Theft Multiplier</LawAndOrder_Setting_TheftMultiplier_Title>
+  <LawAndOrder_Setting_TheftMultiplier_Desc>Multiplier applied to stolen item value. Default 1.5x means debt is 150% of item value.</LawAndOrder_Setting_TheftMultiplier_Desc>
+
+  <LawAndOrder_Setting_ContrabandPerDrug_Title>Contraband per Drug</LawAndOrder_Setting_ContrabandPerDrug_Title>
+  <LawAndOrder_Setting_ContrabandPerDrug_Desc>Debt per illegal drug found on the raider (flake, yayo, go-juice).</LawAndOrder_Setting_ContrabandPerDrug_Desc>
+
+  <!-- Crimes Against Persons -->
+  <LawAndOrder_Setting_Assault_Title>Assault</LawAndOrder_Setting_Assault_Title>
+  <LawAndOrder_Setting_Assault_Desc>Debt for injuring a colonist during combat.</LawAndOrder_Setting_Assault_Desc>
+
+  <LawAndOrder_Setting_DownedColonist_Title>Downed Colonist</LawAndOrder_Setting_DownedColonist_Title>
+  <LawAndOrder_Setting_DownedColonist_Desc>Debt for downing a colonist in combat (more serious than assault).</LawAndOrder_Setting_DownedColonist_Desc>
+
+  <LawAndOrder_Setting_AssaultAnimal_Title>Assault on Animal</LawAndOrder_Setting_AssaultAnimal_Title>
+  <LawAndOrder_Setting_AssaultAnimal_Desc>Debt for harming a colony animal.</LawAndOrder_Setting_AssaultAnimal_Desc>
+
+  <LawAndOrder_Setting_KillAnimalMultiplier_Title>Kill Animal Multiplier</LawAndOrder_Setting_KillAnimalMultiplier_Title>
+  <LawAndOrder_Setting_KillAnimalMultiplier_Desc>Multiplier applied to animal market value when killed.</LawAndOrder_Setting_KillAnimalMultiplier_Desc>
+
+  <LawAndOrder_Setting_KillBondedAnimalMultiplier_Title>Kill Bonded Animal Multiplier</LawAndOrder_Setting_KillBondedAnimalMultiplier_Title>
+  <LawAndOrder_Setting_KillBondedAnimalMultiplier_Desc>Multiplier applied to bonded animal value (higher due to emotional impact).</LawAndOrder_Setting_KillBondedAnimalMultiplier_Desc>
+
+  <LawAndOrder_Setting_KillBondedAnimalBonus_Title>Kill Bonded Animal Bonus</LawAndOrder_Setting_KillBondedAnimalBonus_Title>
+  <LawAndOrder_Setting_KillBondedAnimalBonus_Desc>Additional flat debt added for killing a bonded animal.</LawAndOrder_Setting_KillBondedAnimalBonus_Desc>
+
+  <LawAndOrder_Setting_Murder_Title>Murder</LawAndOrder_Setting_Murder_Title>
+  <LawAndOrder_Setting_Murder_Desc>Debt for killing a colonist. Set high to represent a "life sentence" in labor terms.</LawAndOrder_Setting_Murder_Desc>
+
+  <!-- Property Destruction -->
+  <LawAndOrder_Setting_PropertyDestructionMultiplier_Title>Property Destruction Multiplier</LawAndOrder_Setting_PropertyDestructionMultiplier_Title>
+  <LawAndOrder_Setting_PropertyDestructionMultiplier_Desc>Multiplier applied to destroyed item value. Includes cost of labor to rebuild.</LawAndOrder_Setting_PropertyDestructionMultiplier_Desc>
+
+  <!-- Modifiers -->
+  <LawAndOrder_Setting_BannedWeaponModifier_Title>Banned Weapon Modifier</LawAndOrder_Setting_BannedWeaponModifier_Title>
+  <LawAndOrder_Setting_BannedWeaponModifier_Desc>Multiplier applied to total debt if raider used a banned weapon (e.g., incendiary launcher).</LawAndOrder_Setting_BannedWeaponModifier_Desc>
+
+  <LawAndOrder_Setting_RepeatOffenderModifier_Title>Repeat Offender Modifier</LawAndOrder_Setting_RepeatOffenderModifier_Title>
+  <LawAndOrder_Setting_RepeatOffenderModifier_Desc>Multiplier applied to total debt for repeat offenders (captured multiple times).</LawAndOrder_Setting_RepeatOffenderModifier_Desc>
+
+  <!-- Labor -->
+  <LawAndOrder_Setting_DefaultSilverPerDay_Title>Silver per Day (Labor)</LawAndOrder_Setting_DefaultSilverPerDay_Title>
+  <LawAndOrder_Setting_DefaultSilverPerDay_Desc>Average silver value produced by a prisoner per day of labor. Used to estimate sentence length.</LawAndOrder_Setting_DefaultSilverPerDay_Desc>
+
 </LanguageData>

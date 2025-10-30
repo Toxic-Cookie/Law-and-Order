@@ -50,7 +50,7 @@ namespace Law_and_Order.Source.Utils
         /// <summary>
         /// Record a crime for a pawn
         /// </summary>
-        public static void RecordCrime(Pawn criminal, CrimeType crimeType, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null)
+        public static void RecordCrime(Pawn criminal, CrimeType crimeType, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false)
         {
             if (criminal == null)
             {
@@ -60,8 +60,14 @@ namespace Law_and_Order.Source.Utils
 
             try
             {
+                // Calculate the debt amount for this crime using current settings
+                var tempCrime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled);
+                float debtAmount = DebtUtils.CalculateDebtForCrime(tempCrime);
+
+                // Create the crime with the calculated debt amount stored
+                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount);
+
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
-                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo);
                 criminalRecord?.AddCrime(crime);
 
                 // Automatically add debt for this crime
@@ -72,7 +78,9 @@ namespace Law_and_Order.Source.Utils
                 {
                     string victimInfo = victim != null ? $" against {victim.NameShortColored}" : "";
                     string damageInfo = damageDealt > 0 ? $" ({damageDealt:F1} damage)" : "";
-                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfo}");
+                    string downedInfo = wasVictimDowned ? " [DOWNED]" : "";
+                    string killedInfo = wasVictimKilled ? " [KILLED]" : "";
+                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfo}{downedInfo}{killedInfo} - Debt: {debtAmount:F0} silver");
                 }
             }
             catch (System.Exception e)

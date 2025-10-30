@@ -332,8 +332,15 @@ namespace Law_and_Order.Source.UI
             Rect titleRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.7f, 20f);
             Widgets.Label(titleRect, crime.crimeType.ToString());
 
-            // Calculate and display debt for this crime
-            float crimeDebt = DebtUtils.CalculateDebtForCrime(crime);
+            // Display the stored debt amount (not recalculated)
+            float crimeDebt = crime.debtAmount;
+
+            // Fallback: if debtAmount is 0 (old saves), calculate it
+            if (crimeDebt <= 0)
+            {
+                crimeDebt = DebtUtils.CalculateDebtForCrime(crime);
+            }
+
             if (crimeDebt > 0)
             {
                 Rect debtRect = new Rect(innerRect.x + innerRect.width * 0.7f, innerRect.y, innerRect.width * 0.3f, 20f);
