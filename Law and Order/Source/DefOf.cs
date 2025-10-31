@@ -4,7 +4,7 @@ using Verse;
 namespace Law_and_Order.Source
 {
     /// <summary>
-    /// DefOf class for Law and Order mod
+    /// DefOf class for Law and Order mod - Hediffs
     /// RimWorld automatically initializes these fields at startup
     /// </summary>
     [DefOf]
@@ -16,6 +16,24 @@ namespace Law_and_Order.Source
         static LawAndOrder_HediffDefOf()
         {
             DefOfHelper.EnsureInitializedInCtor(typeof(LawAndOrder_HediffDefOf));
+        }
+    }
+
+    /// <summary>
+    /// DefOf class for Law and Order mod - Thoughts
+    /// </summary>
+    [DefOf]
+    public static class LawAndOrder_ThoughtDefOf
+    {
+        public static ThoughtDef LawAndOrder_ImpressedByPlea;
+        public static ThoughtDef LawAndOrder_HumiliatedInCourt;
+        public static ThoughtDef LawAndOrder_PleaAccepted;
+        public static ThoughtDef LawAndOrder_PleaImpressive;
+        public static ThoughtDef LawAndOrder_PleaRejected;
+
+        static LawAndOrder_ThoughtDefOf()
+        {
+            DefOfHelper.EnsureInitializedInCtor(typeof(LawAndOrder_ThoughtDefOf));
         }
     }
 }

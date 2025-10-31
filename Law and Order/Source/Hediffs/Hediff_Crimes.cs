@@ -2,6 +2,7 @@
 using System.Linq;
 using Verse;
 using RimWorld;
+using Law_and_Order.Source.Hearings;
 
 namespace Law_and_Order.Source.Hediffs
 {
@@ -95,10 +96,13 @@ namespace Law_and_Order.Source.Hediffs
     public class Hediff_Crimes : HediffWithComps
     {
         private List<Crime> crimes = new List<Crime>();
+        private HearingRecord hearingRecord = new HearingRecord();
 
         public IReadOnlyList<Crime> Crimes => crimes.AsReadOnly();
 
         public int TotalCrimeCount => crimes?.Count ?? 0;
+
+        public HearingRecord Hearing => hearingRecord;
 
         /// <summary>
         /// Add a new crime to this pawn's record
@@ -176,12 +180,17 @@ namespace Law_and_Order.Source.Hediffs
         {
             base.ExposeData();
             Scribe_Collections.Look(ref crimes, "crimes", LookMode.Deep);
+            Scribe_Deep.Look(ref hearingRecord, "hearingRecord");
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 if (crimes == null)
                 {
                     crimes = new List<Crime>();
+                }
+                if (hearingRecord == null)
+                {
+                    hearingRecord = new HearingRecord();
                 }
             }
         }

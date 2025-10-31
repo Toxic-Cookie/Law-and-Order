@@ -15,7 +15,10 @@
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/**)",
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/**)",
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Languages/English/Keyed/**)",
-      "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\")"
+      "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\")",
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\InspectTabDefs\\ITab_Judiciary.xml\")",
+      "Bash(dir /b \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Defs\")",
+      "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Defs/**)"
     ],
     "deny": [],
     "ask": []

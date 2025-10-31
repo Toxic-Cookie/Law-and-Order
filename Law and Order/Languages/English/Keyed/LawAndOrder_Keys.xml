@@ -40,6 +40,9 @@
   <LawAndOrder_Released>{0} has been released from prison</LawAndOrder_Released>
   <LawAndOrder_Pardoned>{0} has been pardoned of all crimes</LawAndOrder_Pardoned>
 
+  <!-- ITab -->
+  <TabJudiciary>Judiciary</TabJudiciary>
+
   <!-- Settings -->
   <!-- Crimes Against Colony -->
   <LawAndOrder_Setting_ArmedTrespassing_Title>Armed Trespassing</LawAndOrder_Setting_ArmedTrespassing_Title>

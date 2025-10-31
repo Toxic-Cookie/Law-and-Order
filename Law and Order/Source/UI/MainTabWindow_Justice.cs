@@ -6,6 +6,7 @@ using Verse.Sound;
 using RimWorld;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
+using Law_and_Order.Source.Hearings;
 
 namespace Law_and_Order.Source.UI
 {
@@ -263,9 +264,27 @@ namespace Law_and_Order.Source.UI
 
             Widgets.Label(textRect, $"{"LawAndOrder_Status".Translate()}: {status}");
 
-            // Trial status (placeholder for now)
-            textRect.y += 20f;
-            Widgets.Label(textRect, $"{"LawAndOrder_TrialStatus".Translate()}: {"LawAndOrder_NotScheduled".Translate()}");
+            // Hearing status
+            var criminalRecord = CrimeUtils.TryGetCriminalRecord(selectedCriminal);
+            if (criminalRecord != null)
+            {
+                textRect.y += 20f;
+                string hearingStatus = criminalRecord.Hearing.status.ToString();
+
+                if (criminalRecord.Hearing.status == HearingStatus.Completed)
+                {
+                    GUI.color = new Color(0.2f, 0.8f, 0.2f);
+                    hearingStatus = $"Completed ({criminalRecord.Hearing.DaysSinceCompleted}d ago)";
+                }
+                else if (criminalRecord.Hearing.status == HearingStatus.Scheduled)
+                {
+                    GUI.color = new Color(0.8f, 0.8f, 0.2f);
+                    hearingStatus = "Scheduled";
+                }
+
+                Widgets.Label(textRect, $"{"LawAndOrder_TrialStatus".Translate()}: {hearingStatus}");
+                GUI.color = Color.white;
+            }
 
             // Debt information
             var debtRecord = DebtUtils.TryGetDebtRecord(selectedCriminal);
@@ -422,29 +441,70 @@ namespace Law_and_Order.Source.UI
 
         private void ScheduleHearing()
         {
-            // Check for courtroom
-            if (!CourtroomUtils.HasCourtroom())
+            if (selectedCriminal == null)
+            {
+                return;
+            }
+
+            // Get criminal record
+            var criminalRecord = CrimeUtils.TryGetCriminalRecord(selectedCriminal);
+            if (criminalRecord == null || criminalRecord.TotalCrimeCount == 0)
             {
                 Messages.Message(
-                    "LawAndOrder_NoCourtroom".Translate(),
+                    $"{selectedCriminal.LabelShort} has no crimes on record.",
                     MessageTypeDefOf.RejectInput
                 );
                 return;
             }
 
-            // TODO: Implement actual hearing scheduling logic
-            // For now, just show a message
-            Messages.Message(
-                "LawAndOrder_HearingScheduled".Translate(selectedCriminal.NameShortColored),
-                MessageTypeDefOf.PositiveEvent
-            );
-
-            if (Prefs.DevMode)
+            // Check if hearing already completed
+            if (criminalRecord.Hearing.status == HearingStatus.Completed)
             {
-                var bestCourtroom = CourtroomUtils.GetBestCourtroom();
-                float quality = bestCourtroom != null ? CourtroomUtils.GetCourtroomQuality(bestCourtroom) : 0f;
-                Mod.Log?.Message($"Scheduled hearing for {selectedCriminal.Name} in courtroom (quality: {quality:F1})");
+                Messages.Message(
+                    $"{selectedCriminal.LabelShort} has already had their hearing.",
+                    MessageTypeDefOf.RejectInput
+                );
+                return;
             }
+
+            // Check for courtroom (optional but recommended)
+            if (!CourtroomUtils.HasCourtroom())
+            {
+                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                    "No suitable courtroom found. Conduct hearing anyway?",
+                    () => OpenHearingDialog(),
+                    true
+                ));
+                return;
+            }
+
+            // Open the hearing dialog
+            OpenHearingDialog();
+        }
+
+        private void OpenHearingDialog()
+        {
+            // Get best adjudicator
+            var adjudicator = HearingUtils.GetBestAdjudicator();
+
+            if (adjudicator == null)
+            {
+                Messages.Message(
+                    "No suitable colonist available to serve as adjudicator.",
+                    MessageTypeDefOf.RejectInput
+                );
+                return;
+            }
+
+            // Schedule the hearing first
+            var criminalRecord = CrimeUtils.TryGetCriminalRecord(selectedCriminal);
+            if (criminalRecord.Hearing.status == HearingStatus.NotScheduled)
+            {
+                HearingUtils.ScheduleHearing(selectedCriminal, adjudicator);
+            }
+
+            // Open the conduct hearing dialog
+            Find.WindowStack.Add(new Dialog_ConductHearing(selectedCriminal, adjudicator));
         }
 
         private void ReleasePrisoner()

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- Impressed by prisoner's plea (adjudicator receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_ImpressedByPlea</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>impressed by plea</label>
+        <description>That prisoner made a very compelling case. I'm genuinely impressed by their eloquence.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Humiliated from critical failure (prisoner receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_HumiliatedInCourt</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>humiliated in court</label>
+        <description>I made a fool of myself trying to plead my case. The adjudicator was not impressed.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Relieved from successful plea (prisoner receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_PleaAccepted</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>2</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>plea accepted</label>
+        <description>The adjudicator accepted my plea for leniency. My sentence was reduced.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Greatly relieved from critical success (prisoner receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_PleaImpressive</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>3</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>impressive plea</label>
+        <description>I managed to significantly reduce my sentence through skillful negotiation. I feel proud of myself.</description>
+        <baseMoodEffect>8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Disappointed from failed plea (prisoner receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_PleaRejected</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>plea rejected</label>
+        <description>My plea for leniency fell on deaf ears. The sentence stands.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>
