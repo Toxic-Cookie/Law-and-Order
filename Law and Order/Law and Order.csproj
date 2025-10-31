@@ -28,6 +28,7 @@
 		<MakeDir Directories="$(ModOutputPath)\Assemblies" />
 		<MakeDir Directories="$(ModOutputPath)\About" Condition="Exists('$(ProjectDir)About')" />
 		<MakeDir Directories="$(ModOutputPath)\Defs" Condition="Exists('$(ProjectDir)Defs')" />
+		<MakeDir Directories="$(ModOutputPath)\Patches" Condition="Exists('$(ProjectDir)Patches')" />
 		<MakeDir Directories="$(ModOutputPath)\Texture" Condition="Exists('$(ProjectDir)Texture')" />
 		<MakeDir Directories="$(ModOutputPath)\Languages" Condition="Exists('$(ProjectDir)Languages')" />
 
@@ -45,6 +46,12 @@
 			<DefsFiles Include="$(ProjectDir)Defs\**\*.*" />
 		</ItemGroup>
 		<Copy SourceFiles="@(DefsFiles)" DestinationFolder="$(ModOutputPath)\Defs\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)Defs')" />
+
+		<!-- Copy Patches folder -->
+		<ItemGroup>
+			<PatchFiles Include="$(ProjectDir)Patches\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(PatchFiles)" DestinationFolder="$(ModOutputPath)\Patches\%(RecursiveDir)" SkipUnchangedFiles="false" Condition="Exists('$(ProjectDir)Patches')" />
 
 		<!-- Copy Texture folder -->
 		<ItemGroup>

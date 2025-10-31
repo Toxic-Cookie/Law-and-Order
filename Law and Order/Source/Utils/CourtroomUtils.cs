@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse;
 using RimWorld;
+using Law_and_Order.Source.Rituals;
 
 namespace Law_and_Order.Source.Utils
 {
@@ -11,53 +12,67 @@ namespace Law_and_Order.Source.Utils
     public static class CourtroomUtils
     {
         /// <summary>
-        /// Check if the colony has a valid courtroom
-        /// A courtroom is defined as a room with specific furniture/requirements
-        /// TODO: Define actual courtroom requirements (throne, chairs, etc.)
+        /// Get all chairs in a room with their role assignments
         /// </summary>
-        public static bool HasCourtroom(Map map = null)
+        public static Dictionary<CourtroomChairRole, List<Thing>> GetCourtroomChairs(Room room)
         {
-            if (map == null)
+            var result = new Dictionary<CourtroomChairRole, List<Thing>>();
+
+            if (room == null)
             {
-                map = Find.CurrentMap;
+                return result;
             }
 
-            if (map == null)
-            {
-                return false;
-            }
+            // Get all things in the room that are sittable and have the courtroom comp
+            var chairs = room.ContainedAndAdjacentThings
+                .Where(t => t.def.building?.isSittable == true)
+                .Where(t => t.TryGetComp<CompCourtroomChair>() != null)
+                .ToList();
 
-            // Placeholder implementation
-            // TODO: Implement actual courtroom detection logic
-            // Could check for:
-            // - A room with throne/chair
-            // - Minimum room size
-            // - Specific courtroom marker building
-            // - Room role/designation
-
-            // For now, just check if there's any room that could be used
-            var rooms = map.regionGrid.AllRooms;
-            if (rooms == null || !rooms.Any())
+            // Group by role
+            foreach (var chair in chairs)
             {
-                return false;
-            }
-
-            // Example: Check for a room with at least 10 cells and some furniture
-            foreach (var room in rooms)
-            {
-                if (room.CellCount >= 10 && room.ContainedAndAdjacentThings.Any(t => t.def.building?.isSittable ?? false))
+                var comp = chair.TryGetComp<CompCourtroomChair>();
+                if (comp != null)
                 {
-                    return true;
+                    if (!result.ContainsKey(comp.Role))
+                    {
+                        result[comp.Role] = new List<Thing>();
+                    }
+                    result[comp.Role].Add(chair);
                 }
             }
 
-            return false;
+            return result;
         }
 
         /// <summary>
-        /// Get all potential courtrooms on the map
+        /// Check if a room has the minimum required seating for a hearing
         /// </summary>
-        public static List<Room> GetPotentialCourtrooms(Map map = null)
+        public static bool HasMinimumSeating(Room room)
+        {
+            var chairs = GetCourtroomChairs(room);
+
+            // Must have at least: 1 judge, 1 defendant, 1 spectator
+            bool hasJudge = chairs.ContainsKey(CourtroomChairRole.Judge) && chairs[CourtroomChairRole.Judge].Count >= 1;
+            bool hasDefendant = chairs.ContainsKey(CourtroomChairRole.Defendant) && chairs[CourtroomChairRole.Defendant].Count >= 1;
+
+            return hasJudge && hasDefendant;
+        }
+
+        /// <summary>
+        /// Get the number of designated seats for a specific role
+        /// </summary>
+        public static int GetSeatCountForRole(Room room, CourtroomChairRole role)
+        {
+            var chairs = GetCourtroomChairs(room);
+            return chairs.ContainsKey(role) ? chairs[role].Count : 0;
+        }
+
+        /// <summary>
+        /// Find all potential courtrooms (rooms with courtroom chairs)
+        /// </summary>
+        public static List<Room> GetPotentialCourtroomsWithSeating(Map map = null)
         {
             if (map == null)
             {
@@ -73,16 +88,30 @@ namespace Law_and_Order.Source.Utils
 
             foreach (var room in map.regionGrid.AllRooms)
             {
-                // Basic requirements for a courtroom
-                // TODO: Make these requirements configurable or more sophisticated
-                if (room.CellCount >= 10 &&
-                    room.ContainedAndAdjacentThings.Any(t => t.def.building?.isSittable ?? false))
+                if (HasMinimumSeating(room))
                 {
                     courtrooms.Add(room);
                 }
             }
 
             return courtrooms;
+        }
+        /// <summary>
+        /// Check if the colony has a valid courtroom
+        /// A courtroom must have minimum required seating (Judge, Defendant)
+        /// </summary>
+        public static bool HasCourtroom(Map map = null)
+        {
+            var courtrooms = GetPotentialCourtroomsWithSeating(map);
+            return courtrooms.Count > 0;
+        }
+
+        /// <summary>
+        /// Get all potential courtrooms on the map
+        /// </summary>
+        public static List<Room> GetPotentialCourtrooms(Map map = null)
+        {
+            return GetPotentialCourtroomsWithSeating(map);
         }
 
         /// <summary>
@@ -95,21 +124,8 @@ namespace Law_and_Order.Source.Utils
                 return false;
             }
 
-            // TODO: Add specific courtroom requirements
-            // For now, basic checks:
-            // - Must be indoors
-            // - Must have minimum size
-            // - Must have seating
-
-            if (room.CellCount < 10)
-            {
-                return false;
-            }
-
-            // Check for seating
-            bool hasSeating = room.ContainedAndAdjacentThings.Any(t => t.def.building?.isSittable ?? false);
-
-            return hasSeating;
+            // Must have minimum required seating
+            return HasMinimumSeating(room);
         }
 
         /// <summary>
@@ -158,18 +174,30 @@ namespace Law_and_Order.Source.Utils
                 return "Room must be indoors";
             }
 
-            if (room.CellCount < 10)
+            var chairs = GetCourtroomChairs(room);
+
+            int judgeSeats = GetSeatCountForRole(room, CourtroomChairRole.Judge);
+            int defendantSeats = GetSeatCountForRole(room, CourtroomChairRole.Defendant);
+
+            if (judgeSeats == 0 && defendantSeats == 0)
             {
-                return "Room is too small (minimum 10 cells)";
+                return "No designated courtroom seating. Select chairs and designate them for courtroom roles.";
             }
 
-            bool hasSeating = room.ContainedAndAdjacentThings.Any(t => t.def.building?.isSittable ?? false);
-            if (!hasSeating)
+            if (judgeSeats == 0)
             {
-                return "Room needs seating (chairs, stools, thrones, etc.)";
+                return "Missing Judge seat. Designate a chair for the judge.";
             }
 
-            return "Valid courtroom";
+            if (defendantSeats == 0)
+            {
+                return "Missing Defendant seat. Designate a chair for the defendant.";
+            }
+
+            return $"Valid courtroom (Judge: {judgeSeats}, Defendant: {defendantSeats}, " +
+                   $"Jury: {GetSeatCountForRole(room, CourtroomChairRole.Jury)}, " +
+                   $"Victim: {GetSeatCountForRole(room, CourtroomChairRole.Victim)}, " +
+                   $"Spectator: {GetSeatCountForRole(room, CourtroomChairRole.Spectator)})";
         }
     }
 }
