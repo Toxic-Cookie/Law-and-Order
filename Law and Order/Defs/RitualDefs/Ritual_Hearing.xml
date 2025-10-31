@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Ritual Behavior Definition for Hearing -->
+  <RitualBehaviorDef>
+    <defName>LawAndOrder_Hearing</defName>
+    <label>court hearing</label>
+    <description>A formal hearing where a prisoner is tried for their crimes before a judge.</description>
+    <workerClass>LawAndOrder.RitualBehaviorWorker_Hearing</workerClass>
+
+    <!-- Duration: approximately 1-2 in-game hours -->
+    <durationTicks>
+      <min>2500</min>
+      <max>3500</max>
+    </durationTicks>
+
+    <!-- Roles -->
+    <roles>
+      <!-- Judge Role (Required) -->
+      <li Class="LawAndOrder.RitualRole_Judge">
+        <id>judge</id>
+        <label>judge</label>
+        <categoryLabel>judge</categoryLabel>
+        <required>true</required>
+        <substitutable>false</substitutable>
+        <maxCount>1</maxCount>
+        <countsAsParticipant>true</countsAsParticipant>
+        <missingDesc>a judge</missingDesc>
+        <noCandidatesGizmoDesc>No colonist available to serve as judge.</noCandidatesGizmoDesc>
+      </li>
+
+      <!-- Defendant Role (Required) -->
+      <li Class="LawAndOrder.RitualRole_Defendant">
+        <id>defendant</id>
+        <label>defendant</label>
+        <categoryLabel>defendant</categoryLabel>
+        <required>true</required>
+        <substitutable>false</substitutable>
+        <maxCount>1</maxCount>
+        <countsAsParticipant>true</countsAsParticipant>
+        <missingDesc>a prisoner defendant</missingDesc>
+        <noCandidatesGizmoDesc>No prisoner available with crimes to be tried.</noCandidatesGizmoDesc>
+      </li>
+
+      <!-- Victim Role (Optional) -->
+      <li Class="LawAndOrder.RitualRole_Victim">
+        <id>victim</id>
+        <label>victim</label>
+        <categoryLabel>victim</categoryLabel>
+        <required>false</required>
+        <substitutable>true</substitutable>
+        <maxCount>3</maxCount>
+        <countsAsParticipant>true</countsAsParticipant>
+        <missingDesc>crime victims</missingDesc>
+      </li>
+
+      <!-- Jury Role (Optional) -->
+      <li Class="LawAndOrder.RitualRole_Jury">
+        <id>jury</id>
+        <label>juror</label>
+        <categoryLabel>jury</categoryLabel>
+        <required>false</required>
+        <substitutable>true</substitutable>
+        <maxCount>12</maxCount>
+        <countsAsParticipant>true</countsAsParticipant>
+        <missingDesc>jurors</missingDesc>
+      </li>
+
+      <!-- Spectator Role (Optional) -->
+      <li Class="LawAndOrder.RitualRole_Spectator">
+        <id>spectator</id>
+        <label>spectator</label>
+        <categoryLabel>spectators</categoryLabel>
+        <required>false</required>
+        <substitutable>true</substitutable>
+        <maxCount>20</maxCount>
+        <countsAsParticipant>false</countsAsParticipant>
+        <missingDesc>spectators</missingDesc>
+      </li>
+    </roles>
+
+    <!-- Ritual Stages -->
+    <stages>
+      <!-- Stage 1: Waiting for Participants -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>false</spectatorsRequired>
+        <showProgressBar>false</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_RolesReadyForStage">
+            <roleIds>
+              <li>judge</li>
+              <li>defendant</li>
+            </roleIds>
+          </li>
+        </endTriggers>
+        <roleBehaviors>
+          <li>
+            <roleId>judge</roleId>
+            <dutyDef>Spectate</dutyDef>
+            <customPositions>
+              <li Class="RitualPosition_OnInteractionCell" />
+            </customPositions>
+          </li>
+          <li>
+            <roleId>defendant</roleId>
+            <dutyDef>Spectate</dutyDef>
+            <customPositions>
+              <li Class="RitualPosition_OnInteractionCell" />
+            </customPositions>
+          </li>
+        </roleBehaviors>
+      </li>
+
+      <!-- Stage 2: Opening Statements -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>true</spectatorsRequired>
+        <showProgressBar>true</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_DurationPercentage">
+            <percentage>0.15</percentage>
+          </li>
+        </endTriggers>
+        <roleBehaviors>
+          <li>
+            <roleId>judge</roleId>
+            <dutyDef>SpeakOnThrone</dutyDef>
+            <customPositions>
+              <li Class="RitualPosition_OnInteractionCell" />
+            </customPositions>
+          </li>
+          <li>
+            <roleId>defendant</roleId>
+            <dutyDef>Spectate</dutyDef>
+          </li>
+        </roleBehaviors>
+      </li>
+
+      <!-- Stage 3: Reading Charges -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>true</spectatorsRequired>
+        <showProgressBar>true</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_DurationPercentage">
+            <percentage>0.30</percentage>
+          </li>
+        </endTriggers>
+        <roleBehaviors>
+          <li>
+            <roleId>judge</roleId>
+            <dutyDef>SpeakOnThrone</dutyDef>
+            <customPositions>
+              <li Class="RitualPosition_OnInteractionCell" />
+            </customPositions>
+          </li>
+          <li>
+            <roleId>defendant</roleId>
+            <dutyDef>Spectate</dutyDef>
+          </li>
+        </roleBehaviors>
+      </li>
+
+      <!-- Stage 4: Plea Bargain -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>true</spectatorsRequired>
+        <showProgressBar>true</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_DurationPercentage">
+            <percentage>0.60</percentage>
+          </li>
+        </endTriggers>
+        <roleBehaviors>
+          <li>
+            <roleId>defendant</roleId>
+            <dutyDef>SpeakOnThrone</dutyDef>
+            <customPositions>
+              <li Class="RitualPosition_OnInteractionCell" />
+            </customPositions>
+          </li>
+          <li>
+            <roleId>judge</roleId>
+            <dutyDef>Spectate</dutyDef>
+          </li>
+        </roleBehaviors>
+      </li>
+
+      <!-- Stage 5: Deliberation (if jury present) -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>false</spectatorsRequired>
+        <showProgressBar>true</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_DurationPercentage">
+            <percentage>0.80</percentage>
+          </li>
+        </endTriggers>
+        <roleBehaviors>
+          <li>
+            <roleId>jury</roleId>
+            <dutyDef>Spectate</dutyDef>
+          </li>
+        </roleBehaviors>
+      </li>
+
+      <!-- Stage 6: Sentencing -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>true</spectatorsRequired>
+        <showProgressBar>true</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_DurationPercentage">
+            <percentage>0.95</percentage>
+          </li>
+        </endTriggers>
+        <roleBehaviors>
+          <li>
+            <roleId>judge</roleId>
+            <dutyDef>SpeakOnThrone</dutyDef>
+            <customPositions>
+              <li Class="RitualPosition_OnInteractionCell" />
+            </customPositions>
+          </li>
+          <li>
+            <roleId>defendant</roleId>
+            <dutyDef>Spectate</dutyDef>
+          </li>
+        </roleBehaviors>
+      </li>
+
+      <!-- Stage 7: Closing -->
+      <li>
+        <defaultDuty>Spectate</defaultDuty>
+        <spectatorsRequired>false</spectatorsRequired>
+        <showProgressBar>true</showProgressBar>
+        <endTriggers>
+          <li Class="StageEndTrigger_DurationPercentage">
+            <percentage>1.0</percentage>
+          </li>
+        </endTriggers>
+      </li>
+    </stages>
+
+  </RitualBehaviorDef>
+
+</Defs>

@@ -36,4 +36,18 @@ namespace Law_and_Order.Source
             DefOfHelper.EnsureInitializedInCtor(typeof(LawAndOrder_ThoughtDefOf));
         }
     }
+
+    /// <summary>
+    /// DefOf class for Law and Order mod - Rituals
+    /// </summary>
+    [DefOf]
+    public static class LawAndOrder_RitualDefOf
+    {
+        public static RitualBehaviorDef LawAndOrder_Hearing;
+
+        static LawAndOrder_RitualDefOf()
+        {
+            DefOfHelper.EnsureInitializedInCtor(typeof(LawAndOrder_RitualDefOf));
+        }
+    }
 }
