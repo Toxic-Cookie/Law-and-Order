@@ -19,6 +19,12 @@ namespace LawAndOrder
 
         public RitualOutcomeEffectWorker_Hearing(RitualOutcomeEffectDef def) : base(def)
         {
+            // Initialize compDatas even if comps is empty to prevent NullReferenceException
+            // Base constructor calls FillCompData() which doesn't initialize if comps is empty
+            if (this.compDatas == null)
+            {
+                this.compDatas = new List<RitualOutcomeComp_Data>();
+            }
         }
 
         /// <summary>

@@ -25,6 +25,7 @@
     <shortDescOverride>court hearing</shortDescOverride>
     <ritualBehavior>LawAndOrder_Hearing</ritualBehavior>
     <ritualOutcomeEffect>LawAndOrder_HearingOutcome</ritualOutcomeEffect>
+    <ritualTargetFilter>LawAndOrder_JudgesBench</ritualTargetFilter>
     <ritualOnlyForIdeoMembers>false</ritualOnlyForIdeoMembers>
     <canStartAnytime>true</canStartAnytime>
     <tags>

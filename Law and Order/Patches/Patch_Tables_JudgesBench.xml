@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Add Comp_JudgesBench to all tables so they can be designated as Judge's Bench -->
+  <Operation Class="PatchOperationSequence">
+    <operations>
+
+      <!-- Patch all vanilla tables -->
+      <li Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[
+          (
+            defName="TableShort" or
+            defName="TableLong" or
+            defName="TableButcher" or
+            defName="TableStonecutter" or
+            defName="TableMachining" or
+            defName="TableSmithing" or
+            defName="TableTailor" or
+            defName="TableCraftingStone"
+          )
+          and not(comps/li[@Class="LawAndOrder.CompProperties_JudgesBench"])
+        ]/comps</xpath>
+        <value>
+          <li Class="LawAndOrder.CompProperties_JudgesBench"/>
+        </value>
+      </li>
+
+      <!-- Also add to research benches which could work as judge's bench -->
+      <li Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[
+          (
+            defName="SimpleResearchBench" or
+            defName="HiTechResearchBench"
+          )
+          and not(comps/li[@Class="LawAndOrder.CompProperties_JudgesBench"])
+        ]/comps</xpath>
+        <value>
+          <li Class="LawAndOrder.CompProperties_JudgesBench"/>
+        </value>
+      </li>
+
+    </operations>
+  </Operation>
+
+</Patch>

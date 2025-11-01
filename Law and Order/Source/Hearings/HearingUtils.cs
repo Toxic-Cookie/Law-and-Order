@@ -434,9 +434,41 @@ namespace Law_and_Order.Source.Hearings
                 }
             }
 
-            // Get target cell in courtroom (center of room)
-            IntVec3 targetCell = courtroom.ExtentsClose.CenterCell;
-            TargetInfo target = new TargetInfo(targetCell, prisoner.Map);
+            // Find the Judge's Bench in the courtroom
+            Building judgesBench = null;
+            foreach (IntVec3 cell in courtroom.Cells)
+            {
+                foreach (Thing thing in cell.GetThingList(prisoner.Map))
+                {
+                    Building building = thing as Building;
+                    if (building != null)
+                    {
+                        var comp = building.TryGetComp<LawAndOrder.Comp_JudgesBench>();
+                        if (comp != null && comp.IsDesignatedAsJudgesBench)
+                        {
+                            judgesBench = building;
+                            break;
+                        }
+                    }
+                }
+                if (judgesBench != null)
+                {
+                    break;
+                }
+            }
+
+            // If no Judge's Bench found, inform the user
+            if (judgesBench == null)
+            {
+                Messages.Message(
+                    "No Judge's Bench found in courtroom. Designate a table as Judge's Bench by right-clicking it.",
+                    MessageTypeDefOf.RejectInput
+                );
+                return;
+            }
+
+            // Use the Judge's Bench as the ritual target
+            TargetInfo target = new TargetInfo(judgesBench);
 
             // Prepare forced role assignments
             Dictionary<string, Pawn> forcedRoles = new Dictionary<string, Pawn>();
@@ -465,6 +497,15 @@ namespace Law_and_Order.Source.Hearings
             Dialog_BeginRitual.ActionCallback actionCallback = delegate(RitualRoleAssignments assignments)
             {
                 Law_and_Order.Source.Mod.Log?.Message($"Starting hearing ritual for {prisoner.LabelShort} with {assignments.Participants.Count()} participants");
+
+                // Check if ritual can start
+                string canStartError = ritual.behavior.CanStartRitualNow(target, ritual, null, assignments.ForcedRolesForReading);
+                if (canStartError != null)
+                {
+                    Law_and_Order.Source.Mod.Log?.Error($"Cannot start ritual: {canStartError}");
+                    Messages.Message($"Cannot start hearing: {canStartError}", MessageTypeDefOf.RejectInput);
+                    return false;
+                }
 
                 // Start the ritual
                 ritual.behavior.TryExecuteOn(target, judge, ritual, null, assignments, true);

@@ -16,8 +16,8 @@
 
     <!-- Roles -->
     <roles>
-      <!-- Judge Role (Required) -->
-      <li Class="LawAndOrder.RitualRole_Judge">
+      <!-- Judge Role (Required) - Uses RitualRoleWarden to enable prisoner escort -->
+      <li Class="RimWorld.RitualRoleWarden">
         <id>judge</id>
         <label>judge</label>
         <categoryLabel>judge</categoryLabel>
@@ -25,6 +25,8 @@
         <substitutable>false</substitutable>
         <maxCount>1</maxCount>
         <countsAsParticipant>true</countsAsParticipant>
+        <allowChild>false</allowChild>
+        <mustBeAbleToReachTarget>true</mustBeAbleToReachTarget>
         <missingDesc>a judge</missingDesc>
         <noCandidatesGizmoDesc>No colonist available to serve as judge.</noCandidatesGizmoDesc>
       </li>
@@ -37,7 +39,10 @@
         <required>true</required>
         <substitutable>false</substitutable>
         <maxCount>1</maxCount>
-        <countsAsParticipant>true</countsAsParticipant>
+        <countsAsParticipant>false</countsAsParticipant>
+        <ignoreBleeding>true</ignoreBleeding>
+        <allowDowned>true</allowDowned>
+        <removeFromAssignmentsOnDeath>false</removeFromAssignmentsOnDeath>
         <missingDesc>a prisoner defendant</missingDesc>
         <noCandidatesGizmoDesc>No prisoner available with crimes to be tried.</noCandidatesGizmoDesc>
       </li>
@@ -72,33 +77,33 @@
 
     <!-- Ritual Stages -->
     <stages>
-      <!-- Stage 1: Waiting for Participants -->
-      <li>
+      <!-- Stage 1: Escorting Defendant to Court -->
+      <li Class="RitualStage_InteractWithPrisoner">
         <defaultDuty>Spectate</defaultDuty>
         <spectatorsRequired>false</spectatorsRequired>
         <showProgressBar>false</showProgressBar>
         <endTriggers>
-          <li Class="StageEndTrigger_RolesArrived">
-            <roleIds>
-              <li>judge</li>
-              <li>defendant</li>
-            </roleIds>
-          </li>
+          <li Class="StageEndTrigger_PawnDeliveredOrNotValid"/>
         </endTriggers>
+        <failTriggers>
+          <li Class="StageFailTrigger_TargetPawnUnreachable">
+            <takerId>judge</takerId>
+            <takeeId>defendant</takeeId>
+            <desc>Defendant is not reachable.</desc>
+          </li>
+          <li Class="StageFailTrigger_PawnAsleep">
+            <desc>Judge asleep</desc>
+            <pawnId>judge</pawnId>
+          </li>
+        </failTriggers>
         <roleBehaviors>
           <li>
             <roleId>judge</roleId>
-            <dutyDef>Spectate</dutyDef>
-            <customPositions>
-              <li Class="RitualPosition_OnInteractionCell" />
-            </customPositions>
+            <dutyDef>DeliverPawnToAltar</dutyDef>
           </li>
           <li>
             <roleId>defendant</roleId>
-            <dutyDef>Spectate</dutyDef>
-            <customPositions>
-              <li Class="RitualPosition_OnInteractionCell" />
-            </customPositions>
+            <dutyDef>Idle</dutyDef>
           </li>
         </roleBehaviors>
       </li>
@@ -117,9 +122,6 @@
           <li>
             <roleId>judge</roleId>
             <dutyDef>GiveSpeech</dutyDef>
-            <customPositions>
-              <li Class="RitualPosition_OnInteractionCell" />
-            </customPositions>
           </li>
           <li>
             <roleId>defendant</roleId>
@@ -142,9 +144,6 @@
           <li>
             <roleId>judge</roleId>
             <dutyDef>GiveSpeech</dutyDef>
-            <customPositions>
-              <li Class="RitualPosition_OnInteractionCell" />
-            </customPositions>
           </li>
           <li>
             <roleId>defendant</roleId>
@@ -167,9 +166,6 @@
           <li>
             <roleId>defendant</roleId>
             <dutyDef>GiveSpeech</dutyDef>
-            <customPositions>
-              <li Class="RitualPosition_OnInteractionCell" />
-            </customPositions>
           </li>
           <li>
             <roleId>judge</roleId>
@@ -210,9 +206,6 @@
           <li>
             <roleId>judge</roleId>
             <dutyDef>GiveSpeech</dutyDef>
-            <customPositions>
-              <li Class="RitualPosition_OnInteractionCell" />
-            </customPositions>
           </li>
           <li>
             <roleId>defendant</roleId>
