@@ -80,6 +80,16 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ Full UI localization
 - ✅ Settings validation on load
 
+**2025-11-01: Social Interaction System**
+- ✅ Added social interaction logging to court hearings
+- ✅ Four interactions: Judge questions, Defendant pleads, Victim confronts, Judge sentences
+- ✅ Interactions logged at different stages during ritual (25%, 50%, 75%, 100%)
+- ✅ Integrated with RimWorld's native PlayLogEntry_Interaction system
+- ✅ Grants Social skill XP to participants
+- ✅ Victim confrontation affects mood and relationships
+- ✅ Interactions viewable in pawn Social tab
+- ✅ Fully tested and working
+
 ---
 
 ## Court Ritual System Progress
@@ -385,6 +395,10 @@ All P0 (High Priority), P1 (High Priority), P2 (Medium Priority), and P3 (Low Pr
 - ✅ Debt modifications based on outcome
 - ✅ Criminal record updates
 - ✅ Mood effects for all participants
+- ✅ Social interaction logging system
+- ✅ Four staged interactions during ritual
+- ✅ Social skill XP for judge and defendant
+- ✅ Victim confrontation with mood effects
 
 **Debt Payment System**
 - ✅ Automatic enslavement after hearing

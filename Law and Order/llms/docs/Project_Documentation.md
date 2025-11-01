@@ -30,12 +30,18 @@
 - [Ritual System Integration](#ritual-system-integration)
 - [Plea Bargain Mechanics](#plea-bargain-mechanics)
 
-### [Section 5: Logging System](#section-5-logging-system)
+### [Section 5: Social Interaction System](#section-5-social-interaction-system)
+- [Overview](#social-interaction-overview)
+- [Court Interactions](#court-interactions)
+- [Implementation](#social-interaction-implementation)
+- [Timing and Progression](#interaction-timing)
+
+### [Section 6: Logging System](#section-6-logging-system)
 - [Tiered Logging](#tiered-logging)
 - [Usage Patterns](#logging-usage-patterns)
 - [Best Practices](#logging-best-practices)
 
-### [Section 6: Quick References](#section-6-quick-references)
+### [Section 7: Quick References](#section-7-quick-references)
 - [Crime System Quick Reference](#crime-quick-reference)
 - [UI Quick Reference](#ui-quick-reference)
 - [Logging Quick Reference](#logging-quick-reference)
@@ -708,7 +714,244 @@ Prisoner returned to cell
 
 ---
 
-## Section 5: Logging System
+## Section 5: Social Interaction System
+
+### Social Interaction Overview
+
+The court hearing system includes a **social interaction logging system** that records interactions between participants in the pawns' social logs. This creates a permanent record of the courtroom proceedings that players can view in the Social tab.
+
+**Key Features:**
+- Interactions appear in pawn social logs
+- Logged at different stages throughout the ritual
+- Includes judge, defendant, and victim interactions
+- Grants skill XP to participants
+- May affect pawn mood and relationships
+- Permanent record viewable in Social tab
+
+**Integration:**
+- Uses RimWorld's native `PlayLogEntry_Interaction` system
+- Fully compatible with vanilla social mechanics
+- Interactions stored in Find.PlayLog
+- Survives save/load cycles
+
+### Court Interactions
+
+#### Four Core Interactions
+
+**1. Judge Questions Defendant** (`LawAndOrder_JudgeQuestions`)
+- **Timing:** 25% ritual progress
+- **Initiator:** Judge
+- **Recipient:** Defendant
+- **Effects:**
+  - Judge gains 10 Social skill XP
+  - No mood effects
+  - No social fight chance
+- **Log Variants:**
+  - "Judge questioned Defendant about the charges"
+  - "Judge examined Defendant's testimony"
+  - "Judge interrogated Defendant in court"
+
+**2. Defendant Pleads** (`LawAndOrder_DefendantPleads`)
+- **Timing:** 50% ritual progress
+- **Initiator:** Defendant
+- **Recipient:** Judge
+- **Effects:**
+  - Defendant gains 15 Social skill XP
+  - No mood effects
+  - No social fight chance
+- **Log Variants:**
+  - "Defendant pleaded their case to Judge"
+  - "Defendant made a plea for leniency before Judge"
+  - "Defendant argued for mercy in front of Judge"
+
+**3. Victim Confronts Defendant** (`LawAndOrder_VictimConfronts`)
+- **Timing:** 75% ritual progress (if victim present)
+- **Initiator:** Victim
+- **Recipient:** Defendant
+- **Effects:**
+  - Victim: +6 mood for 3 days ("confronted criminal")
+  - Defendant: -4 mood, -5 opinion of victim for 3 days
+  - 2% social fight chance
+- **Log Variants:**
+  - "Victim confronted Defendant about their crimes"
+  - "Victim spoke out against Defendant in court"
+  - "Victim testified against Defendant"
+  - "Victim accused Defendant before the court"
+
+**4. Judge Sentences Defendant** (`LawAndOrder_JudgeSentences`)
+- **Timing:** 100% ritual complete (PostCleanup)
+- **Initiator:** Judge
+- **Recipient:** Defendant
+- **Effects:**
+  - Judge gains 20 Social skill XP
+  - No mood effects
+  - No social fight chance
+- **Log Variants:**
+  - "Judge pronounced judgment on Defendant"
+  - "Judge sentenced Defendant for their crimes"
+  - "Judge delivered the court's verdict to Defendant"
+
+### Social Interaction Implementation
+
+#### System Architecture
+
+```
+RitualBehaviorWorker_CourtHearing
+    ├── Tick() - Monitors ritual progress
+    │   ├── 25% progress → Log judge questions
+    │   ├── 50% progress → Log defendant pleads
+    │   └── 75% progress → Log victim confronts (if present)
+    └── PostCleanup() - Called when ritual ends
+        └── 100% complete → Log judge sentences
+```
+
+#### Code Structure
+
+**Interaction Tracking:**
+```csharp
+// RitualBehaviorWorker_CourtHearing.cs:16
+private bool hasQuestionedDefendant = false;
+private bool hasDefendantPleaded = false;
+private bool hasVictimConfronted = false;
+```
+
+**Progress Monitoring:**
+```csharp
+// RitualBehaviorWorker_CourtHearing.cs:32
+public override void Tick(LordJob_Ritual ritual)
+{
+    base.Tick(ritual);
+
+    // Only during Stage 1 (the hearing)
+    if (ritual.StageIndex != 1) return;
+
+    float progress = ritual.Progress;
+
+    // Trigger interactions at milestones
+    if (progress >= 0.25f && !hasQuestionedDefendant)
+    {
+        LogInteraction("LawAndOrder_JudgeQuestions", judge, defendant);
+        hasQuestionedDefendant = true;
+    }
+    // ... more milestones
+}
+```
+
+**Interaction Logging:**
+```csharp
+// RitualBehaviorWorker_CourtHearing.cs:224
+private void LogInteraction(string interactionDefName, Pawn initiator, Pawn recipient)
+{
+    InteractionDef interactionDef = DefDatabase<InteractionDef>.GetNamedSilentFail(interactionDefName);
+
+    PlayLogEntry_Interaction entry = new PlayLogEntry_Interaction(
+        interactionDef,
+        initiator,
+        recipient,
+        null // extraSentencePacks
+    );
+
+    Find.PlayLog.Add(entry);
+}
+```
+
+#### InteractionDef XML Structure
+
+**Example: Judge Questions Defendant**
+```xml
+<InteractionDef>
+  <defName>LawAndOrder_JudgeQuestions</defName>
+  <label>question defendant</label>
+  <symbol>UI/Icons/Rituals/CourtHearing</symbol>
+  <ignoreTimeSinceLastInteraction>true</ignoreTimeSinceLastInteraction>
+  <socialFightBaseChance>0</socialFightBaseChance>
+
+  <!-- Judge gets Social XP -->
+  <initiatorXpGainSkill>Social</initiatorXpGainSkill>
+  <initiatorXpGainAmount>10</initiatorXpGainAmount>
+
+  <!-- Log text from judge's perspective -->
+  <logRulesInitiator>
+    <rulesStrings>
+      <li>r_logentry->[INITIATOR_nameIndef] questioned [RECIPIENT_nameIndef] about the charges.</li>
+    </rulesStrings>
+  </logRulesInitiator>
+
+  <!-- Log text from defendant's perspective -->
+  <logRulesRecipient>
+    <rulesStrings>
+      <li>r_logentry->[RECIPIENT_nameIndef] was questioned by [INITIATOR_nameIndef].</li>
+    </rulesStrings>
+  </logRulesRecipient>
+</InteractionDef>
+```
+
+### Interaction Timing
+
+#### Ritual Progress Breakdown
+
+```
+Stage 0: Escort (variable duration)
+  └── Judge carries prisoner to courtroom
+
+Stage 1: Hearing (2500-3500 ticks)
+  ├── 0-25% progress - Opening proceedings
+  ├── 25% progress ━━━━━━━━━━━━━━━━━━┓
+  │                                  ┗→ Judge Questions Defendant
+  ├── 25-50% progress - Examination
+  ├── 50% progress ━━━━━━━━━━━━━━━━━┓
+  │                                  ┗→ Defendant Pleads
+  ├── 50-75% progress - Testimony
+  ├── 75% progress ━━━━━━━━━━━━━━━━━┓
+  │                                  ┗→ Victim Confronts Defendant (if present)
+  └── 75-100% progress - Deliberation
+
+PostCleanup (ritual complete)
+  └── 100% ━━━━━━━━━━━━━━━━━━━━━━━━┓
+                                   ┗→ Judge Sentences Defendant
+```
+
+#### Viewing Interactions
+
+**In-Game:**
+1. Select any participant (judge, defendant, or victim)
+2. Open their character info
+3. Click "Social" tab
+4. Scroll to view logged interactions
+
+**Example Display:**
+```
+Social Log - Alice
+
+3 hours ago: Bob questioned Alice about the charges
+2 hours ago: Alice pleaded their case to Bob
+1 hour ago: Charlie confronted Alice about their crimes (-4 mood, -5 opinion)
+Now: Bob sentenced Alice for their crimes
+```
+
+#### Benefits
+
+**Gameplay:**
+- Creates narrative history of court proceedings
+- Affects pawn relationships over time
+- Provides skill training opportunities
+- Adds depth to justice system
+
+**Immersion:**
+- Pawns remember courtroom experiences
+- Social dynamics reflect legal proceedings
+- Victims get closure through confrontation
+- Creates memorable colony stories
+
+**Technical:**
+- Uses vanilla systems (no custom UI)
+- Lightweight (minimal performance impact)
+- Persistent (survives save/load)
+- Compatible with other mods
+
+---
+
+## Section 6: Logging System
 
 ### Tiered Logging
 
@@ -845,7 +1088,7 @@ public static void Postfix(/* parameters */)
 
 ---
 
-## Section 6: Quick References
+## Section 7: Quick References
 
 ### Crime Quick Reference
 
