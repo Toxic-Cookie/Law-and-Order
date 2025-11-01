@@ -98,13 +98,13 @@ namespace LawAndOrder
                 return baseCheck;
             }
 
-            // Validate courtroom exists and has required seating
-            if (target.HasThing)
+            // Validate that the target is a Judge's Bench in a proper room
+            if (!target.HasThing)
             {
-                return "LawAndOrder_HearingRequiresRoom".Translate();
+                return "LawAndOrder_MustTargetJudgesBench".Translate();
             }
 
-            Room room = target.Cell.GetRoom(target.Map);
+            Room room = target.Thing.Position.GetRoom(target.Map);
             if (room == null || room.OutdoorsForWork)
             {
                 return "LawAndOrder_HearingRequiresIndoorRoom".Translate();
