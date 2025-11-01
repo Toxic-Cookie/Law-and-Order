@@ -38,6 +38,7 @@
   <!-- Ritual Behavior -->
   <RitualBehaviorDef>
     <defName>LawAndOrder_CourtHearingBehavior</defName>
+    <workerClass>LawAndOrder.RitualBehaviorWorker_CourtHearing</workerClass>
     <durationTicks>
       <min>2500</min>
       <max>3500</max>
