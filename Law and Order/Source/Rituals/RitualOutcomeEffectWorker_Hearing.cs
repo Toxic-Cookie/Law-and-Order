@@ -34,6 +34,7 @@ namespace Law_and_Order.Source.Rituals
         {
             Pawn judge = jobRitual.PawnWithRole("judge");
             Pawn defendant = jobRitual.PawnWithRole("defendant");
+            Pawn victim = jobRitual.PawnWithRole("victim");
 
             if (defendant == null)
             {
@@ -60,6 +61,9 @@ namespace Law_and_Order.Source.Rituals
 
             // Apply thoughts to participants
             ApplyThoughtsToParticipants(jobRitual, judge, defendant, totalPresence);
+
+            // Log social interactions that occurred during the hearing
+            LogCourtInteractions(judge, defendant, victim);
 
             // Send completion letter
             Find.LetterStack.ReceiveLetter(
@@ -108,6 +112,71 @@ namespace Law_and_Order.Source.Rituals
                 }
 
                 spectator.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_AttendedHearing);
+            }
+        }
+
+        /// <summary>
+        /// Log social interactions that occurred during the court hearing
+        /// </summary>
+        private void LogCourtInteractions(Pawn judge, Pawn defendant, Pawn victim)
+        {
+            if (judge == null || defendant == null)
+            {
+                return;
+            }
+
+            // Get interaction defs
+            InteractionDef judgeQuestionsInteraction = DefDatabase<InteractionDef>.GetNamedSilentFail("LawAndOrder_JudgeQuestions");
+            InteractionDef defendantPleadsInteraction = DefDatabase<InteractionDef>.GetNamedSilentFail("LawAndOrder_DefendantPleads");
+            InteractionDef judgeSentencesInteraction = DefDatabase<InteractionDef>.GetNamedSilentFail("LawAndOrder_JudgeSentences");
+            InteractionDef victimConfrontsInteraction = DefDatabase<InteractionDef>.GetNamedSilentFail("LawAndOrder_VictimConfronts");
+
+            // 1. Judge questions defendant
+            if (judgeQuestionsInteraction != null)
+            {
+                PlayLogEntry_Interaction questioningEntry = new PlayLogEntry_Interaction(
+                    judgeQuestionsInteraction,
+                    judge,
+                    defendant,
+                    null
+                );
+                Find.PlayLog.Add(questioningEntry);
+            }
+
+            // 2. Defendant pleads to judge
+            if (defendantPleadsInteraction != null)
+            {
+                PlayLogEntry_Interaction pleaEntry = new PlayLogEntry_Interaction(
+                    defendantPleadsInteraction,
+                    defendant,
+                    judge,
+                    null
+                );
+                Find.PlayLog.Add(pleaEntry);
+            }
+
+            // 3. Victim confronts defendant (if victim is present)
+            if (victim != null && victimConfrontsInteraction != null)
+            {
+                PlayLogEntry_Interaction victimEntry = new PlayLogEntry_Interaction(
+                    victimConfrontsInteraction,
+                    victim,
+                    defendant,
+                    null
+                );
+                Find.PlayLog.Add(victimEntry);
+            }
+
+            // 4. Judge sentences defendant
+            if (judgeSentencesInteraction != null)
+            {
+                PlayLogEntry_Interaction sentenceEntry = new PlayLogEntry_Interaction(
+                    judgeSentencesInteraction,
+                    judge,
+                    defendant,
+                    null
+                );
+                Find.PlayLog.Add(sentenceEntry);
             }
         }
     }

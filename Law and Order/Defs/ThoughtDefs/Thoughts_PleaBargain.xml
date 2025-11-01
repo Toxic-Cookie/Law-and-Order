@@ -108,4 +108,35 @@
     </stages>
   </ThoughtDef>
 
+  <!-- Confronted criminal in court (victim receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_ConfrontedCriminal</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>3</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>confronted criminal</label>
+        <description>I got to speak out against the one who wronged me. It feels good to have my voice heard.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Confronted by victim in court (defendant receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_ConfrontedByVictim</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <durationDays>3</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>confronted by victim</label>
+        <description>I had to face my victim in court. Their words were difficult to hear.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+        <baseOpinionOffset>-5</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
 </Defs>
