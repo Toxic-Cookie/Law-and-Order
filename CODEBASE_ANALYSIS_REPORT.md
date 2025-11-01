@@ -8,16 +8,16 @@
 
 ## Executive Summary
 
-The Law and Order mod is a well-structured RimWorld 1.6 mod that implements a comprehensive criminal justice system with crime tracking, debt management, court hearings, and slave labor debt repayment. The mod demonstrates good architectural practices with clear separation of concerns, but has several areas of technical debt, inconsistencies, and opportunities for improvement.
+The Law and Order mod is a well-structured RimWorld 1.6 mod that implements a comprehensive criminal justice system with crime tracking, debt management, court hearings (via Custom Ritual Framework integration), and slave labor debt repayment. The mod demonstrates good architectural practices with clear separation of concerns, but has some dead code, misleading folder names, and opportunities for improvement.
 
 **Key Findings:**
 - **Overall Code Quality:** Good (7/10)
 - **Architecture:** Well-organized with clear component separation
-- **Technical Debt Level:** Moderate
-- **Performance Concerns:** Minor (primarily in WorldComponent ticking)
-- **Maintainability:** Good, but could be improved with better documentation and consistency
+- **Technical Debt Level:** Moderate (primarily organizational issues)
+- **Performance Concerns:** Minor (debug logging in Release builds, WorldComponent ticking)
+- **Maintainability:** Good, but could be improved with cleanup and consistency
 
-**Critical Issues:** 2 High Priority, 5 Medium Priority, 8 Low Priority
+**Critical Issues:** 3 High Priority, 4 Medium Priority, 8 Low Priority
 
 ---
 
@@ -43,7 +43,7 @@ Law and Order/
 │   ├── Buildings/          # Building components (Judge's Bench)
 │   ├── Components/         # World components (DebtManager)
 │   ├── Debug/              # Debug actions
-│   ├── Examples/           # Example code (should be removed/disabled)
+│   ├── Examples/           # Crime detection patches (PRODUCTION CODE - should be renamed to CrimeDetection/)
 │   ├── Hearings/           # Hearing system
 │   ├── Hediffs/            # Crime and debt tracking via hediffs
 │   ├── Patches/            # Harmony patches
@@ -75,8 +75,8 @@ Law and Order/
 | **HearingUtils** | Utility functions for conducting hearings | ✅ Good |
 | **CrimeUtils** | Crime recording and retrieval | ✅ Good |
 | **DebtUtils** | Debt calculation and management | ✅ Good |
-| **RitualBehaviorWorker_CourtHearing** | CRF integration for court rituals | ⚠️ Duplicate functionality |
-| **RitualBehaviorWorker_Hearing** | Manual ritual implementation | ⚠️ Duplicate functionality |
+| **RitualBehaviorWorker_CourtHearing** | CRF integration for court rituals | ✅ Active production code |
+| **RitualBehaviorWorker_Hearing** | Manual ritual implementation | ❌ Unused (should be deleted) |
 | **ITab_Pawn_Judiciary** | UI tab for viewing criminal records | ✅ Good |
 | **MainTabWindow_Justice** | Main justice management UI | ❓ Not reviewed |
 
@@ -115,33 +115,34 @@ Debt reduced over time
 #### 2.1.1 Duplicate Ritual Implementations
 **Location:** `Source/Rituals/`
 **Files:**
-- `RitualBehaviorWorker_CourtHearing.cs` (CRF integration)
-- `RitualBehaviorWorker_Hearing.cs` (Manual implementation)
+- `RitualBehaviorWorker_CourtHearing.cs` (CRF integration) - **ACTIVE PRODUCTION CODE**
+- `RitualBehaviorWorker_Hearing.cs` (Manual implementation) - **DEPRECATED/UNUSED**
 
 **Issue:** The mod has TWO separate ritual behavior workers that do essentially the same thing:
 
-1. **RitualBehaviorWorker_CourtHearing** - Integrates with Custom Ritual Framework (CRF)
-2. **RitualBehaviorWorker_Hearing** - Manual implementation with extensive logging and state management
+1. **RitualBehaviorWorker_CourtHearing** - Integrates with Custom Ritual Framework (CRF) - **This is the active implementation**
+2. **RitualBehaviorWorker_Hearing** - Manual implementation with extensive logging and state management - **Not currently used**
 
 **Problems:**
 - Code duplication (~60% overlap in functionality)
-- Confusion about which system is actually being used
-- Maintenance burden - changes must be made in two places
-- `RitualBehaviorWorker_Hearing` has extensive debug logging that should be conditional
+- Dead code in the project that could be confusing
+- Maintenance burden - appears like changes need to be made in two places
+- `RitualBehaviorWorker_Hearing` has extensive debug logging
+- Increases build size and complexity unnecessarily
 
 **Impact:** Medium-High (affects maintainability, potential for bugs)
 
-**Recommendation:** Choose ONE approach and remove the other, or clearly separate them as "CRF mode" vs "Standalone mode" with a setting.
+**Recommendation:** Remove `RitualBehaviorWorker_Hearing.cs` entirely since the CRF-based `RitualBehaviorWorker_CourtHearing.cs` is the active production implementation. This will eliminate confusion and reduce the codebase.
 
 ---
 
-#### 2.1.2 Example Code in Production Build
+#### 2.1.2 Misnamed Production Code Files
 **Location:** `Source/Examples/`
 **Files:**
-- `CrimeTrackingExample.cs`
-- `DebtSystemExample.cs`
+- `CrimeTrackingExample.cs` - **ACTIVE PRODUCTION CODE**
+- `DebtSystemExample.cs` - **ACTIVE PRODUCTION CODE**
 
-**Issue:** The mod includes example/template code with Harmony patches that are ACTIVE in production:
+**Issue:** The mod has production code in a folder named "Examples/" which creates confusion:
 
 ```csharp
 [HarmonyPatch(typeof(Pawn_HealthTracker), "PostApplyDamage")]
@@ -153,17 +154,16 @@ public static class TrackAssault_Patch
 ```
 
 **Problems:**
-- Example patches are actually executing in production
-- No way to disable them without code changes
-- Unclear if this is intentional or leftover development code
-- Performance impact from unintended patches
+- Folder name "Examples" incorrectly implies these are templates or sample code
+- Creates confusion for developers and maintainers
+- Makes it unclear what is actually running in production
+- Could lead to accidental deletion or modification thinking they're just examples
 
-**Impact:** High (affects gameplay, potential bugs)
+**Impact:** Medium (affects maintainability, creates confusion)
 
-**Recommendation:** Either:
-1. Remove example files entirely if they're just templates
-2. Disable patches with `#if DEBUG` or feature flag
-3. Clearly document if these are the ACTUAL crime tracking implementation
+**Recommendation:** Rename folder from `Examples/` to `CrimeDetection/` or `CrimeTracking/` and update the file names to remove "Example" suffix:
+- `CrimeTrackingExample.cs` → `CrimeDetection.cs` or `CrimeTrackingPatches.cs`
+- `DebtSystemExample.cs` → `DebtSystemPatches.cs`
 
 ---
 
@@ -195,10 +195,10 @@ namespace LawAndOrder  // Different namespace!
 
 ---
 
-#### 2.2.2 Excessive Debug Logging in Production
-**Location:** `RitualBehaviorWorker_Hearing.cs`, `WorldComponent_DebtManager.cs`
+#### 2.2.2 Debug Logging Not Conditionally Compiled
+**Location:** `RitualBehaviorWorker_Hearing.cs`, `WorldComponent_DebtManager.cs`, various patches
 
-**Issue:** Heavy logging throughout runtime code:
+**Issue:** Verbose debug logging is compiled into Release builds:
 
 ```csharp
 // Every 250 ticks during ritual (4 times per second!)
@@ -211,14 +211,28 @@ if (Find.TickManager.TicksGame - lastLoggedTick > 250)
 ```
 
 **Problems:**
-- Performance impact (string concatenation, reflection)
+- Performance impact in Release builds (string concatenation, formatting, reflection)
 - Log spam for players who enable dev mode
 - Hard to find actual errors in logs
-- Should be conditional on a setting or debug flag
+- Debug code ships to end users unnecessarily
+- Larger assembly size than needed
 
-**Impact:** Medium (performance, usability)
+**Impact:** Medium (performance, usability, build size)
 
-**Recommendation:** Wrap verbose logging in a feature flag or `#if DEBUG`.
+**Recommendation:** Use conditional compilation to exclude debug logging from Release builds:
+
+```csharp
+#if DEBUG
+if (Find.TickManager.TicksGame - lastLoggedTick > 250)
+{
+    Law_and_Order.Source.Mod.Log?.Message($"=== Ritual Tick ===");
+    Law_and_Order.Source.Mod.Log?.Message($"Current stage: {ritual.StageIndex}/{ritual.Ritual.behavior.def.stages.Count - 1}");
+    // ... detailed logging
+}
+#endif
+```
+
+This ensures debug logging is only present in Debug builds, improving Release build performance and reducing log noise.
 
 ---
 
@@ -528,69 +542,48 @@ if (this.compDatas == null)
 
 ### 4.1 Refactoring Opportunities
 
-#### 4.1.1 Consolidate Ritual Systems
+#### 4.1.1 Remove Unused Ritual Implementation
 
-**Current State:** Two ritual implementations
+**Current State:** Two ritual implementations, only one is active
 
-**Proposed Refactoring:**
-```csharp
-// Create a unified interface
-public interface IRitualOutcomeHandler
-{
-    void ApplyOutcome(Pawn defendant, Pawn judge, float ritualQuality);
-}
+**Action Required:**
+1. Delete `RitualBehaviorWorker_Hearing.cs` (unused manual implementation)
+2. Keep `RitualBehaviorWorker_CourtHearing.cs` (active CRF-based implementation)
+3. Remove any references to the deleted class
 
-// CRF-based implementation
-public class CRFRitualHandler : IRitualOutcomeHandler
-{
-    // Uses CRF outcome determination
-}
+**Files to Delete:**
+- `Source/Rituals/RitualBehaviorWorker_Hearing.cs`
 
-// Manual implementation
-public class ManualRitualHandler : IRitualOutcomeHandler
-{
-    // Uses manual plea bargain system
-}
-
-// Factory to choose based on mod configuration
-public static class RitualHandlerFactory
-{
-    public static IRitualOutcomeHandler Create()
-    {
-        return ModSettings.UseCRF ? new CRFRitualHandler() : new ManualRitualHandler();
-    }
-}
-```
+**Files to Keep:**
+- `Source/Rituals/RitualBehaviorWorker_CourtHearing.cs` (uses Custom Ritual Framework)
 
 **Benefits:**
-- Eliminates duplication
-- Makes system choice explicit
-- Easier to test and maintain
+- Eliminates dead code
+- Reduces codebase size and complexity
+- Removes maintenance confusion
+- Makes it clear that CRF integration is the production approach
 
 ---
 
-#### 4.1.2 Extract Crime Tracking to Dedicated System
+#### 4.1.2 Reorganize Crime Detection Code
 
-**Current State:** Example patches in production
+**Current State:** Production code in "Examples/" folder with misleading names
 
 **Proposed Refactoring:**
 
-1. Create a dedicated `CrimeDetectionSystem` class
-2. Move all actual detection logic there
-3. Remove/disable example files
-4. Use event-driven approach instead of patches where possible
+1. Rename `Source/Examples/` folder to `Source/CrimeDetection/`
+2. Rename files to remove "Example" suffix:
+   - `CrimeTrackingExample.cs` → `CrimeDetectionPatches.cs`
+   - `DebtSystemExample.cs` → `DebtSystemPatches.cs`
+3. Update namespace from `Law_and_Order.Source.Examples` to `Law_and_Order.Source.CrimeDetection`
+4. Add error handling to all patches
 
 ```csharp
-public static class CrimeDetectionSystem
+// File: Source/CrimeDetection/CrimeDetectionPatches.cs
+namespace Law_and_Order.Source.CrimeDetection
 {
-    public static void Initialize()
-    {
-        // Register event handlers instead of patches where possible
-        // Only patch where necessary
-    }
-
     [HarmonyPatch(typeof(Pawn_HealthTracker), "PostApplyDamage")]
-    public static class DetectAssault
+    public static class DetectAssault_Patch
     {
         [HarmonyPostfix]
         public static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, float totalDamageDealt)
@@ -601,46 +594,61 @@ public static class CrimeDetectionSystem
             }
             catch (Exception e)
             {
-                Log.Error($"Error in crime detection: {e}");
+                Mod.Log?.Error($"Error in assault detection: {e}");
             }
         }
     }
 }
 ```
 
+**Benefits:**
+- Clearer folder/file organization
+- Obvious that this is production code
+- Better namespace organization
+- Easier to maintain and understand
+
 ---
 
-#### 4.1.3 Implement Tiered Logging System
+#### 4.1.3 Use Conditional Compilation for Debug Logging
 
-**Current State:** Excessive logging mixed with important errors
+**Current State:** Debug logging compiled into Release builds
 
 **Proposed Solution:**
+
+Use preprocessor directives to exclude debug logging from Release builds:
+
 ```csharp
-public static class ModLog
+// Verbose ritual tick logging
+#if DEBUG
+if (Find.TickManager.TicksGame - lastLoggedTick > 250)
 {
-    public enum LogLevel { Error, Warning, Info, Debug, Trace }
+    Mod.Log?.Message($"=== Ritual Tick ===");
+    Mod.Log?.Message($"Current stage: {ritual.StageIndex}/{ritual.Ritual.behavior.def.stages.Count - 1}");
+    Mod.Log?.Message($"Defendant: {defendant?.LabelShort}");
+    // ... detailed logging
+    lastLoggedTick = Find.TickManager.TicksGame;
+}
+#endif
 
-    private static LogLevel currentLevel = LogLevel.Info;
-
-    public static void Trace(string message)
-    {
-        if (currentLevel >= LogLevel.Trace)
-            Mod.Log?.Message($"[TRACE] {message}");
-    }
-
-    public static void Debug(string message)
-    {
-        if (currentLevel >= LogLevel.Debug || Prefs.DevMode)
-            Mod.Log?.Message($"[DEBUG] {message}");
-    }
-
-    public static void Info(string message) => Mod.Log?.Message(message);
-    public static void Warning(string message) => Mod.Log?.Warning(message);
-    public static void Error(string message) => Mod.Log?.Error(message);
+// Critical errors should always be logged
+if (defendant == null)
+{
+    Mod.Log?.Error("Court hearing ritual has no defendant!");
+    return;
 }
 ```
 
-Then add setting to control log level.
+**Benefits:**
+- Debug logging completely removed from Release builds (zero performance impact)
+- Smaller assembly size in Release builds
+- Still available for debugging in Debug builds
+- No need for runtime log level checks
+- Standard C# practice
+
+**Implementation:**
+1. Wrap all verbose/trace logging in `#if DEBUG` blocks
+2. Keep error and warning logs outside conditional blocks
+3. Ensure build configuration properly sets DEBUG symbol
 
 ---
 
@@ -900,11 +908,11 @@ public class CrimeReport
 
 | Priority | Item | Effort | Impact | Files Affected |
 |----------|------|--------|--------|----------------|
-| 🔴 P0 | Remove or disable example patches in production | 1 hour | High | `CrimeTrackingExample.cs`, `DebtSystemExample.cs` |
+| 🔴 P0 | Delete unused ritual implementation | 30 min | High | Delete `RitualBehaviorWorker_Hearing.cs` |
+| 🔴 P0 | Rename Examples folder and files | 1 hour | Medium | Rename `Source/Examples/` → `Source/CrimeDetection/`, update file names |
 | 🔴 P0 | Add try-catch to all Harmony patches | 2 hours | High | All patch files |
-| 🔴 P1 | Consolidate duplicate ritual systems | 4 hours | High | `RitualBehaviorWorker_*.cs` |
-| 🔴 P1 | Reduce excessive debug logging | 1 hour | Medium | `RitualBehaviorWorker_Hearing.cs` |
-| 🔴 P1 | Standardize namespace usage | 2 hours | Medium | All ritual files |
+| 🔴 P1 | Add conditional compilation for debug logging | 2 hours | Medium | `RitualBehaviorWorker_CourtHearing.cs`, `WorldComponent_DebtManager.cs`, patch files |
+| 🔴 P1 | Standardize namespace usage | 2 hours | Medium | All ritual files, renamed CrimeDetection files |
 
 ### 5.2 Medium Priority (Do Soon)
 
@@ -940,76 +948,52 @@ public class CrimeReport
 
 ## 6. Specific Code Examples
 
-### 6.1 Example: Consolidating Ritual Systems
+### 6.1 Example: Removing Unused Ritual Implementation
 
-**Before (Duplicated):**
+**Before (Duplicate Files):**
 
-```csharp
-// File: RitualBehaviorWorker_CourtHearing.cs
-public override void PostCleanup(LordJob_Ritual ritual)
-{
-    base.PostCleanup(ritual);
-    Pawn defendant = ritual.PawnWithRole("defendant");
-    // CRF-based outcome determination
-    PleaBargainOutcome outcome = DetermineOutcomeFromMemories(defendant);
-    HearingUtils.ApplyPleaBargainOutcome(defendant, judge, outcome, currentDebt);
-}
-
-// File: RitualBehaviorWorker_Hearing.cs
-public override void PostCleanup(LordJob_Ritual ritual)
-{
-    base.PostCleanup(ritual);
-    Pawn defendant = ritual.PawnWithRole("defendant");
-    // Manual plea bargain
-    if (pleaBargainAttempted && pleaBargainOutcome.HasValue)
-    {
-        HearingUtils.ApplyPleaBargainOutcome(defendant, judge, pleaBargainOutcome.Value, currentDebt);
-    }
-}
+```
+Source/Rituals/
+├── RitualBehaviorWorker_CourtHearing.cs  (ACTIVE - CRF-based)
+└── RitualBehaviorWorker_Hearing.cs       (UNUSED - Manual implementation)
 ```
 
-**After (Unified):**
+**After (Clean):**
 
+```
+Source/Rituals/
+└── RitualBehaviorWorker_CourtHearing.cs  (ACTIVE - CRF-based)
+```
+
+**Action:**
+Simply delete `RitualBehaviorWorker_Hearing.cs` as it's not being used. The active production code uses `RitualBehaviorWorker_CourtHearing.cs` which integrates with Custom Ritual Framework.
+
+**File to Keep (Active Production):**
 ```csharp
 // File: RitualBehaviorWorker_CourtHearing.cs
-public class RitualBehaviorWorker_CourtHearing : RitualBehaviorWorker
+namespace LawAndOrder
 {
-    private readonly IPleaBargainSystem pleaSystem;
-
-    public RitualBehaviorWorker_CourtHearing(RitualBehaviorDef def) : base(def)
+    public class RitualBehaviorWorker_CourtHearing : RitualBehaviorWorker
     {
-        // Choose system based on mod settings or CRF presence
-        pleaSystem = ModSettings.UseCRFPleaBargain
-            ? new CRFPleaBargainSystem()
-            : new ManualPleaBargainSystem();
+        public override void PostCleanup(LordJob_Ritual ritual)
+        {
+            base.PostCleanup(ritual);
+            Pawn defendant = ritual.PawnWithRole("defendant");
+            Pawn judge = ritual.PawnWithRole("judge");
+
+            // CRF-based outcome determination
+            PleaBargainOutcome outcome = DetermineOutcomeFromMemories(defendant);
+            HearingUtils.ApplyPleaBargainOutcome(defendant, judge, outcome, currentDebt);
+        }
     }
-
-    public override void PostCleanup(LordJob_Ritual ritual)
-    {
-        base.PostCleanup(ritual);
-
-        Pawn defendant = ritual.PawnWithRole("defendant");
-        Pawn judge = ritual.PawnWithRole("judge");
-
-        // Unified interface
-        var outcome = pleaSystem.DetermineOutcome(ritual, defendant, judge);
-        pleaSystem.ApplyOutcome(outcome, defendant, judge);
-    }
-}
-
-// Interface
-public interface IPleaBargainSystem
-{
-    PleaBargainOutcome DetermineOutcome(LordJob_Ritual ritual, Pawn defendant, Pawn judge);
-    void ApplyOutcome(PleaBargainOutcome outcome, Pawn defendant, Pawn judge);
 }
 ```
 
 ---
 
-### 6.2 Example: Tiered Logging
+### 6.2 Example: Conditional Compilation for Debug Logging
 
-**Before:**
+**Before (Always Compiled):**
 
 ```csharp
 if (Find.TickManager.TicksGame - lastLoggedTick > 250)
@@ -1017,21 +1001,39 @@ if (Find.TickManager.TicksGame - lastLoggedTick > 250)
     Law_and_Order.Source.Mod.Log?.Message($"=== Ritual Tick ===");
     Law_and_Order.Source.Mod.Log?.Message($"Current stage: {ritual.StageIndex}");
     Law_and_Order.Source.Mod.Log?.Message($"Defendant: {defendant?.LabelShort}");
-    // 30 more lines...
+    Law_and_Order.Source.Mod.Log?.Message($"Judge: {judge?.LabelShort}");
+    // ... 30 more lines of debug logging
+    lastLoggedTick = Find.TickManager.TicksGame;
 }
 ```
 
-**After:**
+**After (Debug Build Only):**
 
 ```csharp
-if (ModLog.IsTraceEnabled && Find.TickManager.TicksGame - lastLoggedTick > 250)
+#if DEBUG
+if (Find.TickManager.TicksGame - lastLoggedTick > 250)
 {
-    ModLog.Trace("=== Ritual Tick ===");
-    ModLog.Trace($"Current stage: {ritual.StageIndex}");
-    ModLog.Trace($"Defendant: {defendant?.LabelShort}");
-    // Same logging, but only if trace is enabled
+    Mod.Log?.Message($"=== Ritual Tick ===");
+    Mod.Log?.Message($"Current stage: {ritual.StageIndex}");
+    Mod.Log?.Message($"Defendant: {defendant?.LabelShort}");
+    Mod.Log?.Message($"Judge: {judge?.LabelShort}");
+    // ... detailed logging for debugging
+    lastLoggedTick = Find.TickManager.TicksGame;
+}
+#endif
+
+// Critical errors still logged in all builds
+if (defendant == null)
+{
+    Mod.Log?.Error("Court hearing has no defendant!");
 }
 ```
+
+**Benefits:**
+- Zero performance impact in Release builds (code completely removed)
+- Still available for development debugging
+- Smaller assembly size
+- No runtime log level checks needed
 
 ---
 
@@ -1127,22 +1129,23 @@ public static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, floa
 
 The Law and Order mod is a well-architected RimWorld mod with good separation of concerns and mostly clean code. The main areas for improvement are:
 
-1. **Eliminating duplicate ritual implementations** - Choose CRF or manual and stick with it
-2. **Cleaning up production code** - Remove/disable example patches
-3. **Improving error handling** - Add try-catch to patches, better error messages
-4. **Standardizing conventions** - Namespaces, logging levels, constants
+1. **Remove dead code** - Delete unused `RitualBehaviorWorker_Hearing.cs` (CRF version is the active one)
+2. **Fix organizational issues** - Rename "Examples" folder to "CrimeDetection", update file names
+3. **Conditional compilation** - Wrap debug logging in `#if DEBUG` for Release build optimization
+4. **Improving error handling** - Add try-catch to patches, better error messages
+5. **Standardizing conventions** - Namespaces, constants
 
-With these improvements, the mod will be more maintainable, performant, and reliable. The codebase is in good shape overall and shows evidence of thoughtful design.
+With these improvements, the mod will be cleaner, more performant in Release builds, and more maintainable. The codebase is in good shape overall and shows evidence of thoughtful design using Custom Ritual Framework.
 
 ### Final Recommendations Priority:
 
-1. **Week 1:** Remove example code, add error handling to patches
-2. **Week 2:** Consolidate ritual systems, implement logging levels
-3. **Week 3:** Extract constants, standardize namespaces
-4. **Week 4:** Document systems, add compatibility checks
-5. **Long-term:** Implement design patterns, add comprehensive tests
+1. **Week 1:** Delete unused ritual worker, rename Examples folder/files, add error handling to patches
+2. **Week 2:** Add conditional compilation for debug logging, standardize namespaces
+3. **Week 3:** Extract magic numbers to constants, improve documentation
+4. **Week 4:** Add compatibility checks, implement crime archival
+5. **Long-term:** Add comprehensive tests, consider additional design patterns
 
-**Estimated Total Effort:** 40-60 hours of focused development work
+**Estimated Total Effort:** 25-35 hours of focused development work (reduced from initial estimate after clarifying which code is active)
 
 ---
 
