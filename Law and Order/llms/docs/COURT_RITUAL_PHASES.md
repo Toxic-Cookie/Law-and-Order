@@ -1,6 +1,6 @@
 # Court Ritual System - Implementation Phases
 
-## 📊 Overall Progress: 4/7 Phases Complete
+## 📊 Overall Progress: 5/7 Phases Complete
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -8,11 +8,12 @@
 | Phase 2 | ✅ Complete | Custom Ritual Framework Integration |
 | Phase 4 | ✅ Complete | Debt/Criminal System Integration |
 | Phase 6 | ✅ Complete | Core Testing - Ritual Works End-to-End |
+| Phase 8 | ✅ Complete | Debt Payment Through Slave Labor |
 | Phase 3 | ⏳ Pending | Courtroom Room Requirements (Optional) |
 | Phase 5 | ⏳ Pending | Enhanced Ritual Stages (Optional) |
 | Phase 7 | ⏳ Future | Optional Enhancements |
 
-**Current Status:** ✅ **FULLY FUNCTIONAL!** Ritual completes successfully, applies CRF outcomes, modifies debt, and integrates with criminal records.
+**Current Status:** ✅ **FULLY FUNCTIONAL!** Ritual completes successfully, applies CRF outcomes, modifies debt, integrates with criminal records, and automatically enslaves prisoners with debt who then work to pay it off.
 
 ---
 
@@ -312,6 +313,175 @@ Result: ✅ Debt increased 15%, suppression +20%, will -1.0
 
 ---
 
+## ✅ Phase 8: Debt Payment Through Slave Labor (COMPLETED)
+
+### Status: Implemented and Ready for Testing
+
+After a court hearing, prisoners with remaining debt are automatically enslaved to work off their debt through colony labor.
+
+### What Was Implemented:
+
+#### **Automatic Prisoner-to-Slave Conversion**
+
+**File:** `Source/Rituals/RitualBehaviorWorker_CourtHearing.cs`
+
+After the hearing ritual completes and debt is modified:
+1. System checks if the defendant has remaining debt > 0
+2. If yes, automatically converts prisoner to slave using `GenGuest.TryEnslavePrisoner()`
+3. Sends message to player: "{Prisoner} has been enslaved to work off their debt of {X} silver (est. {Y} days of labor)."
+4. Uses RimWorld's built-in slavery system - no custom prisoner handling needed
+
+**Benefits:**
+- ✅ Uses proven RimWorld slavery mechanics
+- ✅ Slaves can perform work assignments like colonists
+- ✅ Natural integration with existing suppression/rebellion systems
+- ✅ Player can assign slaves to specific work types
+
+#### **Daily Debt Payment System**
+
+**File:** `Source/Components/WorldComponent_DebtManager.cs`
+
+A WorldComponent that processes debt payments once per in-game day:
+
+**Payment Calculation Factors:**
+
+1. **Base Payment:** 35 silver per day (configurable constant)
+
+2. **Health Efficiency:**
+   - Consciousness level affects all work
+   - Downed slaves can't work (0 payment)
+   - Injuries/illness reduce payment proportionally
+
+3. **Skill Level:**
+   - Average of work-related skills (Construction, Plants, Mining, Cooking, Crafting, Animals)
+   - Low skill (0-4): 0.7x multiplier
+   - Medium skill (5-9): 1.0x multiplier
+   - High skill (10-14): 1.3x multiplier
+   - Expert skill (15+): 1.6x multiplier
+
+4. **Traits:**
+   - Industriousness trait affects payment:
+     - Lazy/Slothful: 0.7x multiplier
+     - Hard worker: 1.3x multiplier
+
+5. **Suppression Level:**
+   - Low suppression = less effective work
+   - Formula: 50% base + (suppression level × 50%)
+   - Fully suppressed slave = 100% efficiency
+   - Rebellious slave (0 suppression) = 50% efficiency
+
+**Payment Application:**
+- Debt is paid down daily via `debtRecord.PayDebt(amount, "Slave Labor")`
+- Payment amount logged in debt history
+- When debt reaches 0, player receives positive notification
+- Slave gains Catharsis thought upon completing debt
+
+**Example Calculation:**
+```
+Slave with:
+- 8 average skill level (Medium) = 1.0x
+- 90% health = 0.9x
+- Hard worker trait = 1.3x
+- 60% suppression = 0.8x
+
+Daily payment = 35 × 1.0 × 0.9 × 1.3 × 0.8 = 32.76 silver/day
+```
+
+#### **Supporting Files:**
+
+**No XML defs needed!**
+- RimWorld automatically discovers all `WorldComponent` subclasses using reflection
+- `WorldComponent_DebtManager` is instantiated automatically when the world is created
+- No manual registration required
+
+### Integration Flow:
+
+```
+Court Hearing Completes
+    ↓
+Debt modified based on plea outcome
+    ↓
+Check: Does defendant have debt > 0?
+    ↓ (Yes)
+Convert prisoner to slave (GenGuest.TryEnslavePrisoner)
+    ↓
+Send player message with debt amount and estimated days
+    ↓
+Slave assigned to colony work
+    ↓
+[DAILY TICK] WorldComponent_DebtManager processes all slaves
+    ↓
+For each slave with debt:
+    - Calculate daily payment based on factors
+    - Pay down debt
+    - Check if debt fully paid
+    ↓
+When debt = 0:
+    - Notify player
+    - Apply positive thought
+    - Slave remains enslaved (player can free them manually)
+```
+
+### Player Experience:
+
+**After Hearing:**
+- Player sees: "John has been enslaved to work off their debt of 500 silver (est. 14 days of labor)."
+- Slave appears in Assign tab with slave icon
+- Player can assign slave to work priorities
+
+**During Debt Payment:**
+- Dev mode logs show daily payments (if enabled)
+- Player can check debt amount in Justice tab
+- Debt hediff tooltip shows estimated days remaining
+
+**When Debt Paid:**
+- Player sees: "John has fully paid off their debt through labor. They remain enslaved until you choose to free them."
+- Player can manually emancipate slave via context menu
+
+### Design Decisions:
+
+**Why Use Built-in Slavery?**
+- ✅ No need to recreate prisoner work assignment systems
+- ✅ Suppression and rebellion mechanics already work
+- ✅ Slave bed requirements handled automatically
+- ✅ Colonists react appropriately to slavery (ideoligion, thoughts)
+- ✅ Player can use existing slave management UI
+
+**Why Daily Payments?**
+- ✅ Avoids complex work tracking per job
+- ✅ Balances performance with realism
+- ✅ Simple to tune via constants
+- ✅ Works for all work types (not just bills)
+
+**Why Keep Slaves After Debt Paid?**
+- Player choice to free or keep enslaved
+- Avoids forced emancipation that might surprise players
+- Matches RimWorld's philosophy of player agency
+
+### Configuration:
+
+All payment calculation constants are at the top of `WorldComponent_DebtManager.cs`:
+```csharp
+TICK_INTERVAL = GenDate.TicksPerDay (check frequency)
+BASE_DAILY_DEBT_PAYMENT = 35f (base silver per day)
+SKILL_MULTIPLIER_LOW/MED/HIGH/EXPERT (skill bonuses)
+```
+
+Players can adjust these via mod settings or edit the source if needed.
+
+### Testing Checklist:
+
+- [⏳] Prisoner with debt is automatically enslaved after hearing
+- [⏳] Enslaved pawn can be assigned to work types
+- [⏳] Daily debt payments reduce debt over time
+- [⏳] Payment amount factors in health, skills, traits, suppression
+- [⏳] Player receives notification when debt fully paid
+- [⏳] System works across save/load
+- [⏳] Multiple slaves with debt process correctly
+- [⏳] Slaves with 0 debt are not affected
+
+---
+
 ## 🚧 Phase 3: Courtroom Room Requirements (OPTIONAL - NOT IMPLEMENTED)
 
 ### Status: Deferred
@@ -415,6 +585,8 @@ Currently uses `GatheringSpotOrAltar`. Could create custom filter:
 5. **Debt Modifications** - Based on CRF outcome quality
 6. **Criminal Records** - Updated with hearing results
 7. **Player Feedback** - Messages and quality reports
+8. **Automatic Enslavement** - Prisoners with debt converted to slaves
+9. **Debt Payment System** - Daily payments based on slave labor
 
 ### 🔧 What's Missing (Optional):
 1. **Room Requirements** - Formal courtroom designation

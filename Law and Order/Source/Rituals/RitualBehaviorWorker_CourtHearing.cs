@@ -79,6 +79,19 @@ namespace LawAndOrder
 
                 Law_and_Order.Source.Mod.Log?.Message($"Hearing marked as completed for {defendant.LabelShort}");
             }
+
+            // Queue prisoner for enslavement if they have remaining debt
+            // Use the WorldComponent to handle this on the next tick to avoid timing issues
+            float finalDebt = debtRecord?.CurrentDebt ?? 0f;
+            if (finalDebt > 0 && defendant.IsPrisonerOfColony && !defendant.IsSlave)
+            {
+                var worldComp = Find.World.GetComponent<Law_and_Order.Source.Components.WorldComponent_DebtManager>();
+                if (worldComp != null)
+                {
+                    worldComp.QueuePrisonerForEnslavement(defendant, judge, finalDebt);
+                    Law_and_Order.Source.Mod.Log?.Message($"Queued {defendant.LabelShort} for enslavement with debt of {finalDebt:F0} silver");
+                }
+            }
         }
 
         /// <summary>
