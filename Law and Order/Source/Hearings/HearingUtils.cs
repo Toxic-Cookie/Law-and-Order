@@ -397,5 +397,199 @@ namespace Law_and_Order.Source.Hearings
                     return "No plea bargain attempted.";
             }
         }
+
+        /// <summary>
+        /// Start a hearing ritual for the given prisoner
+        /// </summary>
+        public static void StartHearingRitual(Pawn prisoner, Room courtroom = null, Pawn judge = null)
+        {
+            if (prisoner == null)
+            {
+                Law_and_Order.Source.Mod.Log?.Error("Cannot start hearing ritual: prisoner is null");
+                return;
+            }
+
+            // Validate prisoner has crimes
+            var criminalRecord = CrimeUtils.TryGetCriminalRecord(prisoner);
+            if (criminalRecord == null || criminalRecord.TotalCrimeCount == 0)
+            {
+                Messages.Message(
+                    $"{prisoner.LabelShort} has no crimes on record.",
+                    MessageTypeDefOf.RejectInput
+                );
+                return;
+            }
+
+            // Auto-select best courtroom if not provided
+            if (courtroom == null)
+            {
+                courtroom = CourtroomUtils.GetBestCourtroom();
+                if (courtroom == null)
+                {
+                    Messages.Message(
+                        "No suitable courtroom available. Designate judge and defendant seats in a room.",
+                        MessageTypeDefOf.RejectInput
+                    );
+                    return;
+                }
+            }
+
+            // Get target cell in courtroom (center of room)
+            IntVec3 targetCell = courtroom.ExtentsClose.CenterCell;
+            TargetInfo target = new TargetInfo(targetCell, prisoner.Map);
+
+            // Prepare forced role assignments
+            Dictionary<string, Pawn> forcedRoles = new Dictionary<string, Pawn>();
+            forcedRoles["defendant"] = prisoner;
+
+            if (judge != null)
+            {
+                forcedRoles["judge"] = judge;
+            }
+
+            // Get or create the hearing ritual
+            Precept_Ritual ritual = GetOrCreateHearingRitual();
+            if (ritual == null)
+            {
+                Messages.Message(
+                    "Unable to initialize hearing ritual. Check mod installation.",
+                    MessageTypeDefOf.RejectInput
+                );
+                return;
+            }
+
+            // Get the outcome effect def
+            var outcomeEffectDef = ritual?.outcomeEffect?.def ?? Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_HearingOutcome;
+
+            // Create the action callback that actually starts the ritual
+            Dialog_BeginRitual.ActionCallback actionCallback = delegate(RitualRoleAssignments assignments)
+            {
+                Law_and_Order.Source.Mod.Log?.Message($"Starting hearing ritual for {prisoner.LabelShort} with {assignments.Participants.Count()} participants");
+
+                // Start the ritual
+                ritual.behavior.TryExecuteOn(target, judge, ritual, null, assignments, true);
+
+                Law_and_Order.Source.Mod.Log?.Message($"Ritual started for {prisoner.LabelShort}");
+
+                return true;
+            };
+
+            // Start the ritual using Dialog_BeginRitual
+            Law_and_Order.Source.Mod.Log?.Message($"Opening ritual dialog for {prisoner.LabelShort}");
+
+            Find.WindowStack.Add(new Dialog_BeginRitual(
+                "Court Hearing",           // ritualLabel
+                ritual,                    // ritual
+                target,                    // target
+                prisoner.Map,              // map
+                actionCallback,            // action callback
+                judge,                     // organizer
+                null,                      // obligation
+                null,                      // filter
+                "Begin".Translate(),       // okButtonText
+                null,                      // requiredPawns
+                forcedRoles,               // forcedForRole
+                outcomeEffectDef,          // outcome
+                null,                      // extraInfoText
+                null                       // selectedPawn
+            ));
+        }
+
+        /// <summary>
+        /// Get or create a hearing ritual
+        /// </summary>
+        private static Precept_Ritual GetOrCreateHearingRitual()
+        {
+            // Check if we have an ideology system
+            if (Find.IdeoManager == null || Faction.OfPlayer?.ideos == null)
+            {
+                return null;
+            }
+
+            var primaryIdeo = Faction.OfPlayer.ideos.PrimaryIdeo;
+            if (primaryIdeo == null)
+            {
+                return null;
+            }
+
+            // Look for existing hearing ritual in the primary ideology
+            foreach (var precept in primaryIdeo.PreceptsListForReading)
+            {
+                if (precept is Precept_Ritual ritual &&
+                    ritual.def != null &&
+                    ritual.def == Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_Hearing_Precept)
+                {
+                    return ritual;
+                }
+            }
+
+            // Get the precept def
+            var preceptDef = Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_Hearing_Precept;
+            if (preceptDef == null)
+            {
+                return null;
+            }
+
+            // Create a new ritual using PreceptMaker
+            Precept_Ritual newRitual = (Precept_Ritual)PreceptMaker.MakePrecept(preceptDef);
+            newRitual.Init(primaryIdeo, null);
+
+            // Manually initialize behavior and outcomeEffect from the pattern
+            var pattern = Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_Hearing_Pattern;
+            if (pattern != null)
+            {
+                if (pattern.ritualBehavior != null)
+                {
+                    newRitual.behavior = pattern.ritualBehavior.GetInstance();
+                }
+
+                if (pattern.ritualOutcomeEffect != null)
+                {
+                    newRitual.outcomeEffect = pattern.ritualOutcomeEffect.GetInstance();
+                }
+
+                newRitual.sourcePattern = pattern;
+            }
+
+            primaryIdeo.AddPrecept(newRitual, false);
+
+            return newRitual;
+        }
+
+        /// <summary>
+        /// Check if a hearing ritual can be started for the given prisoner
+        /// </summary>
+        public static bool CanStartHearingRitual(Pawn prisoner, out string reason)
+        {
+            reason = null;
+
+            if (prisoner == null)
+            {
+                reason = "Prisoner is null";
+                return false;
+            }
+
+            if (!prisoner.IsPrisonerOfColony)
+            {
+                reason = $"{prisoner.LabelShort} is not a prisoner";
+                return false;
+            }
+
+            var criminalRecord = CrimeUtils.TryGetCriminalRecord(prisoner);
+            if (criminalRecord == null || criminalRecord.TotalCrimeCount == 0)
+            {
+                reason = $"{prisoner.LabelShort} has no crimes on record";
+                return false;
+            }
+
+            var courtroom = CourtroomUtils.GetBestCourtroom();
+            if (courtroom == null)
+            {
+                reason = "No suitable courtroom available";
+                return false;
+            }
+
+            return true;
+        }
     }
 }

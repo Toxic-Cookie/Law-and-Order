@@ -21,7 +21,8 @@
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Defs/**)",
       "Read(//c/Program Files (x86)/Steam/steamapps/common/RimWorld/Mods/Law and Order/Patches/**)",
       "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Rimworld\\V_1_6\\Assembly-CSharp\\RimWorld\")",
-      "Bash(dir /b \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Languages\\English\\Keyed\")"
+      "Bash(dir /b \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Languages\\English\\Keyed\")",
+      "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\Rituals\")"
     ],
     "deny": [],
     "ask": []

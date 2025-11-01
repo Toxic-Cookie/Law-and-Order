@@ -66,17 +66,8 @@
         <missingDesc>jurors</missingDesc>
       </li>
 
-      <!-- Spectator Role (Optional) -->
-      <li Class="LawAndOrder.RitualRole_Spectator">
-        <id>spectator</id>
-        <label>spectator</label>
-        <categoryLabel>spectators</categoryLabel>
-        <required>false</required>
-        <substitutable>true</substitutable>
-        <maxCount>20</maxCount>
-        <countsAsParticipant>false</countsAsParticipant>
-        <missingDesc>spectators</missingDesc>
-      </li>
+      <!-- Spectators are handled automatically by RimWorld's ritual system -->
+      <!-- We don't need to define a custom spectator role -->
     </roles>
 
     <!-- Ritual Stages -->
@@ -87,7 +78,7 @@
         <spectatorsRequired>false</spectatorsRequired>
         <showProgressBar>false</showProgressBar>
         <endTriggers>
-          <li Class="StageEndTrigger_RolesReadyForStage">
+          <li Class="StageEndTrigger_RolesArrived">
             <roleIds>
               <li>judge</li>
               <li>defendant</li>
@@ -125,7 +116,7 @@
         <roleBehaviors>
           <li>
             <roleId>judge</roleId>
-            <dutyDef>SpeakOnThrone</dutyDef>
+            <dutyDef>GiveSpeech</dutyDef>
             <customPositions>
               <li Class="RitualPosition_OnInteractionCell" />
             </customPositions>
@@ -150,7 +141,7 @@
         <roleBehaviors>
           <li>
             <roleId>judge</roleId>
-            <dutyDef>SpeakOnThrone</dutyDef>
+            <dutyDef>GiveSpeech</dutyDef>
             <customPositions>
               <li Class="RitualPosition_OnInteractionCell" />
             </customPositions>
@@ -175,7 +166,7 @@
         <roleBehaviors>
           <li>
             <roleId>defendant</roleId>
-            <dutyDef>SpeakOnThrone</dutyDef>
+            <dutyDef>GiveSpeech</dutyDef>
             <customPositions>
               <li Class="RitualPosition_OnInteractionCell" />
             </customPositions>
@@ -218,7 +209,7 @@
         <roleBehaviors>
           <li>
             <roleId>judge</roleId>
-            <dutyDef>SpeakOnThrone</dutyDef>
+            <dutyDef>GiveSpeech</dutyDef>
             <customPositions>
               <li Class="RitualPosition_OnInteractionCell" />
             </customPositions>

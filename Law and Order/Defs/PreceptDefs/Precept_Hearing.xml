@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Precept Definition for Court Hearing Ritual -->
+  <PreceptDef>
+    <defName>LawAndOrder_Hearing_Precept</defName>
+    <issue>LawAndOrder_Hearing_Issue</issue>
+    <label>court hearing</label>
+    <description>A formal legal hearing where prisoners are tried for their crimes before a judge.</description>
+    <preceptClass>Precept_Ritual</preceptClass>
+    <ritualPatternBase>LawAndOrder_Hearing_Pattern</ritualPatternBase>
+    <impact>Low</impact>
+    <displayOrderInImpact>100</displayOrderInImpact>
+    <conflictingMemes />
+    <associatedMemes />
+    <requiredMemes />
+    <selectionWeight>0</selectionWeight>
+  </PreceptDef>
+
+  <!-- Ritual Pattern Definition -->
+  <RitualPatternDef>
+    <defName>LawAndOrder_Hearing_Pattern</defName>
+    <label>court hearing</label>
+    <description>A formal court hearing ritual.</description>
+    <shortDescOverride>court hearing</shortDescOverride>
+    <ritualBehavior>LawAndOrder_Hearing</ritualBehavior>
+    <ritualOutcomeEffect>LawAndOrder_HearingOutcome</ritualOutcomeEffect>
+    <ritualOnlyForIdeoMembers>false</ritualOnlyForIdeoMembers>
+    <canStartAnytime>true</canStartAnytime>
+    <tags>
+      <li>LawAndOrder_Hearing</li>
+    </tags>
+  </RitualPatternDef>
+
+</Defs>

@@ -44,6 +44,9 @@ namespace Law_and_Order.Source
     public static class LawAndOrder_RitualDefOf
     {
         public static RitualBehaviorDef LawAndOrder_Hearing;
+        public static PreceptDef LawAndOrder_Hearing_Precept;
+        public static RitualPatternDef LawAndOrder_Hearing_Pattern;
+        public static RitualOutcomeEffectDef LawAndOrder_HearingOutcome;
 
         static LawAndOrder_RitualDefOf()
         {

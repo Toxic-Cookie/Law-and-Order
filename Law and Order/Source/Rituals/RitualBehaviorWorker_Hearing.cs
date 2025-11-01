@@ -91,7 +91,7 @@ namespace LawAndOrder
 
             if (defendant == null)
             {
-                Mod.Log?.Warning("Hearing ritual completed but defendant is null");
+                Law_and_Order.Source.Mod.Log?.Warning("Hearing ritual completed but defendant is null");
                 return;
             }
 
@@ -174,7 +174,7 @@ namespace LawAndOrder
 
             if (Prefs.DevMode)
             {
-                Mod.Log?.Message($"Plea bargain attempted: Roll={pleaRoll}, Outcome={pleaBargainOutcome}");
+                Law_and_Order.Source.Mod.Log?.Message($"Plea bargain attempted: Roll={pleaRoll}, Outcome={pleaBargainOutcome}");
             }
         }
 
