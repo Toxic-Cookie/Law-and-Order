@@ -31,8 +31,8 @@
         <noCandidatesGizmoDesc>No colonist available to serve as judge.</noCandidatesGizmoDesc>
       </li>
 
-      <!-- Defendant Role (Required) -->
-      <li Class="LawAndOrder.RitualRole_Defendant">
+      <!-- Defendant Role (Required) - Use vanilla RitualRolePrisoner for compatibility -->
+      <li Class="RitualRolePrisoner">
         <id>defendant</id>
         <label>defendant</label>
         <categoryLabel>defendant</categoryLabel>
@@ -44,7 +44,7 @@
         <allowDowned>true</allowDowned>
         <removeFromAssignmentsOnDeath>false</removeFromAssignmentsOnDeath>
         <missingDesc>a prisoner defendant</missingDesc>
-        <noCandidatesGizmoDesc>No prisoner available with crimes to be tried.</noCandidatesGizmoDesc>
+        <noCandidatesGizmoDesc>No prisoner available to be tried.</noCandidatesGizmoDesc>
       </li>
 
       <!-- Victim Role (Optional) -->
@@ -111,7 +111,7 @@
       <!-- Stage 2: Opening Statements -->
       <li>
         <defaultDuty>Spectate</defaultDuty>
-        <spectatorsRequired>true</spectatorsRequired>
+        <spectatorsRequired>false</spectatorsRequired>
         <showProgressBar>true</showProgressBar>
         <endTriggers>
           <li Class="StageEndTrigger_DurationPercentage">
@@ -133,7 +133,7 @@
       <!-- Stage 3: Reading Charges -->
       <li>
         <defaultDuty>Spectate</defaultDuty>
-        <spectatorsRequired>true</spectatorsRequired>
+        <spectatorsRequired>false</spectatorsRequired>
         <showProgressBar>true</showProgressBar>
         <endTriggers>
           <li Class="StageEndTrigger_DurationPercentage">
@@ -155,7 +155,7 @@
       <!-- Stage 4: Plea Bargain -->
       <li>
         <defaultDuty>Spectate</defaultDuty>
-        <spectatorsRequired>true</spectatorsRequired>
+        <spectatorsRequired>false</spectatorsRequired>
         <showProgressBar>true</showProgressBar>
         <endTriggers>
           <li Class="StageEndTrigger_DurationPercentage">

@@ -133,6 +133,19 @@ namespace LawAndOrder
         public override void Cleanup(LordJob_Ritual ritual)
         {
             Law_and_Order.Source.Mod.Log?.Message($"=== Cleanup called ===");
+            Law_and_Order.Source.Mod.Log?.Message($"Current stage when cleanup called: {ritual.StageIndex}/{ritual.Ritual.behavior.def.stages.Count - 1}");
+            Law_and_Order.Source.Mod.Log?.Message($"Ritual duration: {ritual.DurationTicks} ticks, Progress: {ritual.TicksPassedWithProgress}/{ritual.DurationTicks} ticks");
+
+            // Log why the ritual might be ending
+            if (ritual.cancelled)
+            {
+                Law_and_Order.Source.Mod.Log?.Warning($"Ritual was CANCELLED");
+            }
+
+            if (ritual.lord != null && ritual.lord.CurLordToil != null)
+            {
+                Law_and_Order.Source.Mod.Log?.Message($"Current toil when cleaning up: {ritual.lord.CurLordToil.GetType().Name}");
+            }
 
             // Make sure prisoner waits instead of trying to escape
             Pawn defendant = ritual.PawnWithRole("defendant");
@@ -235,6 +248,7 @@ namespace LawAndOrder
 
                 Law_and_Order.Source.Mod.Log?.Message($"=== Ritual Tick ===");
                 Law_and_Order.Source.Mod.Log?.Message($"Current stage: {ritual.StageIndex}/{ritual.Ritual.behavior.def.stages.Count - 1}");
+                Law_and_Order.Source.Mod.Log?.Message($"Ritual duration: {ritual.DurationTicks} ticks, Progress: {ritual.TicksPassedWithProgress}/{ritual.DurationTicks} ticks");
                 Law_and_Order.Source.Mod.Log?.Message($"Current toil: {ritual.lord.CurLordToil?.GetType().Name}");
                 Law_and_Order.Source.Mod.Log?.Message($"Defendant: {defendant?.LabelShort}, Position: {defendant?.Position}, Job: {defendant?.CurJobDef?.defName}");
                 Law_and_Order.Source.Mod.Log?.Message($"Judge: {judge?.LabelShort}, Position: {judge?.Position}, Job: {judge?.CurJobDef?.defName}");
