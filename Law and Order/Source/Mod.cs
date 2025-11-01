@@ -28,6 +28,9 @@ namespace Law_and_Order.Source
             // Initialize settings
             LawAndOrderSettings.Initialize(Settings);
 
+            // Validate settings after initialization
+            LawAndOrderSettings.ValidateSettings();
+
             // Example: Log when mod is loaded
             Logger.Message("Law and Order mod loaded successfully!");
         }
@@ -38,6 +41,9 @@ namespace Law_and_Order.Source
         public override void SettingsChanged()
         {
             base.SettingsChanged();
+
+            // Validate settings when user changes them
+            LawAndOrderSettings.ValidateSettings();
         }
 
         /// <summary>
@@ -46,6 +52,9 @@ namespace Law_and_Order.Source
         public override void WorldLoaded()
         {
             base.WorldLoaded();
+
+            // Validate settings when a save game is loaded
+            LawAndOrderSettings.ValidateSettings();
         }
     }
 }

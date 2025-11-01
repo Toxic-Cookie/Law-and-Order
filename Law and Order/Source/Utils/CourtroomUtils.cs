@@ -11,6 +11,44 @@ namespace Law_and_Order.Source.Utils
     /// </summary>
     public static class CourtroomUtils
     {
+        // Cache for courtroom lists to avoid repeated scanning
+        private static Dictionary<Map, List<Room>> cachedCourtrooms = new Dictionary<Map, List<Room>>();
+        private static Dictionary<Map, int> lastCacheUpdateTick = new Dictionary<Map, int>();
+
+        // Cache duration in ticks (~1 minute at normal speed)
+        private const int CACHE_DURATION_TICKS = 2500;
+
+        /// <summary>
+        /// Invalidate the courtroom cache for a specific map.
+        /// Call this when furniture is built/destroyed or room structure changes.
+        /// </summary>
+        public static void InvalidateCache(Map map)
+        {
+            if (map == null)
+            {
+                return;
+            }
+
+            if (cachedCourtrooms.ContainsKey(map))
+            {
+                cachedCourtrooms.Remove(map);
+            }
+
+            if (lastCacheUpdateTick.ContainsKey(map))
+            {
+                lastCacheUpdateTick.Remove(map);
+            }
+        }
+
+        /// <summary>
+        /// Invalidate the courtroom cache for all maps.
+        /// </summary>
+        public static void InvalidateAllCaches()
+        {
+            cachedCourtrooms.Clear();
+            lastCacheUpdateTick.Clear();
+        }
+
         /// <summary>
         /// Get all chairs in a room with their role assignments
         /// </summary>
@@ -71,6 +109,8 @@ namespace Law_and_Order.Source.Utils
 
         /// <summary>
         /// Find all potential courtrooms (rooms with courtroom chairs)
+        /// Uses caching to avoid repeated scans of all rooms on the map.
+        /// Cache is automatically refreshed after CACHE_DURATION_TICKS.
         /// </summary>
         public static List<Room> GetPotentialCourtroomsWithSeating(Map map = null)
         {
@@ -84,6 +124,21 @@ namespace Law_and_Order.Source.Utils
                 return new List<Room>();
             }
 
+            int currentTick = Find.TickManager.TicksGame;
+
+            // Check if we have a valid cache
+            bool hasValidCache = cachedCourtrooms.ContainsKey(map) &&
+                                lastCacheUpdateTick.ContainsKey(map) &&
+                                (currentTick - lastCacheUpdateTick[map]) < CACHE_DURATION_TICKS;
+
+            if (hasValidCache)
+            {
+                ModLog.Trace($"Using cached courtroom list for map {map.uniqueID} (age: {currentTick - lastCacheUpdateTick[map]} ticks)");
+                return cachedCourtrooms[map];
+            }
+
+            // Cache miss or expired - scan for courtrooms
+            ModLog.Trace($"Scanning map {map.uniqueID} for courtrooms (cache miss or expired)");
             var courtrooms = new List<Room>();
 
             foreach (var room in map.regionGrid.AllRooms)
@@ -93,6 +148,12 @@ namespace Law_and_Order.Source.Utils
                     courtrooms.Add(room);
                 }
             }
+
+            // Update cache
+            cachedCourtrooms[map] = courtrooms;
+            lastCacheUpdateTick[map] = currentTick;
+
+            ModLog.Trace($"Found {courtrooms.Count} courtrooms on map {map.uniqueID}");
 
             return courtrooms;
         }

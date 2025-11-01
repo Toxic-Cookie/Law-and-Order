@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
+using Law_and_Order.Source.Utils;
 
 namespace Law_and_Order.Source.Hediffs
 {
@@ -142,11 +143,13 @@ namespace Law_and_Order.Source.Hediffs
                 Mod.Log?.Message($"{pawn?.NameShortColored} paid {amountToPay:F0} silver debt: {reason}. Remaining: {CurrentDebt:F0}");
             }
 
-            // If debt is fully paid, optionally remove the hediff
+            // If debt is fully paid, keep the hediff as a historical record
+            // This allows us to track that a pawn had debt and paid it off
             if (CurrentDebt <= 0.01f) // Small epsilon for floating point errors
             {
-                // You can choose to keep the hediff as a historical record or remove it
-                // For now, we'll keep it to maintain the history
+                ModLog.Debug($"{pawn?.NameShortColored} has fully paid their debt. Hediff kept for historical record.");
+                // Hediff is intentionally kept to maintain payment history
+                // The ShouldRemove property returns false, so this hediff will persist
             }
 
             return amountToPay;

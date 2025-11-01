@@ -10,6 +10,11 @@ This is a RimWorld 1.6 mod project. Your primary purpose is to serve as a helpfu
 
 This folder contains locally available information about the libraries being used in this mod. Reference this when questions arise about mod-specific libraries and dependencies.
 
+### Deployed Mod Folder ###
+`C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Law and Order`
+
+This folder is where the mod gets deployed to. Any file changes should NOT be made here as they will be overwritten by the files in the project during the build. Although, residual files could be here and potentially interfere with new changes.
+
 ### RimWorld Source Code
 `C:\Users\Giovanni\source\repos\Rimworld\V_1_6\Assembly-CSharp`
 

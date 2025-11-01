@@ -84,8 +84,7 @@ namespace Law_and_Order.Source.Rituals
             // Judge gets a positive thought for performing their duty
             if (judge?.needs?.mood?.thoughts?.memories != null)
             {
-                // TODO: Add LawAndOrder_PresidedOverHearing thought in Phase 5
-                // judge.needs.mood.thoughts.memories.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_PresidedOverHearing);
+                judge.needs.mood.thoughts.memories.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_PresidedOverHearing);
             }
 
             // Defendant already gets thoughts from the plea bargain system
@@ -108,8 +107,7 @@ namespace Law_and_Order.Source.Rituals
                     continue;
                 }
 
-                // TODO: Add LawAndOrder_AttendedHearing thought in Phase 5
-                // spectator.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_AttendedHearing);
+                spectator.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_AttendedHearing);
             }
         }
     }

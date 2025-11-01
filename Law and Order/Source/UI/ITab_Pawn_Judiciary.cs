@@ -52,7 +52,7 @@ namespace Law_and_Order.Source.UI
             {
                 // No criminal record
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(rect, "No criminal record");
+                Widgets.Label(rect, "LawAndOrder_ITab_NoCriminalRecord".Translate());
                 Text.Anchor = TextAnchor.UpperLeft;
                 return;
             }
@@ -76,7 +76,7 @@ namespace Law_and_Order.Source.UI
             // Header
             Text.Font = GameFont.Medium;
             Rect headerRect = new Rect(rect.x, rect.y, rect.width, 30f);
-            Widgets.Label(headerRect, $"Crimes ({criminalRecord.TotalCrimeCount})");
+            Widgets.Label(headerRect, "LawAndOrder_ITab_CrimesHeader".Translate(criminalRecord.TotalCrimeCount));
             Text.Font = GameFont.Small;
 
             rect.yMin += 35f;
@@ -148,13 +148,13 @@ namespace Law_and_Order.Source.UI
             string details = "";
             if (crime.victim != null)
             {
-                details += $"Victim: {crime.victim.LabelShort}\n";
+                details += "LawAndOrder_ITab_Victim".Translate(crime.victim.LabelShort) + "\n";
             }
             if (crime.damageDealt > 0)
             {
-                details += $"Damage: {crime.damageDealt:F1} | ";
+                details += "LawAndOrder_ITab_Damage".Translate(crime.damageDealt.ToString("F1")) + " | ";
             }
-            details += $"{crime.DaysAgo}d ago";
+            details += "LawAndOrder_ITab_DaysAgoShort".Translate(crime.DaysAgo);
 
             Widgets.Label(detailsRect, details);
 
@@ -169,7 +169,7 @@ namespace Law_and_Order.Source.UI
             // Debt section
             Text.Font = GameFont.Medium;
             Rect debtHeaderRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
-            Widgets.Label(debtHeaderRect, "Debt");
+            Widgets.Label(debtHeaderRect, "LawAndOrder_ITab_DebtHeader".Translate());
             yPos += 35f;
 
             Text.Font = GameFont.Small;
@@ -177,11 +177,11 @@ namespace Law_and_Order.Source.UI
             {
                 Rect debtInfoRect = new Rect(rect.x, rect.y + yPos, rect.width, 80f);
                 GUI.color = new Color(0.9f, 0.6f, 0.2f);
-                string debtInfo = $"Current: {debtRecord.CurrentDebt:F0} silver\n";
+                string debtInfo = "LawAndOrder_ITab_DebtCurrent".Translate(debtRecord.CurrentDebt.ToString("F0")) + "\n";
                 GUI.color = Color.white;
-                debtInfo += $"Total Owed: {debtRecord.TotalDebtOwed:F0} silver\n";
-                debtInfo += $"Total Paid: {debtRecord.TotalDebtPaid:F0} silver\n";
-                debtInfo += $"Est. Labor: ~{debtRecord.EstimatedDaysOfLabor()} days";
+                debtInfo += "LawAndOrder_ITab_DebtTotalOwed".Translate(debtRecord.TotalDebtOwed.ToString("F0")) + "\n";
+                debtInfo += "LawAndOrder_ITab_DebtTotalPaid".Translate(debtRecord.TotalDebtPaid.ToString("F0")) + "\n";
+                debtInfo += "LawAndOrder_ITab_EstLabor".Translate(debtRecord.EstimatedDaysOfLabor());
 
                 Widgets.Label(debtInfoRect, debtInfo);
                 yPos += 90f;
@@ -190,14 +190,14 @@ namespace Law_and_Order.Source.UI
             {
                 Rect paidRect = new Rect(rect.x, rect.y + yPos, rect.width, 40f);
                 GUI.color = new Color(0.2f, 0.8f, 0.2f);
-                Widgets.Label(paidRect, $"Debt Fully Paid\n({debtRecord.TotalDebtOwed:F0} silver)");
+                Widgets.Label(paidRect, "LawAndOrder_ITab_DebtFullyPaid".Translate(debtRecord.TotalDebtOwed.ToString("F0")));
                 GUI.color = Color.white;
                 yPos += 50f;
             }
             else
             {
                 Rect noDebtRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
-                Widgets.Label(noDebtRect, "No debt recorded");
+                Widgets.Label(noDebtRect, "LawAndOrder_ITab_NoDebt".Translate());
                 yPos += 40f;
             }
 
@@ -206,40 +206,40 @@ namespace Law_and_Order.Source.UI
             // Hearing section
             Text.Font = GameFont.Medium;
             Rect hearingHeaderRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
-            Widgets.Label(hearingHeaderRect, "Hearing");
+            Widgets.Label(hearingHeaderRect, "LawAndOrder_ITab_HearingHeader".Translate());
             yPos += 35f;
 
             Text.Font = GameFont.Small;
             var hearing = criminalRecord.Hearing;
 
             Rect hearingInfoRect = new Rect(rect.x, rect.y + yPos, rect.width, 120f);
-            string hearingInfo = $"Status: {hearing.status}\n";
+            string hearingInfo = "LawAndOrder_ITab_Status".Translate(hearing.status) + "\n";
 
             if (hearing.status == HearingStatus.Completed)
             {
-                hearingInfo += $"Completed: {hearing.DaysSinceCompleted}d ago\n";
+                hearingInfo += "LawAndOrder_ITab_Completed".Translate(hearing.DaysSinceCompleted) + "\n";
                 if (hearing.adjudicator != null)
                 {
-                    hearingInfo += $"Adjudicator: {hearing.adjudicator.LabelShort}\n";
+                    hearingInfo += "LawAndOrder_ITab_Adjudicator".Translate(hearing.adjudicator.LabelShort) + "\n";
                 }
 
                 if (hearing.pleaBargainOutcome != PleaBargainOutcome.NotAttempted)
                 {
-                    hearingInfo += $"\nPlea: {hearing.pleaBargainOutcome}\n";
-                    hearingInfo += $"Roll: {hearing.pleaBargainRoll}";
+                    hearingInfo += "\n" + "LawAndOrder_ITab_Plea".Translate(hearing.pleaBargainOutcome) + "\n";
+                    hearingInfo += "LawAndOrder_ITab_Roll".Translate(hearing.pleaBargainRoll);
                 }
             }
             else if (hearing.status == HearingStatus.Scheduled)
             {
-                hearingInfo += $"Scheduled: {hearing.DaysSinceScheduled}d ago\n";
+                hearingInfo += "LawAndOrder_ITab_Scheduled".Translate(hearing.DaysSinceScheduled) + "\n";
                 if (hearing.adjudicator != null)
                 {
-                    hearingInfo += $"Adjudicator: {hearing.adjudicator.LabelShort}";
+                    hearingInfo += "LawAndOrder_ITab_Adjudicator".Translate(hearing.adjudicator.LabelShort);
                 }
             }
             else
             {
-                hearingInfo += "Not scheduled";
+                hearingInfo += "LawAndOrder_ITab_NotScheduled".Translate();
             }
 
             Widgets.Label(hearingInfoRect, hearingInfo);
@@ -247,7 +247,7 @@ namespace Law_and_Order.Source.UI
 
             // Button to open Justice tab
             Rect buttonRect = new Rect(rect.x, rect.yMax - 40f, rect.width, 35f);
-            if (Widgets.ButtonText(buttonRect, "Open Justice Tab"))
+            if (Widgets.ButtonText(buttonRect, "LawAndOrder_ITab_OpenJusticeTab".Translate()))
             {
                 MainButtonDefOf.Menu.Worker.Activate();
                 // Find and open the Law and Order main tab

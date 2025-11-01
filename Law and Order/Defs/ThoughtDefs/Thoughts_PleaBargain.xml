@@ -76,4 +76,36 @@
     </stages>
   </ThoughtDef>
 
+  <!-- Presided over a hearing (judge receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_PresidedOverHearing</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>2</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>presided over hearing</label>
+        <description>I served justice by presiding over a court hearing. It feels good to uphold the law.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Attended a hearing (spectator receives this) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_AttendedHearing</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>1</durationDays>
+    <stackLimit>2</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>attended hearing</label>
+        <description>I witnessed justice being served in court. The legal process is reassuring.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
 </Defs>

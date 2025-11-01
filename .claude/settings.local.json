@@ -29,7 +29,8 @@
       "Bash(dir:*)",
       "Bash(move:*)",
       "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\Rituals\\RitualBehaviorWorker_Hearing.cs\")",
-      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\RitualDefs\\Ritual_Hearing.xml\")"
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\RitualDefs\\Ritual_Hearing.xml\")",
+      "Bash(copy \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\")"
     ],
     "deny": [],
     "ask": []

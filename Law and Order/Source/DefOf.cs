@@ -30,6 +30,8 @@ namespace Law_and_Order.Source
         public static ThoughtDef LawAndOrder_PleaAccepted;
         public static ThoughtDef LawAndOrder_PleaImpressive;
         public static ThoughtDef LawAndOrder_PleaRejected;
+        public static ThoughtDef LawAndOrder_PresidedOverHearing;
+        public static ThoughtDef LawAndOrder_AttendedHearing;
 
         static LawAndOrder_ThoughtDefOf()
         {

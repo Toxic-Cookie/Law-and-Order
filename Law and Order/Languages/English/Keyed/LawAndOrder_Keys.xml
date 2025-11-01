@@ -42,6 +42,27 @@
 
   <!-- ITab -->
   <TabJudiciary>Judiciary</TabJudiciary>
+  <LawAndOrder_ITab_NoCriminalRecord>No criminal record</LawAndOrder_ITab_NoCriminalRecord>
+  <LawAndOrder_ITab_CrimesHeader>Crimes ({0})</LawAndOrder_ITab_CrimesHeader>
+  <LawAndOrder_ITab_DebtHeader>Debt</LawAndOrder_ITab_DebtHeader>
+  <LawAndOrder_ITab_HearingHeader>Hearing</LawAndOrder_ITab_HearingHeader>
+  <LawAndOrder_ITab_NoDebt>No debt recorded</LawAndOrder_ITab_NoDebt>
+  <LawAndOrder_ITab_DebtFullyPaid>Debt Fully Paid\n({0} silver)</LawAndOrder_ITab_DebtFullyPaid>
+  <LawAndOrder_ITab_DebtCurrent>Current: {0} silver</LawAndOrder_ITab_DebtCurrent>
+  <LawAndOrder_ITab_DebtTotalOwed>Total Owed: {0} silver</LawAndOrder_ITab_DebtTotalOwed>
+  <LawAndOrder_ITab_DebtTotalPaid>Total Paid: {0} silver</LawAndOrder_ITab_DebtTotalPaid>
+  <LawAndOrder_ITab_EstLabor>Est. Labor: ~{0} days</LawAndOrder_ITab_EstLabor>
+  <LawAndOrder_ITab_Victim>Victim: {0}</LawAndOrder_ITab_Victim>
+  <LawAndOrder_ITab_Damage>Damage: {0}</LawAndOrder_ITab_Damage>
+  <LawAndOrder_ITab_DaysAgoShort>{0}d ago</LawAndOrder_ITab_DaysAgoShort>
+  <LawAndOrder_ITab_Status>Status: {0}</LawAndOrder_ITab_Status>
+  <LawAndOrder_ITab_Completed>Completed: {0}d ago</LawAndOrder_ITab_Completed>
+  <LawAndOrder_ITab_Scheduled>Scheduled: {0}d ago</LawAndOrder_ITab_Scheduled>
+  <LawAndOrder_ITab_Adjudicator>Adjudicator: {0}</LawAndOrder_ITab_Adjudicator>
+  <LawAndOrder_ITab_Plea>Plea: {0}</LawAndOrder_ITab_Plea>
+  <LawAndOrder_ITab_Roll>Roll: {0}</LawAndOrder_ITab_Roll>
+  <LawAndOrder_ITab_NotScheduled>Not scheduled</LawAndOrder_ITab_NotScheduled>
+  <LawAndOrder_ITab_OpenJusticeTab>Open Justice Tab</LawAndOrder_ITab_OpenJusticeTab>
 
   <!-- Settings -->
   <!-- Crimes Against Colony -->

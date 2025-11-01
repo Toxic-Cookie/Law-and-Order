@@ -226,5 +226,86 @@ namespace Law_and_Order.Source.Settings
             RepeatOffenderModifier.Value = 1.5f;
             DefaultSilverPerDay.Value = 35f;
         }
+
+        /// <summary>
+        /// Validate all settings values and clamp them to acceptable ranges.
+        /// This prevents issues from corrupted save files or manual XML edits.
+        /// </summary>
+        public static void ValidateSettings()
+        {
+            bool hadInvalidValues = false;
+
+            // Crimes Against Colony
+            hadInvalidValues |= ClampSetting(ref ArmedTrespassing, 0f, 10000f, 150f, "ArmedTrespassing");
+            hadInvalidValues |= ClampSetting(ref ArsonBase, 0f, 10000f, 250f, "ArsonBase");
+            hadInvalidValues |= ClampSetting(ref TheftMultiplier, 1f, 5f, 1.5f, "TheftMultiplier");
+            hadInvalidValues |= ClampSetting(ref ContrabandPerDrug, 0f, 1000f, 50f, "ContrabandPerDrug");
+
+            // Crimes Against Persons
+            hadInvalidValues |= ClampSetting(ref Assault, 0f, 10000f, 350f, "Assault");
+            hadInvalidValues |= ClampSetting(ref DownedColonist, 0f, 10000f, 750f, "DownedColonist");
+            hadInvalidValues |= ClampSetting(ref AssaultAnimal, 0f, 10000f, 100f, "AssaultAnimal");
+            hadInvalidValues |= ClampSetting(ref KillAnimalMultiplier, 1f, 10f, 2f, "KillAnimalMultiplier");
+            hadInvalidValues |= ClampSetting(ref KillBondedAnimalMultiplier, 1f, 10f, 3f, "KillBondedAnimalMultiplier");
+            hadInvalidValues |= ClampSetting(ref KillBondedAnimalBonus, 0f, 10000f, 500f, "KillBondedAnimalBonus");
+            hadInvalidValues |= ClampSetting(ref Murder, 0f, 50000f, 5000f, "Murder");
+
+            // Property Destruction
+            hadInvalidValues |= ClampSetting(ref PropertyDestructionMultiplier, 1f, 5f, 1.2f, "PropertyDestructionMultiplier");
+
+            // Modifiers
+            hadInvalidValues |= ClampSetting(ref BannedWeaponModifier, 1f, 3f, 1.25f, "BannedWeaponModifier");
+            hadInvalidValues |= ClampSetting(ref RepeatOffenderModifier, 1f, 5f, 1.5f, "RepeatOffenderModifier");
+
+            // Labor settings
+            hadInvalidValues |= ClampSetting(ref DefaultSilverPerDay, 1f, 500f, 35f, "DefaultSilverPerDay");
+
+            if (hadInvalidValues)
+            {
+                ModLog.Warning("Some Law and Order settings were outside valid ranges and have been corrected. This may indicate a corrupted save file or manual configuration file edit.");
+            }
+        }
+
+        /// <summary>
+        /// Clamp a setting value to the specified range. Returns true if the value was clamped.
+        /// </summary>
+        private static bool ClampSetting(ref SettingHandle<float> setting, float min, float max, float defaultValue, string settingName)
+        {
+            if (setting == null)
+            {
+                ModLog.Error($"Setting '{settingName}' is null during validation");
+                return false;
+            }
+
+            float originalValue = setting.Value;
+            float clampedValue = originalValue;
+
+            // Check for invalid values (NaN, Infinity)
+            if (float.IsNaN(originalValue) || float.IsInfinity(originalValue))
+            {
+                ModLog.Warning($"Setting '{settingName}' had invalid value ({originalValue}), resetting to default ({defaultValue})");
+                setting.Value = defaultValue;
+                return true;
+            }
+
+            // Clamp to valid range
+            if (originalValue < min)
+            {
+                clampedValue = min;
+            }
+            else if (originalValue > max)
+            {
+                clampedValue = max;
+            }
+
+            if (clampedValue != originalValue)
+            {
+                ModLog.Warning($"Setting '{settingName}' was out of range ({originalValue}), clamped to {clampedValue} (valid range: {min}-{max})");
+                setting.Value = clampedValue;
+                return true;
+            }
+
+            return false;
+        }
     }
 }
