@@ -24,7 +24,10 @@
       "Bash(dir /b \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Languages\\English\\Keyed\")",
       "Bash(dir /b \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\Rituals\")",
       "Bash(xcopy:*)",
-      "Bash(robocopy:*)"
+      "Bash(robocopy:*)",
+      "Bash(dir \"C:\\Users\\Giovanni\\source\\repos\\CustomRitualFramework\" /b /s)",
+      "Bash(dir:*)",
+      "Bash(move:*)"
     ],
     "deny": [],
     "ask": []

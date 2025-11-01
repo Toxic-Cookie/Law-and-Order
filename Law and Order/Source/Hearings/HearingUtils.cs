@@ -491,7 +491,7 @@ namespace Law_and_Order.Source.Hearings
             }
 
             // Get the outcome effect def
-            var outcomeEffectDef = ritual?.outcomeEffect?.def ?? Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_HearingOutcome;
+            var outcomeEffectDef = ritual?.outcomeEffect?.def ?? Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_CourtHearingOutcome;
 
             // Create the action callback that actually starts the ritual
             Dialog_BeginRitual.ActionCallback actionCallback = delegate(RitualRoleAssignments assignments)
@@ -558,14 +558,14 @@ namespace Law_and_Order.Source.Hearings
             {
                 if (precept is Precept_Ritual ritual &&
                     ritual.def != null &&
-                    ritual.def == Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_Hearing_Precept)
+                    ritual.def == Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_CourtHearing)
                 {
                     return ritual;
                 }
             }
 
             // Get the precept def
-            var preceptDef = Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_Hearing_Precept;
+            var preceptDef = Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_CourtHearing;
             if (preceptDef == null)
             {
                 return null;
@@ -576,7 +576,7 @@ namespace Law_and_Order.Source.Hearings
             newRitual.Init(primaryIdeo, null);
 
             // Manually initialize behavior and outcomeEffect from the pattern
-            var pattern = Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_Hearing_Pattern;
+            var pattern = Law_and_Order.Source.LawAndOrder_RitualDefOf.LawAndOrder_CourtHearingPattern;
             if (pattern != null)
             {
                 if (pattern.ritualBehavior != null)
