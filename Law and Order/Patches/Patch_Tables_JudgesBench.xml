@@ -18,10 +18,10 @@
             defName="TableTailor" or
             defName="TableCraftingStone"
           )
-          and not(comps/li[@Class="LawAndOrder.CompProperties_JudgesBench"])
+          and not(comps/li[@Class="Law_and_Order.Source.Buildings.CompProperties_JudgesBench"])
         ]/comps</xpath>
         <value>
-          <li Class="LawAndOrder.CompProperties_JudgesBench"/>
+          <li Class="Law_and_Order.Source.Buildings.CompProperties_JudgesBench"/>
         </value>
       </li>
 
@@ -32,10 +32,10 @@
             defName="SimpleResearchBench" or
             defName="HiTechResearchBench"
           )
-          and not(comps/li[@Class="LawAndOrder.CompProperties_JudgesBench"])
+          and not(comps/li[@Class="Law_and_Order.Source.Buildings.CompProperties_JudgesBench"])
         ]/comps</xpath>
         <value>
-          <li Class="LawAndOrder.CompProperties_JudgesBench"/>
+          <li Class="Law_and_Order.Source.Buildings.CompProperties_JudgesBench"/>
         </value>
       </li>
 

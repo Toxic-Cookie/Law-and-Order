@@ -5,7 +5,7 @@ using Law_and_Order.Source.Hearings;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 
-namespace LawAndOrder
+namespace Law_and_Order.Source.Rituals
 {
     /// <summary>
     /// Ritual behavior worker for court hearings using Custom Ritual Framework.
@@ -41,7 +41,9 @@ namespace LawAndOrder
             // CRF already applied the memories based on ritual quality
             PleaBargainOutcome pleaOutcome = DetermineOutcomeFromMemories(defendant);
 
+#if DEBUG
             Law_and_Order.Source.Mod.Log?.Message($"Plea outcome: {pleaOutcome}");
+#endif
 
             // Get current debt
             var debtRecord = DebtUtils.TryGetDebtRecord(defendant);
@@ -77,7 +79,9 @@ namespace LawAndOrder
                 hearing.debtBeforePlea = currentDebt;
                 hearing.debtAfterPlea = debtRecord?.CurrentDebt ?? 0f;
 
+#if DEBUG
                 Law_and_Order.Source.Mod.Log?.Message($"Hearing marked as completed for {defendant.LabelShort}");
+#endif
             }
 
             // Queue prisoner for enslavement if they have remaining debt
@@ -89,7 +93,9 @@ namespace LawAndOrder
                 if (worldComp != null)
                 {
                     worldComp.QueuePrisonerForEnslavement(defendant, judge, finalDebt);
+#if DEBUG
                     Law_and_Order.Source.Mod.Log?.Message($"Queued {defendant.LabelShort} for enslavement with debt of {finalDebt:F0} silver");
+#endif
                 }
             }
         }

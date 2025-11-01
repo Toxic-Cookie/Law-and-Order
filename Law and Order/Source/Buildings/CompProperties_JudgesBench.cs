@@ -1,7 +1,7 @@
 using RimWorld;
 using Verse;
 
-namespace LawAndOrder
+namespace Law_and_Order.Source.Buildings
 {
     /// <summary>
     /// Component properties for marking a building as a Judge's Bench.

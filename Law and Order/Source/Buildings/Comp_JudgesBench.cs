@@ -3,7 +3,7 @@ using RimWorld;
 using Verse;
 using UnityEngine;
 
-namespace LawAndOrder
+namespace Law_and_Order.Source.Buildings
 {
     /// <summary>
     /// Component that marks a building (usually a table) as a Judge's Bench.

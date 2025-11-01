@@ -4,7 +4,7 @@ using Verse;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 
-namespace LawAndOrder
+namespace Law_and_Order.Source.Rituals
 {
     /// <summary>
     /// Ritual outcome effect worker for court hearings.

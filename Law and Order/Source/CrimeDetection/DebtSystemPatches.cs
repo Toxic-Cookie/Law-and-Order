@@ -5,13 +5,13 @@ using RimWorld;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 
-namespace Law_and_Order.Source.Examples
+namespace Law_and_Order.Source.CrimeDetection
 {
     /// <summary>
-    /// Example showing how to use the debt tracking system
+    /// Debt system integration and example usage
     /// This system tracks silver debts owed by prisoners based on crimes committed
     /// </summary>
-    public static class DebtSystemExample
+    public static class DebtSystemPatches
     {
         /// <summary>
         /// Example: Add debt when a raider is captured

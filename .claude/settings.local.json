@@ -27,7 +27,9 @@
       "Bash(robocopy:*)",
       "Bash(dir \"C:\\Users\\Giovanni\\source\\repos\\CustomRitualFramework\" /b /s)",
       "Bash(dir:*)",
-      "Bash(move:*)"
+      "Bash(move:*)",
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\Rituals\\RitualBehaviorWorker_Hearing.cs\")",
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\RitualDefs\\Ritual_Hearing.xml\")"
     ],
     "deny": [],
     "ask": []

@@ -443,7 +443,7 @@ namespace Law_and_Order.Source.Hearings
                     Building building = thing as Building;
                     if (building != null)
                     {
-                        var comp = building.TryGetComp<LawAndOrder.Comp_JudgesBench>();
+                        var comp = building.TryGetComp<Law_and_Order.Source.Buildings.Comp_JudgesBench>();
                         if (comp != null && comp.IsDesignatedAsJudgesBench)
                         {
                             judgesBench = building;

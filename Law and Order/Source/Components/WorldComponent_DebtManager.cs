@@ -111,7 +111,9 @@ namespace Law_and_Order.Source.Components
                     {
                         // Still in a Lord (ritual/event), delay longer
                         pending.scheduledTick = currentTick + 60;
+#if DEBUG
                         Mod.Log?.Message($"{pending.prisoner.LabelShort} still in Lord, delaying enslavement");
+#endif
                         continue;
                     }
 
@@ -122,7 +124,9 @@ namespace Law_and_Order.Source.Components
                     {
                         // Still being moved, delay longer
                         pending.scheduledTick = currentTick + 60;
+#if DEBUG
                         Mod.Log?.Message($"{pending.prisoner.LabelShort} still being moved (job: {pending.prisoner.CurJob?.def?.defName}), delaying enslavement");
+#endif
                         continue;
                     }
 
@@ -132,7 +136,9 @@ namespace Law_and_Order.Source.Components
                     {
                         // Not in bed yet, delay a bit more
                         pending.scheduledTick = currentTick + 60;
+#if DEBUG
                         Mod.Log?.Message($"{pending.prisoner.LabelShort} not in bed yet, delaying enslavement");
+#endif
                         continue;
                     }
 
@@ -158,7 +164,9 @@ namespace Law_and_Order.Source.Components
                                 MessageTypeDefOf.NeutralEvent
                             );
 
+#if DEBUG
                             Mod.Log?.Message($"Successfully enslaved {pending.prisoner.LabelShort} to pay off debt of {pending.debt:F0} silver");
+#endif
                         }
                         else
                         {
@@ -172,7 +180,9 @@ namespace Law_and_Order.Source.Components
                 }
                 else if (pending.prisoner.IsSlave)
                 {
+#if DEBUG
                     Mod.Log?.Message($"{pending.prisoner.LabelShort} is already a slave");
+#endif
                 }
 
                 toRemove.Add(pending);

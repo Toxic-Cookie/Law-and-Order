@@ -5,7 +5,7 @@
   <RitualOutcomeEffectDef>
     <defName>LawAndOrder_HearingOutcome</defName>
     <description>A formal legal hearing has been conducted.</description>
-    <workerClass>LawAndOrder.RitualOutcomeEffectWorker_Hearing</workerClass>
+    <workerClass>Law_and_Order.Source.Rituals.RitualOutcomeEffectWorker_Hearing</workerClass>
 
     <!-- Basic quality settings (not used heavily in our implementation) -->
     <startingQuality>1.0</startingQuality>

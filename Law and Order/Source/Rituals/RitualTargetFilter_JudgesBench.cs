@@ -3,8 +3,9 @@ using System.Linq;
 using RimWorld;
 using Verse;
 using Verse.AI;
+using Law_and_Order.Source.Buildings;
 
-namespace LawAndOrder
+namespace Law_and_Order.Source.Rituals
 {
     /// <summary>
     /// Ritual target filter that finds tables designated as Judge's Bench.

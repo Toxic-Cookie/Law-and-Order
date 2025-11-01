@@ -1,7 +1,7 @@
 using RimWorld;
 using Verse;
 
-namespace LawAndOrder
+namespace Law_and_Order.Source.Rituals
 {
     /// <summary>
     /// Ritual role for the judge presiding over a hearing.

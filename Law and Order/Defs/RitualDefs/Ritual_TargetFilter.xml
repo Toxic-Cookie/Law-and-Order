@@ -4,7 +4,7 @@
   <!-- Ritual Target Filter for Judge's Bench -->
   <RitualTargetFilterDef>
     <defName>LawAndOrder_JudgesBench</defName>
-    <workerClass>LawAndOrder.RitualTargetFilter_JudgesBench</workerClass>
+    <workerClass>Law_and_Order.Source.Rituals.RitualTargetFilter_JudgesBench</workerClass>
   </RitualTargetFilterDef>
 
 </Defs>

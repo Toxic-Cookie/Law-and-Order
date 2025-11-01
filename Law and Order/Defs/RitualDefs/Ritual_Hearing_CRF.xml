@@ -38,7 +38,7 @@
   <!-- Ritual Behavior -->
   <RitualBehaviorDef>
     <defName>LawAndOrder_CourtHearingBehavior</defName>
-    <workerClass>LawAndOrder.RitualBehaviorWorker_CourtHearing</workerClass>
+    <workerClass>Law_and_Order.Source.Rituals.RitualBehaviorWorker_CourtHearing</workerClass>
     <durationTicks>
       <min>2500</min>
       <max>3500</max>
@@ -76,7 +76,7 @@
       </li>
 
       <!-- Victim Role (Optional) -->
-      <li Class="LawAndOrder.RitualRole_Victim">
+      <li Class="Law_and_Order.Source.Rituals.RitualRole_Victim">
         <id>victim</id>
         <label>victim</label>
         <categoryLabel>victim</categoryLabel>
@@ -88,7 +88,7 @@
       </li>
 
       <!-- Jury Role (Optional) -->
-      <li Class="LawAndOrder.RitualRole_Jury">
+      <li Class="Law_and_Order.Source.Rituals.RitualRole_Jury">
         <id>jury</id>
         <label>juror</label>
         <categoryLabel>jury</categoryLabel>
