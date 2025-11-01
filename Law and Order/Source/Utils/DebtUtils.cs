@@ -10,6 +10,9 @@ namespace Law_and_Order.Source.Utils
     /// </summary>
     public static class DebtUtils
     {
+        // Crime debt multipliers
+        private const float KIDNAPPING_DEBT_MULTIPLIER = 1.5f; // Kidnapping is 150% of downing debt
+
         public static HediffDef DebtDef => LawAndOrder_HediffDefOf.LawAndOrder_Debt;
 
         /// <summary>
@@ -151,7 +154,7 @@ namespace Law_and_Order.Source.Utils
 
                 case CrimeType.Kidnapping:
                     // This is a serious crime, treated similarly to assault/downed
-                    debt = LawAndOrderSettings.DownedColonist.Value * 1.5f;
+                    debt = LawAndOrderSettings.DownedColonist.Value * KIDNAPPING_DEBT_MULTIPLIER;
                     reason = crime.victim != null ? $"Kidnapped {crime.victim.LabelShort}" : "Kidnapping";
                     break;
             }

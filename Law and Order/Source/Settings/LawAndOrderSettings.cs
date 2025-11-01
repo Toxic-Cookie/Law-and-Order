@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using HugsLib.Settings;
+using RimWorld;
 using Verse;
+using Law_and_Order.Source.Utils;
 
 namespace Law_and_Order.Source.Settings
 {
@@ -32,6 +35,9 @@ namespace Law_and_Order.Source.Settings
 
         // Labor settings
         public static SettingHandle<float> DefaultSilverPerDay;
+
+        // Debug/Logging settings
+        public static SettingHandle<LogLevel> LogLevel;
 
         /// <summary>
         /// Initialize all settings with default values
@@ -162,6 +168,41 @@ namespace Law_and_Order.Source.Settings
                 35f,
                 Validators.FloatRangeValidator(1f, 500f)
             );
+
+            // Debug/Logging settings
+            LogLevel = settings.GetHandle(
+                "LogLevel",
+                "Log Level",
+                "Controls how much logging the mod produces. Info is recommended for normal play, Debug for troubleshooting.",
+                Utils.LogLevel.Info
+            );
+
+            // Set custom drawer for log level to show friendly names
+            LogLevel.CustomDrawer = rect =>
+            {
+                if (Widgets.ButtonText(rect, ModLog.GetLogLevelName(LogLevel.Value)))
+                {
+                    var options = new List<FloatMenuOption>();
+                    foreach (Utils.LogLevel level in System.Enum.GetValues(typeof(Utils.LogLevel)))
+                    {
+                        var levelCopy = level; // Capture for lambda
+                        options.Add(new FloatMenuOption(
+                            ModLog.GetLogLevelName(level),
+                            () =>
+                            {
+                                LogLevel.Value = levelCopy;
+                                ModLog.CurrentLogLevel = levelCopy;
+                                ModLog.Info($"Log level changed to: {ModLog.GetLogLevelName(levelCopy)}");
+                            }
+                        ));
+                    }
+                    Find.WindowStack.Add(new FloatMenu(options));
+                }
+                return false;
+            };
+
+            // Initialize ModLog with current setting
+            ModLog.CurrentLogLevel = LogLevel.Value;
         }
 
         /// <summary>

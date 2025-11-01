@@ -13,6 +13,7 @@ namespace Law_and_Order.Source.Hearings
     /// </summary>
     public static class HearingUtils
     {
+        // Plea bargain chance constants
         private const float BASE_PLEA_CHANCE = 0.40f; // 40% base chance
         private const float SKILL_MODIFIER = 2.5f;     // Each point of skill difference = 2.5%
         private const float MIN_CHANCE = 0.05f;        // 5% minimum
@@ -23,6 +24,26 @@ namespace Law_and_Order.Source.Hearings
         private const float SUCCESS_MODIFIER = -0.10f;           // -10% debt
         private const float FAILURE_MODIFIER = 0f;               // No change
         private const float CRITICAL_FAILURE_MODIFIER = 0.15f;   // +15% debt
+
+        // Dice roll constants (d100: 1-100)
+        private const int DICE_MIN = 1;
+        private const int DICE_MAX = 101; // Exclusive upper bound
+        private const int CRITICAL_FAILURE_THRESHOLD = 5;
+        private const int CRITICAL_SUCCESS_THRESHOLD = 96;
+
+        // Trait modifier constants for social skill
+        private const int PSYCHOPATH_PENALTY = -4;
+        private const int ABRASIVE_PENALTY = -3;
+        private const int ANNOYING_VOICE_PENALTY = -2;
+        private const int CREEPY_BREATHING_PENALTY = -2;
+        private const int KIND_BONUS = 2;
+        private const int BEAUTY_BONUS = 2;
+
+        // Health condition modifiers
+        private const float SEVERE_PAIN_THRESHOLD = 0.5f;
+        private const int SEVERE_PAIN_PENALTY = -3;
+        private const float DRUNK_THRESHOLD = 0.5f;
+        private const int DRUNK_PENALTY = -5;
 
         /// <summary>
         /// Calculate the effective social skill for plea bargaining
@@ -44,32 +65,32 @@ namespace Law_and_Order.Source.Hearings
                 // Negative modifiers
                 if (pawn.story.traits.HasTrait(TraitDefOf.Psychopath))
                 {
-                    modifier -= 4;
+                    modifier += PSYCHOPATH_PENALTY;
                 }
                 if (pawn.story.traits.HasTrait(TraitDefOf.Abrasive))
                 {
-                    modifier -= 3;
+                    modifier += ABRASIVE_PENALTY;
                 }
                 if (pawn.story.traits.HasTrait(TraitDefOf.AnnoyingVoice))
                 {
-                    modifier -= 2;
+                    modifier += ANNOYING_VOICE_PENALTY;
                 }
                 if (pawn.story.traits.HasTrait(TraitDefOf.CreepyBreathing))
                 {
-                    modifier -= 2;
+                    modifier += CREEPY_BREATHING_PENALTY;
                 }
 
                 // Positive modifiers
                 if (pawn.story.traits.HasTrait(TraitDefOf.Kind))
                 {
-                    modifier += 2;
+                    modifier += KIND_BONUS;
                 }
 
                 // Check for beauty trait by name since it's not in TraitDefOf
                 var beautyTrait = pawn.story?.traits?.allTraits?.FirstOrDefault(t => t.def.defName == "Beauty");
                 if (beautyTrait != null && beautyTrait.Degree >= 1) // Pretty or Beautiful
                 {
-                    modifier += 2;
+                    modifier += BEAUTY_BONUS;
                 }
             }
 
@@ -78,18 +99,18 @@ namespace Law_and_Order.Source.Hearings
             {
                 // Check for severe pain
                 float painLevel = pawn.health.hediffSet.PainTotal;
-                if (painLevel >= 0.5f) // Severe pain
+                if (painLevel >= SEVERE_PAIN_THRESHOLD)
                 {
-                    modifier -= 3;
+                    modifier += SEVERE_PAIN_PENALTY;
                 }
 
                 // Check for intoxication (alcohol/drugs)
                 if (pawn.health.hediffSet.HasHediff(HediffDefOf.AlcoholHigh))
                 {
                     var alcoholHediff = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.AlcoholHigh);
-                    if (alcoholHediff.Severity >= 0.5f) // Drunk
+                    if (alcoholHediff.Severity >= DRUNK_THRESHOLD)
                     {
-                        modifier -= 5;
+                        modifier += DRUNK_PENALTY;
                     }
                 }
             }
@@ -116,16 +137,16 @@ namespace Law_and_Order.Source.Hearings
         public static PleaBargainOutcome AttemptPleaBargain(Pawn prisoner, Pawn adjudicator, out int roll)
         {
             float successChance = CalculatePleaChance(prisoner, adjudicator);
-            roll = Rand.Range(1, 101); // d100: 1-100
+            roll = Rand.Range(DICE_MIN, DICE_MAX); // d100: 1-100
 
             // Critical failure (1-5)
-            if (roll <= 5)
+            if (roll <= CRITICAL_FAILURE_THRESHOLD)
             {
                 return PleaBargainOutcome.CriticalFailure;
             }
 
             // Critical success (96-100)
-            if (roll >= 96)
+            if (roll >= CRITICAL_SUCCESS_THRESHOLD)
             {
                 return PleaBargainOutcome.CriticalSuccess;
             }

@@ -90,17 +90,83 @@ namespace Law_and_Order.Source.Hediffs
     }
 
     /// <summary>
+    /// Summary of archived crimes for efficient storage
+    /// </summary>
+    public class CrimeSummary : IExposable
+    {
+        public int archivedCount;           // Number of crimes archived
+        public float totalDebt;             // Total debt from archived crimes
+        public int mostRecentTick;          // Most recent crime tick in this archive
+        public int oldestTick;              // Oldest crime tick in this archive
+        public Dictionary<CrimeType, int> crimeTypeCounts; // Count by type
+
+        public CrimeSummary()
+        {
+            crimeTypeCounts = new Dictionary<CrimeType, int>();
+        }
+
+        public CrimeSummary(List<Crime> crimesToArchive)
+        {
+            crimeTypeCounts = new Dictionary<CrimeType, int>();
+
+            if (crimesToArchive == null || crimesToArchive.Count == 0)
+                return;
+
+            archivedCount = crimesToArchive.Count;
+            totalDebt = crimesToArchive.Sum(c => c.debtAmount);
+            mostRecentTick = crimesToArchive.Max(c => c.tickCommitted);
+            oldestTick = crimesToArchive.Min(c => c.tickCommitted);
+
+            // Count crimes by type
+            foreach (var crime in crimesToArchive)
+            {
+                if (!crimeTypeCounts.ContainsKey(crime.crimeType))
+                {
+                    crimeTypeCounts[crime.crimeType] = 0;
+                }
+                crimeTypeCounts[crime.crimeType]++;
+            }
+        }
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref archivedCount, "archivedCount", 0);
+            Scribe_Values.Look(ref totalDebt, "totalDebt", 0f);
+            Scribe_Values.Look(ref mostRecentTick, "mostRecentTick", 0);
+            Scribe_Values.Look(ref oldestTick, "oldestTick", 0);
+            Scribe_Collections.Look(ref crimeTypeCounts, "crimeTypeCounts", LookMode.Value, LookMode.Value);
+
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (crimeTypeCounts == null)
+                {
+                    crimeTypeCounts = new Dictionary<CrimeType, int>();
+                }
+            }
+        }
+
+        public int DaysAgo => (Find.TickManager.TicksGame - mostRecentTick) / GenDate.TicksPerDay;
+    }
+
+    /// <summary>
     /// Hediff that tracks all crimes committed by a pawn
     /// This is efficient for save files as only pawns with crimes get this hediff
     /// </summary>
     public class Hediff_Crimes : HediffWithComps
     {
+        // Crime archival constants
+        private const int DEFAULT_ARCHIVE_AGE_DAYS = 60; // Archive crimes older than 60 days (1 quadrum)
+
         private List<Crime> crimes = new List<Crime>();
         private HearingRecord hearingRecord = new HearingRecord();
+        private List<CrimeSummary> archivedCrimes = new List<CrimeSummary>();
 
         public IReadOnlyList<Crime> Crimes => crimes.AsReadOnly();
+        public IReadOnlyList<CrimeSummary> ArchivedCrimes => archivedCrimes.AsReadOnly();
 
         public int TotalCrimeCount => crimes?.Count ?? 0;
+        public int ArchivedCrimeCount => archivedCrimes?.Sum(a => a.archivedCount) ?? 0;
+        public int TotalCrimeCountIncludingArchived => TotalCrimeCount + ArchivedCrimeCount;
 
         public HearingRecord Hearing => hearingRecord;
 
@@ -159,21 +225,47 @@ namespace Law_and_Order.Source.Hediffs
         }
 
         /// <summary>
-        /// Clear old crimes (optional - for performance if list gets too long)
+        /// Archive old crimes to save memory and reduce save file bloat
+        /// Old crimes are summarized and removed from the detailed list
         /// </summary>
-        public void ClearCrimesOlderThan(int days)
+        public void ArchiveOldCrimes(int daysOld = DEFAULT_ARCHIVE_AGE_DAYS)
         {
-            if (crimes == null) return;
+            if (crimes == null || crimes.Count == 0)
+                return;
 
-            int ticksAgo = days * GenDate.TicksPerDay;
+            if (archivedCrimes == null)
+            {
+                archivedCrimes = new List<CrimeSummary>();
+            }
+
+            // Find crimes older than threshold
+            int ticksAgo = daysOld * GenDate.TicksPerDay;
             int cutoffTick = Find.TickManager.TicksGame - ticksAgo;
+            var oldCrimes = crimes.Where(c => c.tickCommitted < cutoffTick).ToList();
+
+            if (oldCrimes.Count == 0)
+                return;
+
+            // Create summary of old crimes
+            var summary = new CrimeSummary(oldCrimes);
+            archivedCrimes.Add(summary);
+
+            // Remove old crimes from active list
             crimes.RemoveAll(c => c.tickCommitted < cutoffTick);
 
-            // If no crimes left, could optionally remove the hediff entirely
-            if (crimes.Count == 0)
+            if (Prefs.DevMode)
             {
-                pawn.health.RemoveHediff(this);
+                Mod.Log?.Message($"Archived {oldCrimes.Count} crimes for {pawn?.LabelShort ?? "unknown pawn"} (older than {daysOld} days). Remaining active crimes: {crimes.Count}");
             }
+        }
+
+        /// <summary>
+        /// Clear old crimes (legacy method - now archives instead of deleting)
+        /// </summary>
+        [System.Obsolete("Use ArchiveOldCrimes instead")]
+        public void ClearCrimesOlderThan(int days)
+        {
+            ArchiveOldCrimes(days);
         }
 
         public override void ExposeData()
@@ -181,6 +273,7 @@ namespace Law_and_Order.Source.Hediffs
             base.ExposeData();
             Scribe_Collections.Look(ref crimes, "crimes", LookMode.Deep);
             Scribe_Deep.Look(ref hearingRecord, "hearingRecord");
+            Scribe_Collections.Look(ref archivedCrimes, "archivedCrimes", LookMode.Deep);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
@@ -192,6 +285,10 @@ namespace Law_and_Order.Source.Hediffs
                 {
                     hearingRecord = new HearingRecord();
                 }
+                if (archivedCrimes == null)
+                {
+                    archivedCrimes = new List<CrimeSummary>();
+                }
             }
         }
 
@@ -199,14 +296,24 @@ namespace Law_and_Order.Source.Hediffs
         {
             get
             {
-                if (crimes == null || crimes.Count == 0)
+                if ((crimes == null || crimes.Count == 0) && (archivedCrimes == null || archivedCrimes.Count == 0))
                 {
                     return "No crimes recorded";
                 }
 
                 var stringBuilder = new System.Text.StringBuilder();
 
-                return stringBuilder.ToString() + $"\nTotal crimes: {crimes.Count}\n" + $"Recent (7 days): {GetRecentCrimes(7).Count}\n" + $"(View Justice tab for more info)";
+                stringBuilder.AppendLine($"Active crimes: {TotalCrimeCount}");
+                stringBuilder.AppendLine($"Recent (7 days): {GetRecentCrimes(7).Count}");
+
+                if (ArchivedCrimeCount > 0)
+                {
+                    stringBuilder.AppendLine($"Archived crimes: {ArchivedCrimeCount}");
+                }
+
+                stringBuilder.Append("(View Justice tab for more info)");
+
+                return stringBuilder.ToString();
             }
         }
 
