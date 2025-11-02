@@ -104,6 +104,19 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ Cleaned up unused `ReleasePrisoner()` method
 - ✅ Improved UI clarity by focusing on Law and Order specific functionality
 
+**2025-11-02: Contraband System Implementation**
+- ✅ Added new "Contraband" tab to Justice window (4th tab)
+- ✅ Storage-zone-style UI for marking items as contraband with custom penalties
+- ✅ Automatic contraband scanning when raiders become prisoners
+- ✅ Contraband penalties applied as debt with new ContrabandPossession crime type
+- ✅ Left panel shows all game items with search functionality
+- ✅ Right panel configures selected item: mark/update/remove contraband and set silver penalty
+- ✅ Contraband items highlighted in red in item list
+- ✅ Detection triggers when raiders captured or killed
+- ✅ WorldComponent_ContrabandManager stores definitions globally (save-compatible)
+- ✅ Full localization support (14 new translation keys)
+- ✅ Integration with existing crime and debt systems
+
 ---
 
 ## Court Ritual System Progress

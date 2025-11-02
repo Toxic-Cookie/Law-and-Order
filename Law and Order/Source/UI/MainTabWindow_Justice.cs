@@ -7,6 +7,7 @@ using RimWorld;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 using Law_and_Order.Source.Hearings;
+using LawAndOrder;
 
 namespace Law_and_Order.Source.UI
 {
@@ -20,7 +21,8 @@ namespace Law_and_Order.Source.UI
         {
             ActiveCriminals,    // Criminals currently on the map
             Imprisoned,         // Criminals in prison
-            Historical          // Past criminals (dead, released, etc)
+            Historical,         // Past criminals (dead, released, etc)
+            Contraband          // Contraband item configuration
         }
 
         private JusticeTab curTab = JusticeTab.ActiveCriminals;
@@ -29,6 +31,12 @@ namespace Law_and_Order.Source.UI
         private Vector2 criminalListScrollPos;
         private Vector2 selectedCriminalScrollPos;
         private string searchQuery = "";
+
+        // Contraband tab fields
+        private ThingDef selectedContrabandItem;
+        private Vector2 contrabandListScrollPos;
+        private string contrabandSearchQuery = "";
+        private string contrabandPenaltyInput = "";
 
         private const float LeftPanelWidth = 0.35f;
         private const float PanelGap = 17f;
@@ -56,6 +64,11 @@ namespace Law_and_Order.Source.UI
                 () => { curTab = JusticeTab.Historical; selectedCriminal = null; },
                 () => curTab == JusticeTab.Historical
             ));
+            tabs.Add(new TabRecord(
+                "LawAndOrder_Contraband".Translate(),
+                () => { curTab = JusticeTab.Contraband; selectedCriminal = null; },
+                () => curTab == JusticeTab.Contraband
+            ));
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -65,18 +78,26 @@ namespace Law_and_Order.Source.UI
             inRect.yMin += 45f;
             TabDrawer.DrawTabs<TabRecord>(inRect, tabs, 200f);
 
-            // Split into left panel (criminal list) and right panel (details)
-            Rect leftPanel = inRect;
-            leftPanel.width = inRect.width * LeftPanelWidth;
+            // Handle Contraband tab differently
+            if (curTab == JusticeTab.Contraband)
+            {
+                DrawContrabandUI(inRect);
+            }
+            else
+            {
+                // Split into left panel (criminal list) and right panel (details)
+                Rect leftPanel = inRect;
+                leftPanel.width = inRect.width * LeftPanelWidth;
 
-            Rect rightPanel = inRect;
-            rightPanel.xMin = leftPanel.xMax + PanelGap;
+                Rect rightPanel = inRect;
+                rightPanel.xMin = leftPanel.xMax + PanelGap;
 
-            // Draw the criminal list
-            DrawCriminalList(leftPanel);
+                // Draw the criminal list
+                DrawCriminalList(leftPanel);
 
-            // Draw the selected criminal details
-            DrawSelectedCriminalDetails(rightPanel);
+                // Draw the selected criminal details
+                DrawSelectedCriminalDetails(rightPanel);
+            }
         }
 
         private void DrawCriminalList(Rect rect)
@@ -495,6 +516,262 @@ namespace Law_and_Order.Source.UI
 
                 default:
                     return criminalsWithRecords;
+            }
+        }
+
+        private void DrawContrabandUI(Rect inRect)
+        {
+            // Split into left panel (item list) and right panel (configuration)
+            Rect leftPanel = inRect;
+            leftPanel.width = inRect.width * LeftPanelWidth;
+
+            Rect rightPanel = inRect;
+            rightPanel.xMin = leftPanel.xMax + PanelGap;
+
+            // Draw the item list
+            DrawContrabandItemList(leftPanel);
+
+            // Draw the configuration panel
+            DrawContrabandConfiguration(rightPanel);
+        }
+
+        private void DrawContrabandItemList(Rect rect)
+        {
+            Widgets.DrawMenuSection(rect);
+
+            Rect innerRect = rect.ContractedBy(10f);
+
+            // Search bar at the top
+            Rect searchRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 30f);
+            contrabandSearchQuery = Widgets.TextField(searchRect, contrabandSearchQuery);
+            innerRect.yMin += 35f;
+
+            // Get all valid items (weapons, drugs, etc)
+            var allItems = DefDatabase<ThingDef>.AllDefsListForReading
+                .Where(def => def.category == ThingCategory.Item && !def.IsCorpse)
+                .OrderBy(def => def.label)
+                .ToList();
+
+            // Filter by search query
+            if (!string.IsNullOrWhiteSpace(contrabandSearchQuery))
+            {
+                allItems = allItems.Where(def =>
+                    def.label.ToLower().Contains(contrabandSearchQuery.ToLower())
+                ).ToList();
+            }
+
+            // Draw the list
+            float rowHeight = 50f;
+            Rect viewRect = new Rect(0f, 0f, innerRect.width - 16f, allItems.Count * rowHeight);
+            Widgets.BeginScrollView(innerRect, ref contrabandListScrollPos, viewRect);
+
+            float yPos = 0f;
+            foreach (var item in allItems)
+            {
+                Rect rowRect = new Rect(0f, yPos, viewRect.width, rowHeight - 2f);
+                DrawContrabandItemListEntry(rowRect, item);
+                yPos += rowHeight;
+            }
+
+            Widgets.EndScrollView();
+
+            // Display count at bottom
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.UpperLeft;
+            Rect countRect = new Rect(rect.x + 10f, rect.yMax - 25f, rect.width - 20f, 20f);
+
+            int contrabandCount = WorldComponent_ContrabandManager.Instance.ContrabandDefinitions.Count;
+            Widgets.Label(countRect, $"{"LawAndOrder_ContrabandCount".Translate()}: {contrabandCount} / {allItems.Count}");
+            Text.Font = GameFont.Small;
+        }
+
+        private void DrawContrabandItemListEntry(Rect rect, ThingDef item)
+        {
+            bool isSelected = selectedContrabandItem == item;
+            bool isContraband = WorldComponent_ContrabandManager.Instance.IsContraband(item);
+
+            if (isSelected)
+            {
+                Widgets.DrawHighlight(rect);
+            }
+
+            if (Mouse.IsOver(rect))
+            {
+                Widgets.DrawLightHighlight(rect);
+            }
+
+            if (Widgets.ButtonInvisible(rect))
+            {
+                selectedContrabandItem = item;
+
+                // Load penalty if already set as contraband
+                var existingDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
+                if (existingDef != null)
+                {
+                    contrabandPenaltyInput = existingDef.silverPenaltyPerItem.ToString();
+                }
+                else
+                {
+                    contrabandPenaltyInput = "50"; // Default penalty
+                }
+
+                SoundDefOf.Click.PlayOneShotOnCamera(null);
+            }
+
+            // Draw item icon
+            Rect iconRect = new Rect(rect.x + 4f, rect.y + 4f, 40f, 40f);
+            Widgets.ThingIcon(iconRect, item);
+
+            // Draw name
+            Rect textRect = new Rect(iconRect.xMax + 8f, rect.y + 4f, rect.width - iconRect.width - 12f, rect.height - 8f);
+
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+            Widgets.Label(textRect, item.LabelCap);
+
+            // Show contraband marker
+            if (isContraband)
+            {
+                Text.Font = GameFont.Tiny;
+                Rect contrabandRect = textRect;
+                contrabandRect.y += 18f;
+                GUI.color = new Color(0.9f, 0.2f, 0.2f);
+
+                var contrabandDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
+                Widgets.Label(contrabandRect, $"CONTRABAND ({contrabandDef.silverPenaltyPerItem} silver)");
+                GUI.color = Color.white;
+            }
+
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private void DrawContrabandConfiguration(Rect rect)
+        {
+            if (selectedContrabandItem == null)
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(rect, "LawAndOrder_SelectItem".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+
+            Widgets.DrawMenuSection(rect);
+
+            Rect innerRect = rect.ContractedBy(10f);
+
+            // Header with item name
+            Text.Font = GameFont.Medium;
+            Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 32f);
+            Widgets.Label(headerRect, selectedContrabandItem.LabelCap);
+            Text.Font = GameFont.Small;
+
+            innerRect.yMin += 40f;
+
+            // Item description
+            if (!string.IsNullOrEmpty(selectedContrabandItem.description))
+            {
+                Rect descRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 60f);
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(descRect, selectedContrabandItem.description);
+                Text.Font = GameFont.Small;
+                innerRect.yMin += 70f;
+            }
+
+            // Item stats box
+            Rect statsRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 80f);
+            Widgets.DrawBoxSolid(statsRect, new Color(0.2f, 0.2f, 0.2f, 0.5f));
+
+            Rect statsTextRect = statsRect.ContractedBy(5f);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            string stats = $"{"LawAndOrder_Category".Translate()}: {selectedContrabandItem.thingCategories?.FirstOrDefault()?.LabelCap ?? "None"}\n";
+            stats += $"{"LawAndOrder_MarketValue".Translate()}: {selectedContrabandItem.BaseMarketValue:F0} silver";
+
+            Widgets.Label(statsTextRect, stats);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            innerRect.yMin += 90f;
+
+            // Contraband configuration section
+            bool isCurrentlyContraband = WorldComponent_ContrabandManager.Instance.IsContraband(selectedContrabandItem);
+
+            Rect configHeaderRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 25f);
+            Text.Font = GameFont.Medium;
+            Widgets.Label(configHeaderRect, "LawAndOrder_ContrabandSettings".Translate());
+            Text.Font = GameFont.Small;
+
+            innerRect.yMin += 30f;
+
+            // Penalty input
+            Rect penaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.6f, 24f);
+            Widgets.Label(penaltyLabelRect, "LawAndOrder_SilverPenaltyPerItem".Translate());
+
+            Rect penaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.65f, innerRect.y, innerRect.width * 0.35f, 24f);
+            contrabandPenaltyInput = Widgets.TextField(penaltyInputRect, contrabandPenaltyInput);
+
+            innerRect.yMin += 30f;
+
+            // Buttons
+            float buttonWidth = (innerRect.width - 10f) / 2f;
+            float buttonHeight = 35f;
+
+            if (isCurrentlyContraband)
+            {
+                // Show "Update" and "Remove" buttons
+                Rect updateButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
+                if (Widgets.ButtonText(updateButtonRect, "LawAndOrder_UpdateContraband".Translate()))
+                {
+                    if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
+                    {
+                        WorldComponent_ContrabandManager.Instance.SetContraband(selectedContrabandItem, penalty);
+                        Messages.Message(
+                            "LawAndOrder_ContrabandUpdated".Translate(selectedContrabandItem.LabelCap),
+                            MessageTypeDefOf.PositiveEvent
+                        );
+                    }
+                    else
+                    {
+                        Messages.Message(
+                            "LawAndOrder_InvalidPenalty".Translate(),
+                            MessageTypeDefOf.RejectInput
+                        );
+                    }
+                }
+
+                Rect removeButtonRect = new Rect(innerRect.x + buttonWidth + 10f, innerRect.y, buttonWidth, buttonHeight);
+                if (Widgets.ButtonText(removeButtonRect, "LawAndOrder_RemoveContraband".Translate()))
+                {
+                    WorldComponent_ContrabandManager.Instance.RemoveContraband(selectedContrabandItem);
+                    Messages.Message(
+                        "LawAndOrder_ContrabandRemoved".Translate(selectedContrabandItem.LabelCap),
+                        MessageTypeDefOf.NeutralEvent
+                    );
+                }
+            }
+            else
+            {
+                // Show "Mark as Contraband" button
+                Rect addButtonRect = new Rect(innerRect.x, innerRect.y, innerRect.width, buttonHeight);
+                if (Widgets.ButtonText(addButtonRect, "LawAndOrder_MarkAsContraband".Translate()))
+                {
+                    if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
+                    {
+                        WorldComponent_ContrabandManager.Instance.SetContraband(selectedContrabandItem, penalty);
+                        Messages.Message(
+                            "LawAndOrder_ContrabandAdded".Translate(selectedContrabandItem.LabelCap),
+                            MessageTypeDefOf.PositiveEvent
+                        );
+                    }
+                    else
+                    {
+                        Messages.Message(
+                            "LawAndOrder_InvalidPenalty".Translate(),
+                            MessageTypeDefOf.RejectInput
+                        );
+                    }
+                }
             }
         }
     }

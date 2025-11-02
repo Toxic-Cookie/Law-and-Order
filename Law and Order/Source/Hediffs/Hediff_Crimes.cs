@@ -86,7 +86,8 @@ namespace Law_and_Order.Source.Hediffs
         AnimalAbuse,        // Harming colony animals
         Trespassing,        // Entering forbidden areas
         Kidnapping,         // Taking colonists prisoner
-        Vandalism           // Minor property damage
+        Vandalism,          // Minor property damage
+        ContrabandPossession // Possessing contraband items
     }
 
     /// <summary>

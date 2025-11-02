@@ -324,5 +324,33 @@ namespace Law_and_Order.Source.Utils
                 Mod.Log?.Message($"Applied {debtRecord.CurrentDebt:F0} silver debt to {criminal.NameShortColored} for {criminalRecord.TotalCrimeCount} crimes");
             }
         }
+
+        /// <summary>
+        /// Add debt for contraband items found on a pawn.
+        /// </summary>
+        public static void AddDebtForContraband(Pawn criminal, float totalPenalty, System.Collections.Generic.Dictionary<ThingDef, int> contrabandItems)
+        {
+            if (criminal == null || totalPenalty <= 0)
+            {
+                return;
+            }
+
+            var debtRecord = GetOrCreateDebtRecord(criminal);
+            if (debtRecord == null)
+            {
+                return;
+            }
+
+            // Build a description of the contraband
+            string itemList = string.Join(", ", System.Linq.Enumerable.Select(contrabandItems, kvp => $"{kvp.Value}x {kvp.Key.LabelCap}"));
+            string reason = $"Contraband: {itemList}";
+
+            debtRecord.AddDebt(totalPenalty, reason);
+
+            if (Prefs.DevMode)
+            {
+                Mod.Log?.Message($"Applied {totalPenalty:F0} silver contraband debt to {criminal.LabelShort}");
+            }
+        }
     }
 }

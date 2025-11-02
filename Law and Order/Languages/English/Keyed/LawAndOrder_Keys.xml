@@ -125,4 +125,20 @@
   <LawAndOrder_Setting_DefaultSilverPerDay_Title>Silver per Day (Labor)</LawAndOrder_Setting_DefaultSilverPerDay_Title>
   <LawAndOrder_Setting_DefaultSilverPerDay_Desc>Average silver value produced by a prisoner per day of labor. Used to estimate sentence length.</LawAndOrder_Setting_DefaultSilverPerDay_Desc>
 
+  <!-- Contraband Tab -->
+  <LawAndOrder_Contraband>Contraband</LawAndOrder_Contraband>
+  <LawAndOrder_ContrabandCount>Contraband Items</LawAndOrder_ContrabandCount>
+  <LawAndOrder_SelectItem>Select an item to configure</LawAndOrder_SelectItem>
+  <LawAndOrder_Category>Category</LawAndOrder_Category>
+  <LawAndOrder_MarketValue>Market Value</LawAndOrder_MarketValue>
+  <LawAndOrder_ContrabandSettings>Contraband Settings</LawAndOrder_ContrabandSettings>
+  <LawAndOrder_SilverPenaltyPerItem>Silver Penalty per Item</LawAndOrder_SilverPenaltyPerItem>
+  <LawAndOrder_MarkAsContraband>Mark as Contraband</LawAndOrder_MarkAsContraband>
+  <LawAndOrder_UpdateContraband>Update</LawAndOrder_UpdateContraband>
+  <LawAndOrder_RemoveContraband>Remove</LawAndOrder_RemoveContraband>
+  <LawAndOrder_ContrabandAdded>{0} marked as contraband</LawAndOrder_ContrabandAdded>
+  <LawAndOrder_ContrabandUpdated>{0} contraband settings updated</LawAndOrder_ContrabandUpdated>
+  <LawAndOrder_ContrabandRemoved>{0} removed from contraband list</LawAndOrder_ContrabandRemoved>
+  <LawAndOrder_InvalidPenalty>Invalid penalty amount. Must be a positive number.</LawAndOrder_InvalidPenalty>
+
 </LanguageData>
