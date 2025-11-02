@@ -16,13 +16,19 @@ This folder contains locally available information about the libraries being use
 This folder is where the mod gets deployed to. Any file changes should NOT be made here as they will be overwritten by the files in the project during the build. Although, residual files could be here and potentially interfere with new changes.
 
 ## RimWorld Source Code
-`C:\Users\Giovanni\source\repos\Rimworld\V_1_6\Assembly-CSharp`
 
-This folder contains the decompiled RimWorld 1.6 source code (Assembly-CSharp). Use this as a reference when:
+Use this as a reference when:
 - Understanding RimWorld's internal systems and APIs
 - Looking up base game classes, methods, and fields
 - Checking how vanilla RimWorld implements features
 - Debugging compatibility issues
+
+`C:\Users\Giovanni\source\repos\Rimworld\V_1_6\Assembly-CSharp`
+This folder contains the decompiled RimWorld 1.6 source code (Assembly-CSharp).
+
+`C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Data`
+`C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Source`
+These folders contain Rimworld's XML.
 
 ## Guidelines
 
