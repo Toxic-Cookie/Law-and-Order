@@ -1,6 +1,6 @@
 # Law and Order - Project Tracker
 
-**Last Updated:** November 1, 2025
+**Last Updated:** November 2, 2025
 **Current Status:** ✅ Production Ready - All Priority Tasks Complete
 
 ---
@@ -89,6 +89,13 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ Victim confrontation affects mood and relationships
 - ✅ Interactions viewable in pawn Social tab
 - ✅ Fully tested and working
+
+**2025-11-02: Judge's Bench Designation Fix**
+- ✅ Fixed issue where not all tables could be designated as Judge's Bench
+- ✅ Changed from hardcoded table defNames to characteristic-based targeting
+- ✅ Now targets: All dining tables (surfaceType="Eat"), all work tables (Building_WorkTable), and research benches
+- ✅ Supports both vanilla and modded tables automatically
+- ✅ No longer requires manual updates when new tables are added
 
 ---
 
