@@ -29,16 +29,26 @@
   <LawAndOrder_DaysAgo>Days ago</LawAndOrder_DaysAgo>
 
   <!-- Action Buttons -->
-  <LawAndOrder_ScheduleHearing>Schedule Hearing</LawAndOrder_ScheduleHearing>
-  <LawAndOrder_Release>Release</LawAndOrder_Release>
+  <LawAndOrder_BeginHearing>Begin Hearing</LawAndOrder_BeginHearing>
   <LawAndOrder_Pardon>Pardon</LawAndOrder_Pardon>
-  <LawAndOrder_ViewInfo>View Info</LawAndOrder_ViewInfo>
 
   <!-- Messages -->
   <LawAndOrder_NoCourtroom>Cannot schedule hearing: No courtroom available. Build a courtroom to proceed.</LawAndOrder_NoCourtroom>
   <LawAndOrder_HearingScheduled>Hearing scheduled for {0}</LawAndOrder_HearingScheduled>
-  <LawAndOrder_Released>{0} has been released from prison</LawAndOrder_Released>
   <LawAndOrder_Pardoned>{0} has been pardoned of all crimes</LawAndOrder_Pardoned>
+
+  <!-- Judge's Bench -->
+  <LawAndOrder_DesignateJudgesBench>Designate Judge's Bench</LawAndOrder_DesignateJudgesBench>
+  <LawAndOrder_DesignateJudgesBenchDesc>Toggle whether this table serves as the Judge's Bench for court hearings</LawAndOrder_DesignateJudgesBenchDesc>
+  <LawAndOrder_JudgesBenchDesignated>Designated as Judge's Bench</LawAndOrder_JudgesBenchDesignated>
+
+  <!-- Ritual Roles -->
+  <LawAndOrder_RoleMustBePrisoner>{0} must be a prisoner of the colony</LawAndOrder_RoleMustBePrisoner>
+  <LawAndOrder_RoleNoCrimes>{0} has no crimes on record</LawAndOrder_RoleNoCrimes>
+
+  <!-- Ritual Targeting -->
+  <LawAndOrder_MustTargetJudgesBench>Must target a designated Judge's Bench</LawAndOrder_MustTargetJudgesBench>
+  <LawAndOrder_RequiresJudgesBench>Requires a designated Judge's Bench</LawAndOrder_RequiresJudgesBench>
 
   <!-- ITab -->
   <TabJudiciary>Judiciary</TabJudiciary>

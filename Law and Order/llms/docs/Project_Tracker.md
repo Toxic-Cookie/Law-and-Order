@@ -97,6 +97,13 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ Supports both vanilla and modded tables automatically
 - ✅ No longer requires manual updates when new tables are added
 
+**2025-11-02: Justice Tab UI Simplification**
+- ✅ Removed "Release" button from Justice Tab (redundant with vanilla prisoner management)
+- ✅ Removed "View Info" button from Justice Tab (redundant with vanilla pawn selection)
+- ✅ Simplified button layout to show only mod-specific actions: "Begin Hearing" and "Pardon"
+- ✅ Cleaned up unused `ReleasePrisoner()` method
+- ✅ Improved UI clarity by focusing on Law and Order specific functionality
+
 ---
 
 ## Court Ritual System Progress

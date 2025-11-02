@@ -408,34 +408,11 @@ namespace Law_and_Order.Source.UI
                 ScheduleHearing();
             }
 
-            // Release button (if imprisoned)
-            Rect releaseButtonRect = new Rect(rect.x + buttonWidth + 10f, rect.y, buttonWidth, buttonHeight);
-            if (selectedCriminal.IsPrisonerOfColony)
-            {
-                if (Widgets.ButtonText(releaseButtonRect, "LawAndOrder_Release".Translate()))
-                {
-                    ReleasePrisoner();
-                }
-            }
-            else
-            {
-                GUI.enabled = false;
-                Widgets.ButtonText(releaseButtonRect, "LawAndOrder_Release".Translate());
-                GUI.enabled = true;
-            }
-
             // Pardon button
-            Rect pardonButtonRect = new Rect(rect.x, rect.y + buttonHeight + 5f, buttonWidth, buttonHeight);
+            Rect pardonButtonRect = new Rect(rect.x + buttonWidth + 10f, rect.y, buttonWidth, buttonHeight);
             if (Widgets.ButtonText(pardonButtonRect, "LawAndOrder_Pardon".Translate()))
             {
                 PardonCriminal();
-            }
-
-            // View Character Info button
-            Rect infoButtonRect = new Rect(rect.x + buttonWidth + 10f, rect.y + buttonHeight + 5f, buttonWidth, buttonHeight);
-            if (Widgets.ButtonText(infoButtonRect, "LawAndOrder_ViewInfo".Translate()))
-            {
-                Find.WindowStack.Add(new Dialog_InfoCard(selectedCriminal));
             }
         }
 
@@ -480,19 +457,6 @@ namespace Law_and_Order.Source.UI
 
             // Start the ritual
             HearingUtils.StartHearingRitual(selectedCriminal, courtroom, adjudicator);
-        }
-
-        private void ReleasePrisoner()
-        {
-            if (selectedCriminal.IsPrisonerOfColony)
-            {
-                selectedCriminal.guest.SetGuestStatus(Faction.OfPlayer, GuestStatus.Guest);
-                Messages.Message(
-                    "LawAndOrder_Released".Translate(selectedCriminal.NameShortColored),
-                    selectedCriminal,
-                    MessageTypeDefOf.NeutralEvent
-                );
-            }
         }
 
         private void PardonCriminal()
