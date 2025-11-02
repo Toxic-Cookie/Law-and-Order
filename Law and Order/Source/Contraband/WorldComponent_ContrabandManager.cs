@@ -63,6 +63,54 @@ namespace LawAndOrder
         }
 
         /// <summary>
+        /// Marks all items in a list as contraband with the specified penalty.
+        /// </summary>
+        public int SetContrabandBulk(List<ThingDef> items, int silverPenalty)
+        {
+            int count = 0;
+            foreach (var item in items)
+            {
+                SetContraband(item, silverPenalty);
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Updates all contraband items in a list with a new penalty.
+        /// </summary>
+        public int UpdateContrabandBulk(List<ThingDef> items, int silverPenalty)
+        {
+            int count = 0;
+            foreach (var item in items)
+            {
+                if (IsContraband(item))
+                {
+                    SetContraband(item, silverPenalty);
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Removes all contraband items in a list from contraband.
+        /// </summary>
+        public int RemoveContrabandBulk(List<ThingDef> items)
+        {
+            int count = 0;
+            foreach (var item in items)
+            {
+                if (IsContraband(item))
+                {
+                    RemoveContraband(item);
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Calculates the total contraband penalty for items in a pawn's inventory.
         /// </summary>
         public int CalculateContrabandPenalty(Pawn pawn, out Dictionary<ThingDef, int> contrabandItems)

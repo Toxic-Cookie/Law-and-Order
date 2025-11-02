@@ -34,6 +34,7 @@ namespace Law_and_Order.Source.UI
 
         // Contraband tab fields
         private ThingDef selectedContrabandItem;
+        private ContrabandCategoryNode selectedContrabandCategory;
         private Vector2 contrabandListScrollPos;
         private string contrabandSearchQuery = "";
         private string contrabandPenaltyInput = "";
@@ -611,6 +612,13 @@ namespace Law_and_Order.Source.UI
             if (node.IsCategory)
             {
                 // Draw category
+                bool isSelected = selectedContrabandCategory == node;
+
+                if (isSelected)
+                {
+                    Widgets.DrawHighlight(workRect);
+                }
+
                 if (Mouse.IsOver(workRect))
                 {
                     Widgets.DrawLightHighlight(workRect);
@@ -624,8 +632,17 @@ namespace Law_and_Order.Source.UI
                     SoundDefOf.Click.PlayOneShotOnCamera(null);
                 }
 
-                // Draw category name with counts
+                // Draw category name with counts (clickable to select)
                 Rect labelRect = new Rect(arrowRect.xMax + 4f, workRect.y, workRect.width - ArrowWidth - 4f, workRect.height);
+
+                if (Widgets.ButtonInvisible(labelRect))
+                {
+                    selectedContrabandCategory = node;
+                    selectedContrabandItem = null; // Clear item selection
+                    contrabandPenaltyInput = "50"; // Default penalty
+                    SoundDefOf.Click.PlayOneShotOnCamera(null);
+                }
+
                 Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.MiddleLeft;
 
@@ -664,6 +681,7 @@ namespace Law_and_Order.Source.UI
                 if (Widgets.ButtonInvisible(workRect))
                 {
                     selectedContrabandItem = item;
+                    selectedContrabandCategory = null; // Clear category selection
 
                     // Load penalty if already set as contraband
                     var existingDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
@@ -709,7 +727,7 @@ namespace Law_and_Order.Source.UI
 
         private void DrawContrabandConfiguration(Rect rect)
         {
-            if (selectedContrabandItem == null)
+            if (selectedContrabandItem == null && selectedContrabandCategory == null)
             {
                 Text.Anchor = TextAnchor.MiddleCenter;
                 Widgets.Label(rect, "LawAndOrder_SelectItem".Translate());
@@ -717,6 +735,14 @@ namespace Law_and_Order.Source.UI
                 return;
             }
 
+            // Show category bulk operations if category is selected
+            if (selectedContrabandCategory != null)
+            {
+                DrawContrabandCategoryConfiguration(rect);
+                return;
+            }
+
+            // Otherwise show individual item configuration
             Widgets.DrawMenuSection(rect);
 
             Rect innerRect = rect.ContractedBy(10f);
@@ -791,7 +817,6 @@ namespace Law_and_Order.Source.UI
                             "LawAndOrder_ContrabandUpdated".Translate(selectedContrabandItem.LabelCap),
                             MessageTypeDefOf.PositiveEvent
                         );
-                        contrabandTreeNeedsRebuild = true; // Refresh tree to update counts
                     }
                     else
                     {
@@ -810,7 +835,6 @@ namespace Law_and_Order.Source.UI
                         "LawAndOrder_ContrabandRemoved".Translate(selectedContrabandItem.LabelCap),
                         MessageTypeDefOf.NeutralEvent
                     );
-                    contrabandTreeNeedsRebuild = true; // Refresh tree to update counts
                 }
             }
             else
@@ -826,7 +850,6 @@ namespace Law_and_Order.Source.UI
                             "LawAndOrder_ContrabandAdded".Translate(selectedContrabandItem.LabelCap),
                             MessageTypeDefOf.PositiveEvent
                         );
-                        contrabandTreeNeedsRebuild = true; // Refresh tree to update counts
                     }
                     else
                     {
@@ -835,6 +858,145 @@ namespace Law_and_Order.Source.UI
                             MessageTypeDefOf.RejectInput
                         );
                     }
+                }
+            }
+        }
+
+        private void DrawContrabandCategoryConfiguration(Rect rect)
+        {
+            Widgets.DrawMenuSection(rect);
+
+            Rect innerRect = rect.ContractedBy(10f);
+
+            // Header with category name
+            Text.Font = GameFont.Medium;
+            Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 32f);
+            string categoryLabel = selectedContrabandCategory.categoryDef != null
+                ? selectedContrabandCategory.categoryDef.LabelCap
+                : "Uncategorized";
+            Widgets.Label(headerRect, categoryLabel);
+            Text.Font = GameFont.Small;
+
+            innerRect.yMin += 40f;
+
+            // Category stats box
+            Rect statsRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 80f);
+            Widgets.DrawBoxSolid(statsRect, new Color(0.2f, 0.2f, 0.2f, 0.5f));
+
+            Rect statsTextRect = statsRect.ContractedBy(5f);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            int totalItems = selectedContrabandCategory.GetTotalItemCount();
+            int contrabandItems = selectedContrabandCategory.GetContrabandCount();
+
+            string stats = $"{"LawAndOrder_TotalItems".Translate()}: {totalItems}\n";
+            stats += $"{"LawAndOrder_ContrabandItems".Translate()}: {contrabandItems}\n";
+            stats += $"{"LawAndOrder_NonContrabandItems".Translate()}: {totalItems - contrabandItems}";
+
+            Widgets.Label(statsTextRect, stats);
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            innerRect.yMin += 90f;
+
+            // Bulk operations section
+            Rect configHeaderRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 25f);
+            Text.Font = GameFont.Medium;
+            Widgets.Label(configHeaderRect, "LawAndOrder_BulkOperations".Translate());
+            Text.Font = GameFont.Small;
+
+            innerRect.yMin += 30f;
+
+            // Penalty input
+            Rect penaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.6f, 24f);
+            Widgets.Label(penaltyLabelRect, "LawAndOrder_SilverPenaltyPerItem".Translate());
+
+            Rect penaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.65f, innerRect.y, innerRect.width * 0.35f, 24f);
+            contrabandPenaltyInput = Widgets.TextField(penaltyInputRect, contrabandPenaltyInput);
+
+            innerRect.yMin += 30f;
+
+            // Bulk operation buttons
+            float buttonHeight = 35f;
+            float buttonSpacing = 5f;
+
+            // Mark All button
+            Rect markAllButtonRect = new Rect(innerRect.x, innerRect.y, innerRect.width, buttonHeight);
+            if (Widgets.ButtonText(markAllButtonRect, "LawAndOrder_MarkAllAsContraband".Translate()))
+            {
+                if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
+                {
+                    var items = selectedContrabandCategory.GetAllItems();
+                    int count = WorldComponent_ContrabandManager.Instance.SetContrabandBulk(items, penalty);
+                    Messages.Message(
+                        "LawAndOrder_BulkContrabandAdded".Translate(count, categoryLabel),
+                        MessageTypeDefOf.PositiveEvent
+                    );
+                }
+                else
+                {
+                    Messages.Message(
+                        "LawAndOrder_InvalidPenalty".Translate(),
+                        MessageTypeDefOf.RejectInput
+                    );
+                }
+            }
+
+            innerRect.yMin += buttonHeight + buttonSpacing;
+
+            // Update All button (only update existing contraband)
+            Rect updateAllButtonRect = new Rect(innerRect.x, innerRect.y, innerRect.width, buttonHeight);
+            if (Widgets.ButtonText(updateAllButtonRect, "LawAndOrder_UpdateAllContraband".Translate()))
+            {
+                if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
+                {
+                    var items = selectedContrabandCategory.GetAllItems();
+                    int count = WorldComponent_ContrabandManager.Instance.UpdateContrabandBulk(items, penalty);
+                    if (count > 0)
+                    {
+                        Messages.Message(
+                            "LawAndOrder_BulkContrabandUpdated".Translate(count, categoryLabel),
+                            MessageTypeDefOf.PositiveEvent
+                        );
+                    }
+                    else
+                    {
+                        Messages.Message(
+                            "LawAndOrder_NoContrabandToUpdate".Translate(),
+                            MessageTypeDefOf.RejectInput
+                        );
+                    }
+                }
+                else
+                {
+                    Messages.Message(
+                        "LawAndOrder_InvalidPenalty".Translate(),
+                        MessageTypeDefOf.RejectInput
+                    );
+                }
+            }
+
+            innerRect.yMin += buttonHeight + buttonSpacing;
+
+            // Remove All button
+            Rect removeAllButtonRect = new Rect(innerRect.x, innerRect.y, innerRect.width, buttonHeight);
+            if (Widgets.ButtonText(removeAllButtonRect, "LawAndOrder_RemoveAllContraband".Translate()))
+            {
+                var items = selectedContrabandCategory.GetAllItems();
+                int count = WorldComponent_ContrabandManager.Instance.RemoveContrabandBulk(items);
+                if (count > 0)
+                {
+                    Messages.Message(
+                        "LawAndOrder_BulkContrabandRemoved".Translate(count, categoryLabel),
+                        MessageTypeDefOf.NeutralEvent
+                    );
+                }
+                else
+                {
+                    Messages.Message(
+                        "LawAndOrder_NoContrabandToRemove".Translate(),
+                        MessageTypeDefOf.RejectInput
+                    );
                 }
             }
         }

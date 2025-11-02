@@ -128,7 +128,7 @@
   <!-- Contraband Tab -->
   <LawAndOrder_Contraband>Contraband</LawAndOrder_Contraband>
   <LawAndOrder_ContrabandCount>Contraband Items</LawAndOrder_ContrabandCount>
-  <LawAndOrder_SelectItem>Select an item to configure</LawAndOrder_SelectItem>
+  <LawAndOrder_SelectItem>Select an item or category to configure</LawAndOrder_SelectItem>
   <LawAndOrder_Category>Category</LawAndOrder_Category>
   <LawAndOrder_MarketValue>Market Value</LawAndOrder_MarketValue>
   <LawAndOrder_ContrabandSettings>Contraband Settings</LawAndOrder_ContrabandSettings>
@@ -140,5 +140,19 @@
   <LawAndOrder_ContrabandUpdated>{0} contraband settings updated</LawAndOrder_ContrabandUpdated>
   <LawAndOrder_ContrabandRemoved>{0} removed from contraband list</LawAndOrder_ContrabandRemoved>
   <LawAndOrder_InvalidPenalty>Invalid penalty amount. Must be a positive number.</LawAndOrder_InvalidPenalty>
+
+  <!-- Contraband Bulk Operations -->
+  <LawAndOrder_TotalItems>Total Items</LawAndOrder_TotalItems>
+  <LawAndOrder_ContrabandItems>Contraband Items</LawAndOrder_ContrabandItems>
+  <LawAndOrder_NonContrabandItems>Non-Contraband Items</LawAndOrder_NonContrabandItems>
+  <LawAndOrder_BulkOperations>Bulk Operations</LawAndOrder_BulkOperations>
+  <LawAndOrder_MarkAllAsContraband>Mark All as Contraband</LawAndOrder_MarkAllAsContraband>
+  <LawAndOrder_UpdateAllContraband>Update All Contraband</LawAndOrder_UpdateAllContraband>
+  <LawAndOrder_RemoveAllContraband>Remove All Contraband</LawAndOrder_RemoveAllContraband>
+  <LawAndOrder_BulkContrabandAdded>Marked {0} items in {1} as contraband</LawAndOrder_BulkContrabandAdded>
+  <LawAndOrder_BulkContrabandUpdated>Updated {0} contraband items in {1}</LawAndOrder_BulkContrabandUpdated>
+  <LawAndOrder_BulkContrabandRemoved>Removed {0} contraband items from {1}</LawAndOrder_BulkContrabandRemoved>
+  <LawAndOrder_NoContrabandToUpdate>No contraband items to update in this category</LawAndOrder_NoContrabandToUpdate>
+  <LawAndOrder_NoContrabandToRemove>No contraband items to remove in this category</LawAndOrder_NoContrabandToRemove>
 
 </LanguageData>
