@@ -37,6 +37,9 @@ namespace Law_and_Order.Source.UI
         private Vector2 contrabandListScrollPos;
         private string contrabandSearchQuery = "";
         private string contrabandPenaltyInput = "";
+        private List<ContrabandCategoryNode> contrabandCategoryTree;
+        private List<ContrabandCategoryNode> contrabandFlattenedList;
+        private bool contrabandTreeNeedsRebuild = true;
 
         private const float LeftPanelWidth = 0.35f;
         private const float PanelGap = 17f;
@@ -543,33 +546,44 @@ namespace Law_and_Order.Source.UI
 
             // Search bar at the top
             Rect searchRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 30f);
+            string previousSearch = contrabandSearchQuery;
             contrabandSearchQuery = Widgets.TextField(searchRect, contrabandSearchQuery);
-            innerRect.yMin += 35f;
 
-            // Get all valid items (weapons, drugs, etc)
-            var allItems = DefDatabase<ThingDef>.AllDefsListForReading
-                .Where(def => def.category == ThingCategory.Item && !def.IsCorpse)
-                .OrderBy(def => def.label)
-                .ToList();
-
-            // Filter by search query
-            if (!string.IsNullOrWhiteSpace(contrabandSearchQuery))
+            // Rebuild tree if search changed
+            if (previousSearch != contrabandSearchQuery)
             {
-                allItems = allItems.Where(def =>
-                    def.label.ToLower().Contains(contrabandSearchQuery.ToLower())
-                ).ToList();
+                contrabandTreeNeedsRebuild = true;
             }
 
-            // Draw the list
-            float rowHeight = 50f;
-            Rect viewRect = new Rect(0f, 0f, innerRect.width - 16f, allItems.Count * rowHeight);
+            innerRect.yMin += 35f;
+
+            // Build or rebuild tree if needed
+            if (contrabandTreeNeedsRebuild || contrabandCategoryTree == null)
+            {
+                contrabandCategoryTree = ContrabandCategoryTreeBuilder.BuildCategoryTree();
+                contrabandTreeNeedsRebuild = false;
+            }
+
+            // Get flattened list based on search
+            if (!string.IsNullOrWhiteSpace(contrabandSearchQuery))
+            {
+                contrabandFlattenedList = ContrabandCategoryTreeBuilder.SearchTree(contrabandCategoryTree, contrabandSearchQuery);
+            }
+            else
+            {
+                contrabandFlattenedList = ContrabandCategoryTreeBuilder.FlattenTree(contrabandCategoryTree);
+            }
+
+            // Draw the tree
+            float rowHeight = 30f;
+            Rect viewRect = new Rect(0f, 0f, innerRect.width - 16f, contrabandFlattenedList.Count * rowHeight);
             Widgets.BeginScrollView(innerRect, ref contrabandListScrollPos, viewRect);
 
             float yPos = 0f;
-            foreach (var item in allItems)
+            foreach (var node in contrabandFlattenedList)
             {
                 Rect rowRect = new Rect(0f, yPos, viewRect.width, rowHeight - 2f);
-                DrawContrabandItemListEntry(rowRect, item);
+                DrawContrabandCategoryNode(rowRect, node);
                 yPos += rowHeight;
             }
 
@@ -581,69 +595,116 @@ namespace Law_and_Order.Source.UI
             Rect countRect = new Rect(rect.x + 10f, rect.yMax - 25f, rect.width - 20f, 20f);
 
             int contrabandCount = WorldComponent_ContrabandManager.Instance.ContrabandDefinitions.Count;
-            Widgets.Label(countRect, $"{"LawAndOrder_ContrabandCount".Translate()}: {contrabandCount} / {allItems.Count}");
+            int totalItems = contrabandCategoryTree.Sum(n => n.GetTotalItemCount());
+            Widgets.Label(countRect, $"{"LawAndOrder_ContrabandCount".Translate()}: {contrabandCount} / {totalItems}");
             Text.Font = GameFont.Small;
         }
 
-        private void DrawContrabandItemListEntry(Rect rect, ThingDef item)
+        private void DrawContrabandCategoryNode(Rect rect, ContrabandCategoryNode node)
         {
-            bool isSelected = selectedContrabandItem == item;
-            bool isContraband = WorldComponent_ContrabandManager.Instance.IsContraband(item);
+            const float IndentWidth = 18f;
+            const float ArrowWidth = 15f;
 
-            if (isSelected)
+            float indent = node.depth * IndentWidth;
+            Rect workRect = new Rect(rect.x + indent, rect.y, rect.width - indent, rect.height);
+
+            if (node.IsCategory)
             {
-                Widgets.DrawHighlight(rect);
-            }
-
-            if (Mouse.IsOver(rect))
-            {
-                Widgets.DrawLightHighlight(rect);
-            }
-
-            if (Widgets.ButtonInvisible(rect))
-            {
-                selectedContrabandItem = item;
-
-                // Load penalty if already set as contraband
-                var existingDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
-                if (existingDef != null)
+                // Draw category
+                if (Mouse.IsOver(workRect))
                 {
-                    contrabandPenaltyInput = existingDef.silverPenaltyPerItem.ToString();
+                    Widgets.DrawLightHighlight(workRect);
+                }
+
+                // Draw expand/collapse arrow
+                Rect arrowRect = new Rect(workRect.x, workRect.y, ArrowWidth, workRect.height);
+                if (Widgets.ButtonImage(arrowRect, node.isExpanded ? TexButton.Collapse : TexButton.Reveal))
+                {
+                    node.isExpanded = !node.isExpanded;
+                    SoundDefOf.Click.PlayOneShotOnCamera(null);
+                }
+
+                // Draw category name with counts
+                Rect labelRect = new Rect(arrowRect.xMax + 4f, workRect.y, workRect.width - ArrowWidth - 4f, workRect.height);
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.MiddleLeft;
+
+                string categoryLabel = node.categoryDef != null ? node.categoryDef.LabelCap : "Uncategorized";
+                int contrabandCount = node.GetContrabandCount();
+                int totalCount = node.GetTotalItemCount();
+
+                string label = $"{categoryLabel} ({contrabandCount}/{totalCount})";
+
+                if (contrabandCount > 0)
+                {
+                    GUI.color = new Color(0.9f, 0.6f, 0.2f);
+                }
+
+                Widgets.Label(labelRect, label);
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+            }
+            else if (node.IsItem)
+            {
+                // Draw item
+                ThingDef item = node.thingDef;
+                bool isSelected = selectedContrabandItem == item;
+                bool isContraband = WorldComponent_ContrabandManager.Instance.IsContraband(item);
+
+                if (isSelected)
+                {
+                    Widgets.DrawHighlight(workRect);
+                }
+
+                if (Mouse.IsOver(workRect))
+                {
+                    Widgets.DrawLightHighlight(workRect);
+                }
+
+                if (Widgets.ButtonInvisible(workRect))
+                {
+                    selectedContrabandItem = item;
+
+                    // Load penalty if already set as contraband
+                    var existingDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
+                    if (existingDef != null)
+                    {
+                        contrabandPenaltyInput = existingDef.silverPenaltyPerItem.ToString();
+                    }
+                    else
+                    {
+                        contrabandPenaltyInput = "50"; // Default penalty
+                    }
+
+                    SoundDefOf.Click.PlayOneShotOnCamera(null);
+                }
+
+                // Draw item icon
+                Rect iconRect = new Rect(workRect.x + 4f, workRect.y + (workRect.height - 24f) / 2f, 24f, 24f);
+                Widgets.ThingIcon(iconRect, item);
+
+                // Draw name
+                Rect textRect = new Rect(iconRect.xMax + 6f, workRect.y, workRect.width - iconRect.width - 10f, workRect.height);
+
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.MiddleLeft;
+
+                if (isContraband)
+                {
+                    GUI.color = new Color(0.9f, 0.2f, 0.2f);
+                    var contrabandDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
+                    Widgets.Label(textRect, $"{item.LabelCap} ({contrabandDef.silverPenaltyPerItem} silver)");
+                    GUI.color = Color.white;
                 }
                 else
                 {
-                    contrabandPenaltyInput = "50"; // Default penalty
+                    Widgets.Label(textRect, item.LabelCap);
                 }
 
-                SoundDefOf.Click.PlayOneShotOnCamera(null);
-            }
-
-            // Draw item icon
-            Rect iconRect = new Rect(rect.x + 4f, rect.y + 4f, 40f, 40f);
-            Widgets.ThingIcon(iconRect, item);
-
-            // Draw name
-            Rect textRect = new Rect(iconRect.xMax + 8f, rect.y + 4f, rect.width - iconRect.width - 12f, rect.height - 8f);
-
-            Text.Font = GameFont.Small;
-            Text.Anchor = TextAnchor.UpperLeft;
-            Widgets.Label(textRect, item.LabelCap);
-
-            // Show contraband marker
-            if (isContraband)
-            {
-                Text.Font = GameFont.Tiny;
-                Rect contrabandRect = textRect;
-                contrabandRect.y += 18f;
-                GUI.color = new Color(0.9f, 0.2f, 0.2f);
-
-                var contrabandDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
-                Widgets.Label(contrabandRect, $"CONTRABAND ({contrabandDef.silverPenaltyPerItem} silver)");
-                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
             }
 
             Text.Font = GameFont.Small;
-            Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private void DrawContrabandConfiguration(Rect rect)
@@ -730,6 +791,7 @@ namespace Law_and_Order.Source.UI
                             "LawAndOrder_ContrabandUpdated".Translate(selectedContrabandItem.LabelCap),
                             MessageTypeDefOf.PositiveEvent
                         );
+                        contrabandTreeNeedsRebuild = true; // Refresh tree to update counts
                     }
                     else
                     {
@@ -748,6 +810,7 @@ namespace Law_and_Order.Source.UI
                         "LawAndOrder_ContrabandRemoved".Translate(selectedContrabandItem.LabelCap),
                         MessageTypeDefOf.NeutralEvent
                     );
+                    contrabandTreeNeedsRebuild = true; // Refresh tree to update counts
                 }
             }
             else
@@ -763,6 +826,7 @@ namespace Law_and_Order.Source.UI
                             "LawAndOrder_ContrabandAdded".Translate(selectedContrabandItem.LabelCap),
                             MessageTypeDefOf.PositiveEvent
                         );
+                        contrabandTreeNeedsRebuild = true; // Refresh tree to update counts
                     }
                     else
                     {

@@ -107,11 +107,14 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 **2025-11-02: Contraband System Implementation**
 - ✅ Added new "Contraband" tab to Justice window (4th tab)
 - ✅ Storage-zone-style UI for marking items as contraband with custom penalties
+- ✅ Hierarchical category tree with expand/collapse functionality
+- ✅ Categories show contraband counts (e.g., "Weapons (5/23)")
+- ✅ Items organized by RimWorld's native category system
 - ✅ Automatic contraband scanning when raiders become prisoners
 - ✅ Contraband penalties applied as debt with new ContrabandPossession crime type
-- ✅ Left panel shows all game items with search functionality
+- ✅ Left panel shows categorized items with search functionality
 - ✅ Right panel configures selected item: mark/update/remove contraband and set silver penalty
-- ✅ Contraband items highlighted in red in item list
+- ✅ Contraband items highlighted in red in category tree
 - ✅ Detection triggers when raiders captured or killed
 - ✅ WorldComponent_ContrabandManager stores definitions globally (save-compatible)
 - ✅ Full localization support (14 new translation keys)
