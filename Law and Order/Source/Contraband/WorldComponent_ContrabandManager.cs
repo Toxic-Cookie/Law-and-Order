@@ -2,6 +2,7 @@ using RimWorld;
 using RimWorld.Planet;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace LawAndOrder
@@ -11,6 +12,9 @@ namespace LawAndOrder
     /// </summary>
     public class WorldComponent_ContrabandManager : WorldComponent
     {
+        // Maximum penalty is 3x the item's market value
+        private const float MAX_PENALTY_MULTIPLIER = 3.0f;
+
         private List<ContrabandDefinition> contrabandDefinitions = new List<ContrabandDefinition>();
 
         public WorldComponent_ContrabandManager(World world) : base(world)
@@ -43,6 +47,25 @@ namespace LawAndOrder
         /// </summary>
         public void SetContraband(ThingDef thingDef, int silverPenalty)
         {
+            // Cap penalty at 3x market value
+            float marketValue = thingDef.BaseMarketValue;
+            int maxPenalty = Mathf.RoundToInt(marketValue * MAX_PENALTY_MULTIPLIER);
+
+            if (silverPenalty > maxPenalty)
+            {
+                silverPenalty = maxPenalty;
+
+                // Notify player when cap is applied
+                Messages.Message(
+                    $"{thingDef.LabelCap} penalty capped at {maxPenalty} silver (3x market value of {marketValue:F1})",
+                    MessageTypeDefOf.RejectInput
+                );
+
+                #if DEBUG
+                Law_and_Order.Source.Mod.Log?.Warning($"Contraband penalty for {thingDef.label} capped at {maxPenalty} (3x market value of {marketValue})");
+                #endif
+            }
+
             var existing = GetContrabandDefinition(thingDef);
             if (existing != null)
             {
