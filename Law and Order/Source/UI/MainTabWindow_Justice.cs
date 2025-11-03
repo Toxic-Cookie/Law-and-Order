@@ -39,7 +39,6 @@ namespace Law_and_Order.Source.UI
         {
             ActiveCriminals,    // Criminals currently on the map
             Imprisoned,         // Criminals in prison
-            Historical,         // Past criminals (dead, released, etc)
             Contraband          // Contraband item configuration
         }
 
@@ -83,11 +82,6 @@ namespace Law_and_Order.Source.UI
                 "LawAndOrder_Imprisoned".Translate(),
                 () => { curTab = JusticeTab.Imprisoned; selectedCriminal = null; },
                 () => curTab == JusticeTab.Imprisoned
-            ));
-            tabs.Add(new TabRecord(
-                "LawAndOrder_Historical".Translate(),
-                () => { curTab = JusticeTab.Historical; selectedCriminal = null; },
-                () => curTab == JusticeTab.Historical
             ));
             tabs.Add(new TabRecord(
                 "LawAndOrder_Contraband".Translate(),
@@ -551,9 +545,6 @@ namespace Law_and_Order.Source.UI
 
                 case JusticeTab.Imprisoned:
                     return criminalsWithRecords.Where(p => p.IsPrisonerOfColony).ToList();
-
-                case JusticeTab.Historical:
-                    return criminalsWithRecords.Where(p => p.Dead).ToList();
 
                 default:
                     return criminalsWithRecords;
