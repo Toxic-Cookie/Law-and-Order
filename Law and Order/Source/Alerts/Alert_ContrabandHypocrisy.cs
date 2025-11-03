@@ -26,6 +26,15 @@ namespace Law_and_Order.Source.Alerts
             {
                 hypocriticalItemsResult.Clear();
 
+                // Skip if game hasn't started yet (during world generation)
+                if (Current.Game == null || Find.FactionManager == null)
+                    return hypocriticalItemsResult;
+
+                // Get player faction safely
+                Faction playerFaction = Find.FactionManager.OfPlayer;
+                if (playerFaction == null)
+                    return hypocriticalItemsResult;
+
                 // Get contraband manager
                 var contrabandManager = WorldComponent_ContrabandManager.Instance;
                 if (contrabandManager == null)
@@ -44,9 +53,9 @@ namespace Law_and_Order.Source.Alerts
                     // Check each contraband definition
                     foreach (var contrabandDef in contrabandDefinitions)
                     {
-                        // Check if colony has this item in storage
+                        // Check if colony has this item in storage (spawned, not forbidden)
                         var items = map.listerThings.ThingsOfDef(contrabandDef.thingDef);
-                        if (items.Any(t => t.Faction == Faction.OfPlayer))
+                        if (items.Any(t => t.Spawned && !t.IsForbidden(playerFaction)))
                         {
                             if (!hypocriticalItemsResult.Contains(contrabandDef.thingDef))
                             {
@@ -54,10 +63,29 @@ namespace Law_and_Order.Source.Alerts
                             }
                         }
 
-                        // Check colonist inventories
+                        // Check colonist inventories, equipment, and apparel
                         foreach (Pawn colonist in map.mapPawns.FreeColonists)
                         {
+                            // Check inventory
                             if (colonist.inventory?.innerContainer?.Contains(contrabandDef.thingDef) == true)
+                            {
+                                if (!hypocriticalItemsResult.Contains(contrabandDef.thingDef))
+                                {
+                                    hypocriticalItemsResult.Add(contrabandDef.thingDef);
+                                }
+                            }
+
+                            // Check equipment
+                            if (colonist.equipment?.Primary?.def == contrabandDef.thingDef)
+                            {
+                                if (!hypocriticalItemsResult.Contains(contrabandDef.thingDef))
+                                {
+                                    hypocriticalItemsResult.Add(contrabandDef.thingDef);
+                                }
+                            }
+
+                            // Check apparel
+                            if (colonist.apparel?.WornApparel?.Any(a => a.def == contrabandDef.thingDef) == true)
                             {
                                 if (!hypocriticalItemsResult.Contains(contrabandDef.thingDef))
                                 {

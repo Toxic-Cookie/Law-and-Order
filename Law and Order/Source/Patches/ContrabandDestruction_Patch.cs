@@ -19,8 +19,17 @@ namespace Law_and_Order.Source.Patches
 
             try
             {
+                // Skip if game hasn't started yet (during world generation)
+                if (Current.Game == null || Find.FactionManager == null)
+                    return;
+
+                // Get player faction safely
+                Faction playerFaction = Find.FactionManager.OfPlayer;
+                if (playerFaction == null)
+                    return;
+
                 // Only care about player faction items being destroyed
-                if (__instance.Faction != Faction.OfPlayer)
+                if (__instance.Faction != playerFaction)
                     return;
 
                 // Check if this is contraband

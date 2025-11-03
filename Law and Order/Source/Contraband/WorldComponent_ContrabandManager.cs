@@ -85,6 +85,9 @@ namespace LawAndOrder
             {
                 contrabandDefinitions.Add(new ContrabandDefinition(thingDef, silverPenalty));
             }
+
+            // Update burn contraband bill filters
+            Law_and_Order.Source.Patches.BurnContrabandFilterUpdater.UpdateAllBurnContrabandBills();
         }
 
         /// <summary>
@@ -93,6 +96,9 @@ namespace LawAndOrder
         public void RemoveContraband(ThingDef thingDef)
         {
             contrabandDefinitions.RemoveAll(cd => cd.thingDef == thingDef);
+
+            // Update burn contraband bill filters
+            Law_and_Order.Source.Patches.BurnContrabandFilterUpdater.UpdateAllBurnContrabandBills();
         }
 
         /// <summary>
