@@ -773,12 +773,26 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            // Calculate maximum penalty (3x market value)
-            float maxPenalty = selectedContrabandItem.BaseMarketValue * 3.0f;
+            // Calculate maximum penalty (3x market value, minimum 10 for worthless items)
+            float marketValue = selectedContrabandItem.BaseMarketValue;
+            int maxPenalty = Mathf.RoundToInt(marketValue * 3.0f);
+            if (maxPenalty < 10)
+            {
+                maxPenalty = 10;
+            }
 
             string stats = $"{"LawAndOrder_Category".Translate()}: {selectedContrabandItem.thingCategories?.FirstOrDefault()?.LabelCap ?? "None"}\n";
-            stats += $"{"LawAndOrder_MarketValue".Translate()}: {selectedContrabandItem.BaseMarketValue:F0} silver\n";
-            stats += $"Maximum Penalty: {maxPenalty:F0} silver (3x market value)";
+            stats += $"{"LawAndOrder_MarketValue".Translate()}: {marketValue:F0} silver\n";
+
+            // Show appropriate max penalty message based on market value
+            if (marketValue <= 0)
+            {
+                stats += $"Maximum Penalty: {maxPenalty} silver (min for worthless items)";
+            }
+            else
+            {
+                stats += $"Maximum Penalty: {maxPenalty} silver (3x market value)";
+            }
 
             Widgets.Label(statsTextRect, stats);
             Text.Anchor = TextAnchor.UpperLeft;

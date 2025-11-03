@@ -1840,6 +1840,7 @@ if (contrabandManager.IsDraftActive)
 ### Phase 2: Contraband Caps ✅ COMPLETED (Build Successful)
 - [x] 2A. Add cap validation to `WorldComponent_ContrabandManager.cs`
 - [x] 2B. Update UI to show cap in `MainTabWindow_Justice.cs`
+- [x] 2C. Add minimum cap for worthless items (e.g., stone chunks)
 - [x] Test: Build successful, ready for in-game testing
 
 **Phase 2 Overview:**
@@ -2095,6 +2096,7 @@ if (contrabandManager.IsDraftActive)
 - November 2, 2025: Added production debuff for crafting contraband items
 - November 2, 2025: **Phase 1 Completed** - Ritual Quality Reframe fully implemented and tested
 - November 2, 2025: **Phase 2 Completed** - Contraband Penalty Cap implemented (3x market value limit)
+- November 2, 2025: **Phase 2 Updated** - Added minimum cap (10 silver) for worthless items like stone chunks
 
 ---
 
@@ -2184,23 +2186,26 @@ Renamed `PleaBargainOutcome` enum values to reflect hearing quality:
 
 Contraband penalties are now capped at 3x the item's market value to prevent exploitation.
 
-#### 1. Added Penalty Cap Constant
-**File:** `WorldComponent_ContrabandManager.cs:15`
+#### 1. Added Penalty Cap Constants
+**File:** `WorldComponent_ContrabandManager.cs:15-19`
 - Added `MAX_PENALTY_MULTIPLIER = 3.0f` constant
+- Added `MIN_PENALTY_CAP = 10` constant for worthless items
 - Added `using UnityEngine;` for Mathf support
 
 #### 2. Modified SetContraband() Method
-**File:** `WorldComponent_ContrabandManager.cs:49-66`
+**File:** `WorldComponent_ContrabandManager.cs:51-77`
 - Calculate max penalty: `Mathf.RoundToInt(marketValue * 3.0f)`
+- Apply minimum cap of 10 silver for items with 0 market value (e.g., stone chunks)
 - Cap penalty if it exceeds maximum
-- Display user message when cap is applied
+- Display appropriate message (different for worthless vs. valuable items)
 - Log warning in debug mode
 
 #### 3. Updated UI to Show Cap
-**File:** `MainTabWindow_Justice.cs:776-781`
+**File:** `MainTabWindow_Justice.cs:776-798`
 - Calculate and display max penalty in stats section
-- Shows: "Maximum Penalty: X silver (3x market value)"
-- Dynamically updates based on selected item
+- Shows: "Maximum Penalty: X silver (3x market value)" for normal items
+- Shows: "Maximum Penalty: 10 silver (min for worthless items)" for 0-value items
+- Dynamically updates based on selected item and market value
 
 ### Files Modified (2 total)
 1. `Source/Contraband/WorldComponent_ContrabandManager.cs` - Cap validation logic
@@ -2209,17 +2214,19 @@ Contraband penalties are now capped at 3x the item's market value to prevent exp
 ### Balance Impact
 
 **Example Caps:**
+- Stone chunks (0 silver) → Max 10 silver penalty (minimum cap)
 - Bread (2 silver) → Max 6 silver penalty
 - Medicine (18 silver) → Max 54 silver penalty
 - Gold (10 silver) → Max 30 silver penalty
 - Uranium (70 silver) → Max 210 silver penalty
 
-**Result:** Players can no longer set absurd penalties like 10,000 silver for bread. Penalties scale automatically with item value, maintaining balance while allowing meaningful customization. ✅
+**Result:** Players can no longer set absurd penalties like 10,000 silver for bread. Penalties scale automatically with item value, maintaining balance while allowing meaningful customization. Even worthless items (stone chunks) can be penalized up to 10 silver, preventing hoarding of junk. ✅
 
 ### Testing Results
 - ✅ Build successful (0 errors, 2 pre-existing warnings)
-- ✅ Cap constant added correctly
+- ✅ Cap constants added correctly (3x multiplier + 10 silver minimum)
 - ✅ SetContraband() method validates and caps penalties
-- ✅ UI displays maximum penalty
-- ✅ User notification when cap is applied
+- ✅ Minimum cap applied for items with 0 market value
+- ✅ UI displays maximum penalty with appropriate message
+- ✅ User notification when cap is applied (different messages for worthless vs. valuable items)
 - Ready for in-game testing

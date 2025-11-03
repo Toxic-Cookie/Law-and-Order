@@ -15,6 +15,9 @@ namespace LawAndOrder
         // Maximum penalty is 3x the item's market value
         private const float MAX_PENALTY_MULTIPLIER = 3.0f;
 
+        // Minimum penalty cap for worthless items (market value = 0)
+        private const int MIN_PENALTY_CAP = 10;
+
         private List<ContrabandDefinition> contrabandDefinitions = new List<ContrabandDefinition>();
 
         public WorldComponent_ContrabandManager(World world) : base(world)
@@ -47,22 +50,29 @@ namespace LawAndOrder
         /// </summary>
         public void SetContraband(ThingDef thingDef, int silverPenalty)
         {
-            // Cap penalty at 3x market value
+            // Cap penalty at 3x market value, with minimum cap for worthless items
             float marketValue = thingDef.BaseMarketValue;
             int maxPenalty = Mathf.RoundToInt(marketValue * MAX_PENALTY_MULTIPLIER);
+
+            // Ensure minimum cap for worthless items (e.g., stone chunks)
+            if (maxPenalty < MIN_PENALTY_CAP)
+            {
+                maxPenalty = MIN_PENALTY_CAP;
+            }
 
             if (silverPenalty > maxPenalty)
             {
                 silverPenalty = maxPenalty;
 
                 // Notify player when cap is applied
-                Messages.Message(
-                    $"{thingDef.LabelCap} penalty capped at {maxPenalty} silver (3x market value of {marketValue:F1})",
-                    MessageTypeDefOf.RejectInput
-                );
+                string capReason = marketValue <= 0
+                    ? $"{thingDef.LabelCap} penalty capped at {maxPenalty} silver (minimum cap for worthless items)"
+                    : $"{thingDef.LabelCap} penalty capped at {maxPenalty} silver (3x market value of {marketValue:F1})";
+
+                Messages.Message(capReason, MessageTypeDefOf.RejectInput);
 
                 #if DEBUG
-                Law_and_Order.Source.Mod.Log?.Warning($"Contraband penalty for {thingDef.label} capped at {maxPenalty} (3x market value of {marketValue})");
+                Law_and_Order.Source.Mod.Log?.Warning($"Contraband penalty for {thingDef.label} capped at {maxPenalty} (market value: {marketValue})");
                 #endif
             }
 
