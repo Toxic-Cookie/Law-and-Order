@@ -45,7 +45,7 @@ namespace Law_and_Order.Source.Buildings
             {
                 defaultLabel = "LawAndOrder_DesignateJudgesBench".Translate(),
                 defaultDesc = "LawAndOrder_DesignateJudgesBenchDesc".Translate(),
-                icon = ContentFinder<Texture2D>.Get("UI/Commands/DesignateJudgesBench", false) ?? BaseContent.BadTex,
+                icon = ContentFinder<Texture2D>.Get("UI/Icons/Guilty", false) ?? BaseContent.BadTex,
                 isActive = () => isDesignatedAsJudgesBench,
                 toggleAction = delegate ()
                 {
