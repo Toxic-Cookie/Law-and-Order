@@ -36,7 +36,8 @@
       "Bash(mkdir:*)",
       "Bash(copy \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")",
       "Bash(nul)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ],
     "deny": [],
     "ask": []

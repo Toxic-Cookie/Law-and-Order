@@ -47,7 +47,7 @@ namespace Law_and_Order.Source
         }
 
         /// <summary>
-        /// Add custom menu option to open the advanced settings window
+        /// Called when a world/save is loaded
         /// </summary>
         public override void WorldLoaded()
         {
@@ -55,6 +55,9 @@ namespace Law_and_Order.Source
 
             // Validate settings when a save game is loaded
             LawAndOrderSettings.ValidateSettings();
+
+            // Note: Alerts are automatically discovered by RimWorld
+            // The Alert_ContrabandHypocrisy class will be instantiated automatically
         }
     }
 }

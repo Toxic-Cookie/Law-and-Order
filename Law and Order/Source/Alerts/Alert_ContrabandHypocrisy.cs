@@ -102,8 +102,8 @@ namespace Law_and_Order.Source.Alerts
 
         public override AlertReport GetReport()
         {
-            // Only show alert if colony is established
-            if (!Find.PlaySettings.useWorkPriorities)
+            // Only show alert if game has started properly
+            if (Current.Game == null || Find.CurrentMap == null)
                 return false;
 
             List<ThingDef> items = HypocriticalItems;
