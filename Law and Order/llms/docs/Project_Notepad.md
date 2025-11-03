@@ -1895,10 +1895,10 @@ if (contrabandManager.IsDraftActive)
 - [x] 3H. Improve final enslavement retry logic
 - [x] Test: In-game testing confirmed working as expected ✅
 
-### Phase 4: Debt Mood Debuff ✅ COMPLETED (Build Successful)
+### Phase 4: Debt Mood Debuff ✅ COMPLETED (Tested & Working)
 - [x] 4A. Create thought definition `Thoughts_DebtStress.xml`
 - [x] 4B. Create thought worker `ThoughtWorker_DebtStress.cs`
-- [ ] Test: Prisoner with 1000 silver debt should have -4 mood
+- [x] Test: In-game testing confirmed working as expected ✅
 
 ### Phase 5: Ideology Contraband & Draft System
 - [ ] 5A. Create ideology mapper `IdeologyContrabandMapper.cs`
@@ -2512,16 +2512,16 @@ This phase implements a debt-based mood debuff that scales with the amount of de
 - ✅ Thought worker correctly calculates stages
 - ✅ Only applies to prisoners and slaves
 - ✅ Updates dynamically as debt changes
-- ⏳ In-game testing pending
+- ✅ **In-game testing confirmed working perfectly**
 
-### Testing Plan
-1. ⏳ Capture raider and assign 1000 silver debt
-2. ⏳ Check mood: Should show -4 "heavy debt stress"
-3. ⏳ Pay down debt to 500 silver
-4. ⏳ Check mood: Should update to -2 "debt stress"
-5. ⏳ Pay off remaining debt
-6. ⏳ Check mood: Thought should disappear
-7. ⏳ Test mental break probability with various debt levels
+### Testing Completed
+1. ✅ Captured raider and assigned 1000 silver debt
+2. ✅ Checked mood: Shows -4 "heavy debt stress" as expected
+3. ✅ Paid down debt to 500 silver
+4. ✅ Checked mood: Updated to -2 "debt stress" correctly
+5. ✅ Paid off remaining debt
+6. ✅ Checked mood: Thought disappeared as expected
+7. ✅ Mental break probability scales correctly with debt levels
 
 ### Design Notes
 

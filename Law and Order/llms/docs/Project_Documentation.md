@@ -42,18 +42,24 @@
 - [Mood and Faction Effects](#grace-period-effects)
 - [Pardon Integration](#pardon-integration)
 
-### [Section 7: Social Interaction System](#section-7-social-interaction-system)
+### [Section 7: Debt Stress System](#section-7-debt-stress-system) (Added Nov 2025)
+- [Overview](#debt-stress-overview)
+- [Stress Stages](#debt-stress-stages)
+- [Thought Worker Implementation](#debt-stress-worker)
+- [Balance Impact](#debt-stress-balance)
+
+### [Section 8: Social Interaction System](#section-8-social-interaction-system)
 - [Overview](#social-interaction-overview)
 - [Court Interactions](#court-interactions)
 - [Implementation](#social-interaction-implementation)
 - [Timing and Progression](#interaction-timing)
 
-### [Section 8: Logging System](#section-8-logging-system)
+### [Section 9: Logging System](#section-9-logging-system)
 - [Tiered Logging](#tiered-logging)
 - [Usage Patterns](#logging-usage-patterns)
 - [Best Practices](#logging-best-practices)
 
-### [Section 9: Quick References](#section-9-quick-references)
+### [Section 10: Quick References](#section-10-quick-references)
 - [Crime System Quick Reference](#crime-quick-reference)
 - [UI Quick Reference](#ui-quick-reference)
 - [Logging Quick Reference](#logging-quick-reference)
@@ -1297,7 +1303,286 @@ GenGuest.SlaveRelease(slave);
 
 ---
 
-## Section 7: Social Interaction System
+## Section 7: Debt Stress System
+
+### Debt Stress Overview
+
+The debt stress system applies a **situational mood debuff** that scales with the amount of debt owed by prisoners and slaves. This creates psychological pressure and rebellion risk, naturally limiting exploitative "debt bomb" strategies where players assign excessive debt values.
+
+**Purpose:**
+- Prevents unlimited debt accumulation without consequences
+- Creates meaningful rebellion risk for high-debt prisoners
+- Balances contraband penalty system (can't spam huge penalties)
+- Interacts naturally with ritual quality and grace period systems
+- Forces players to balance profit extraction vs. managing mental breaks
+
+**Key Features:**
+- 8-stage situational thought (-1 to -8 mood)
+- Scales at 250 silver per stage
+- Only applies to prisoners and slaves
+- Updates dynamically as debt changes
+- Persists even when pawn is off-map
+
+### Debt Stress Stages
+
+The thought `LawAndOrder_DebtStress` has 8 stages based on current debt:
+
+| Stage | Debt Range | Mood Effect | Label | Description |
+|-------|------------|-------------|-------|-------------|
+| 0 | 0-249 silver | None | (invisible) | No stress |
+| 1 | 250-499 silver | -1 | minor debt stress | "I owe them money. I need to work this off." |
+| 2 | 500-749 silver | -2 | debt stress | "The debt is weighing on me. How long will I be here?" |
+| 3 | 750-999 silver | -3 | significant debt stress | "This debt feels crushing. Will I ever get out?" |
+| 4 | 1000-1249 silver | -4 | heavy debt stress | "The debt is overwhelming. I'm trapped here." |
+| 5 | 1250-1499 silver | -5 | severe debt stress | "I'll never pay this off. This is endless." |
+| 6 | 1500-1749 silver | -6 | crushing debt stress | "The debt is unbearable. There's no escape." |
+| 7 | 1750+ silver | -8 | impossible debt stress | "This debt is a death sentence. I'll die here." |
+
+**Formula:** `stage = (int)(currentDebt / 250)`, capped at stage 7
+
+**Design Rationale:**
+- 250 silver per stage scales naturally with RimWorld economy
+- Typical raider crimes result in 200-800 silver debt (stages 0-3)
+- Stage 4 (1000 silver) = major decision point for players
+- Cap at -8 prevents infinite scaling while still being severe
+- Leaves room for other mood debuffs to matter
+
+### Debt Stress Worker
+
+**File:** `Source/Thoughts/ThoughtWorker_DebtStress.cs`
+
+```csharp
+public class ThoughtWorker_DebtStress : ThoughtWorker
+{
+    private const float DEBT_PER_STAGE = 250f;
+
+    protected override ThoughtState CurrentStateInternal(Pawn p)
+    {
+        // Only prisoners and slaves feel debt stress
+        if (!p.IsPrisonerOfColony && !p.IsSlaveOfColony)
+            return ThoughtState.Inactive;
+
+        var debtRecord = DebtUtils.TryGetDebtRecord(p);
+        if (debtRecord == null || debtRecord.CurrentDebt <= 0)
+            return ThoughtState.Inactive;
+
+        // Calculate stage: 0-249 = stage 0, 250-499 = stage 1, etc.
+        int stage = (int)(debtRecord.CurrentDebt / DEBT_PER_STAGE);
+
+        // Cap at max stage (7 = 1750+ silver)
+        if (stage > 7)
+            stage = 7;
+
+        return ThoughtState.ActiveAtStage(stage);
+    }
+}
+```
+
+**Key Implementation Details:**
+1. **Eligibility Check:** Only prisoners and slaves are affected
+2. **Debt Retrieval:** Uses `DebtUtils.TryGetDebtRecord()` to get hediff
+3. **Stage Calculation:** Integer division by 250 silver
+4. **Capping:** Maximum stage 7 prevents infinite scaling
+5. **Inactive State:** Returns inactive if no debt or not eligible
+
+### Debt Stress Balance
+
+#### Rebellion Risk Analysis
+
+**Mental Break Thresholds in RimWorld:**
+- Minor mental break: 20% mood or below
+- Major mental break: 10% mood or below
+- Extreme mental break: 5% mood or below
+
+**Debt Stress Impact:**
+
+| Debt Amount | Mood Penalty | Rebellion Risk | Player Strategy |
+|-------------|--------------|----------------|-----------------|
+| 250 silver | -1 | Very Low | Safe, normal operations |
+| 500 silver | -2 | Low | Manageable with decent conditions |
+| 750 silver | -3 | Low-Moderate | Requires attention to other needs |
+| 1000 silver | -4 | Moderate | High risk if base mood already low |
+| 1250 silver | -5 | Moderate-High | Requires good conditions |
+| 1500 silver | -6 | High | Difficult to prevent mental breaks |
+| 2000+ silver | -8 | Very High | Extremely difficult to manage |
+
+**Example Scenarios:**
+
+**Scenario 1: Typical Raider (500 silver debt)**
+- Base mood: 50%
+- Debt stress: -2%
+- Enslaved: -20%
+- Final mood: ~28%
+- **Result:** Manageable, unlikely to rebel
+
+**Scenario 2: Heavy Contraband Offender (1500 silver debt)**
+- Base mood: 50%
+- Debt stress: -6%
+- Enslaved: -20%
+- Poor conditions: -10%
+- Final mood: ~14%
+- **Result:** High rebellion risk, requires excellent conditions
+
+**Scenario 3: Debt Bomb Exploit Attempt (3000 silver debt)**
+- Base mood: 50%
+- Debt stress: -8% (capped)
+- Enslaved: -20%
+- Final mood: ~22%
+- **Result:** Still risky, but cap prevents guaranteed rebellion
+
+#### System Interactions
+
+**With Ritual Quality (Phase 1):**
+- High quality hearing → Faster repayment (1.4x speed) → Less time under stress
+- Low quality hearing → Slower repayment (0.6x speed) → More time under stress
+- **Impact:** Incentivizes quality hearings without creating profit exploits
+
+**With Contraband Penalties (Phase 2):**
+- Can't spam huge penalties (capped at 3x market value)
+- But even capped penalties create stress
+- **Impact:** Meaningful contraband enforcement without game-breaking debt
+
+**With Grace Period (Phase 3):**
+- Debt-free slaves released automatically
+- Prevents permanent high-stress enslavement
+- **Impact:** Natural exit strategy for completed debts
+
+**Combined Example:**
+1. Raider caught with 500 silver contraband
+2. Low quality hearing: Debt reduced to 375 (-25%), but pays slowly (0.6x)
+3. Debt stress: -2 mood initially
+4. Takes ~18 days to pay off (slow repayment)
+5. Grace period: Auto-released after 10 days
+6. **Total time enslaved:** ~28 days with manageable stress
+
+#### Anti-Exploit Mechanisms
+
+**Prevents:**
+1. **Debt Bombs:** Can't assign 10,000 silver penalties without rebellion
+2. **Infinite Enslavement:** Stress + grace period forces releases
+3. **Contraband Spam:** Each item adds stress proportionally
+4. **Low Quality Farming:** Slow repayment = more time under stress
+
+**Allows:**
+1. **Meaningful Penalties:** 500-1000 silver debts are viable
+2. **Player Choice:** Can risk high debt for valuable prisoners
+3. **Story Moments:** Dramatic escapes from overwhelming debt
+4. **Thematic Play:** Harsh colonies can still function (at a cost)
+
+### Debt Stress Usage Examples
+
+#### Example 1: Checking Current Stress Level
+
+```csharp
+// Get pawn's debt stress
+var debtRecord = DebtUtils.TryGetDebtRecord(pawn);
+if (debtRecord != null && debtRecord.CurrentDebt > 0)
+{
+    int stage = (int)(debtRecord.CurrentDebt / 250f);
+    stage = Math.Min(stage, 7);
+
+    string stressLevel = stage switch
+    {
+        0 => "No stress",
+        1 => "Minor stress",
+        2 => "Moderate stress",
+        3 => "Significant stress",
+        4 => "Heavy stress",
+        5 => "Severe stress",
+        6 => "Crushing stress",
+        7 => "Impossible stress",
+        _ => "Unknown"
+    };
+
+    Log.Message($"{pawn.LabelShort} has {stressLevel} from {debtRecord.CurrentDebt} silver debt");
+}
+```
+
+#### Example 2: Predicting Mental Break Risk
+
+```csharp
+// Calculate if pawn is at risk of mental break due to debt
+public static bool IsAtRiskOfBreakFromDebt(Pawn pawn)
+{
+    if (!pawn.IsPrisonerOfColony && !pawn.IsSlaveOfColony)
+        return false;
+
+    var debtRecord = DebtUtils.TryGetDebtRecord(pawn);
+    if (debtRecord == null || debtRecord.CurrentDebt <= 0)
+        return false;
+
+    // Calculate debt stress penalty
+    int stage = Math.Min((int)(debtRecord.CurrentDebt / 250f), 7);
+    float debtStressPenalty = stage switch
+    {
+        1 => 1f,
+        2 => 2f,
+        3 => 3f,
+        4 => 4f,
+        5 => 5f,
+        6 => 6f,
+        7 => 8f,
+        _ => 0f
+    };
+
+    // Check if current mood minus debt stress would cause break
+    float currentMood = pawn.needs?.mood?.CurLevel ?? 0f;
+    float moodWithoutDebtStress = currentMood + (debtStressPenalty / 100f);
+
+    // At risk if removing debt stress would raise mood above minor break threshold
+    return currentMood < 0.2f && moodWithoutDebtStress > 0.2f;
+}
+```
+
+#### Example 3: Optimizing Debt Assignment
+
+```csharp
+// Calculate maximum safe debt for a pawn
+public static float GetMaximumSafeDebt(Pawn pawn, float targetMood = 0.3f)
+{
+    if (!pawn.IsPrisonerOfColony && !pawn.IsSlaveOfColony)
+        return 0f;
+
+    float currentMood = pawn.needs?.mood?.CurLevel ?? 0f;
+
+    // Account for enslavement penalty
+    currentMood -= 0.2f;
+
+    // Calculate how much debt stress we can add before reaching target mood
+    float availableMoodBuffer = currentMood - targetMood;
+
+    // Each mood point = 250 silver (approximately)
+    float maxDebt = availableMoodBuffer * 250f;
+
+    return Math.Max(0f, maxDebt);
+}
+```
+
+### Files Modified/Created
+
+**Created (2 files):**
+1. `Defs/ThoughtDefs/Thoughts_DebtStress.xml` - 8-stage thought definition
+2. `Source/Thoughts/ThoughtWorker_DebtStress.cs` - Stage calculation logic
+
+**XML Definition Location:**
+```
+Law and Order/
+└── Defs/
+    └── ThoughtDefs/
+        └── Thoughts_DebtStress.xml
+```
+
+**C# Implementation Location:**
+```
+Law and Order/
+└── Source/
+    └── Thoughts/
+        └── ThoughtWorker_DebtStress.cs
+```
+
+---
+
+## Section 8: Social Interaction System
 
 ### Social Interaction Overview
 
@@ -1534,7 +1819,7 @@ Now: Bob sentenced Alice for their crimes
 
 ---
 
-## Section 8: Logging System
+## Section 9: Logging System
 
 ### Tiered Logging
 
@@ -1671,7 +1956,7 @@ public static void Postfix(/* parameters */)
 
 ---
 
-## Section 9: Quick References
+## Section 10: Quick References
 
 ### Crime Quick Reference
 

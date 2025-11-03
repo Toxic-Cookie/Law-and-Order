@@ -1,11 +1,13 @@
 # Law and Order - Project Tracker
 
 **Last Updated:** November 2, 2025
-**Current Status:** ✅ Production Ready - Balance Improvements In Progress
+**Current Status:** ✅ Production Ready - Balance Improvements 80% Complete (4/5 Phases Done)
 
 **Recent Updates:**
 - ✅ **Phase 1 Complete (Nov 2, 2025):** Ritual Quality Reframe - Eliminated hearing sabotage exploit
 - ✅ **Phase 2 Complete (Nov 2, 2025):** Contraband Penalty Cap - Penalties capped at 3x market value (min 10 silver)
+- ✅ **Phase 3 Complete (Nov 2, 2025):** Grace Period & Release System - 10-day grace period with auto-emancipation
+- ✅ **Phase 4 Complete (Nov 2, 2025):** Debt Stress System - Mood debuffs scale with debt (-1 per 250 silver)
 
 ---
 
@@ -138,6 +140,39 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ Debug logging for penalty capping
 - ✅ In-game testing confirmed working as expected
 - ✅ Documentation updated in Project_Documentation.md
+- ✅ Documentation updated in Project_Notepad.md
+
+**2025-11-02: Balance Improvements - Phase 3 (Grace Period & Release System)**
+- ✅ Added grace period tracking to Hediff_Debt (10-day window after debt paid)
+- ✅ Created Alert_UnreleasedDebtors for overdue releases
+- ✅ Implemented auto-emancipation system in WorldComponent_DebtManager
+- ✅ Added three new mood thoughts (Released Debtor, Holding Debt-Free Slave, Debt Paid But Enslaved)
+- ✅ Created two thought workers for colonists and slaves
+- ✅ Implemented faction relation changes based on release timing (+15 to -5 goodwill)
+- ✅ Added Harmony patch on GenGuest.SlaveRelease to trigger faction effects
+- ✅ Integrated pardon system with grace period mechanics
+- ✅ Fixed Harmony patch parameter mismatches (parameter name and void return)
+- ✅ Improved final enslavement retry logic (skip checks on attempt 20+)
+- ✅ Created helper method GetDebtDaysOverdue() in DebtUtils
+- ✅ In-game testing confirmed working as expected
+- ✅ Documentation updated in Project_Documentation.md (Section 6)
+- ✅ Documentation updated in Project_Notepad.md
+
+**2025-11-02: Balance Improvements - Phase 4 (Debt Stress System)**
+- ✅ Created Thoughts_DebtStress.xml with 8-stage situational thought
+- ✅ Implemented ThoughtWorker_DebtStress.cs for stage calculation
+- ✅ Formula: -1 mood per 250 silver debt (capped at -8 for 1750+ silver)
+- ✅ Only applies to prisoners and slaves
+- ✅ Updates dynamically as debt changes
+- ✅ Persists when pawn is off-map (validWhileDespawned: true)
+- ✅ Creates rebellion risk for high-debt prisoners
+- ✅ Naturally limits "debt bomb" exploit strategies
+- ✅ Interacts with ritual quality (faster repayment = less time under stress)
+- ✅ Interacts with contraband caps (even capped penalties create stress)
+- ✅ Interacts with grace period (releases before permanent stress)
+- ✅ Build successful (0 errors, 2 pre-existing warnings)
+- ✅ In-game testing confirmed working perfectly
+- ✅ Documentation updated in Project_Documentation.md (Section 7)
 - ✅ Documentation updated in Project_Notepad.md
 
 ---
