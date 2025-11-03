@@ -5,7 +5,7 @@
 
 **Recent Updates:**
 - ✅ **Phase 1 Complete (Nov 2, 2025):** Ritual Quality Reframe - Eliminated hearing sabotage exploit
-- 🔄 **Phase 2 Ready:** Contraband Penalty Cap - Prevent absurd penalties
+- ✅ **Phase 2 Complete (Nov 2, 2025):** Contraband Penalty Cap - Penalties capped at 3x market value (min 10 silver)
 
 ---
 
@@ -126,6 +126,19 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ WorldComponent_ContrabandManager stores definitions globally (save-compatible)
 - ✅ Full localization support (24 translation keys total)
 - ✅ Integration with existing crime and debt systems
+
+**2025-11-02: Balance Improvements - Phase 2 (Contraband Penalty Caps)**
+- ✅ Added MAX_PENALTY_MULTIPLIER constant (3.0x market value)
+- ✅ Added MIN_PENALTY_CAP constant (10 silver for worthless items)
+- ✅ Modified SetContraband() to validate and cap all penalties
+- ✅ Automatic cap enforcement for all bulk operations
+- ✅ UI displays maximum penalty for selected items
+- ✅ Different messages for worthless vs. valuable items
+- ✅ User notification when cap is applied
+- ✅ Debug logging for penalty capping
+- ✅ In-game testing confirmed working as expected
+- ✅ Documentation updated in Project_Documentation.md
+- ✅ Documentation updated in Project_Notepad.md
 
 ---
 

@@ -1837,11 +1837,11 @@ if (contrabandManager.IsDraftActive)
 - [x] 1F. Update ritual outcome messages in `Ritual_Hearing_CRF.xml`
 - [x] Test: Run hearing, verify debt changes and repayment speed ✅
 
-### Phase 2: Contraband Caps ✅ COMPLETED (Build Successful)
+### Phase 2: Contraband Caps ✅ COMPLETED (Tested & Working)
 - [x] 2A. Add cap validation to `WorldComponent_ContrabandManager.cs`
 - [x] 2B. Update UI to show cap in `MainTabWindow_Justice.cs`
 - [x] 2C. Add minimum cap for worthless items (e.g., stone chunks)
-- [x] Test: Build successful, ready for in-game testing
+- [x] Test: In-game testing confirmed working as expected ✅
 
 **Phase 2 Overview:**
 
@@ -2229,4 +2229,8 @@ Contraband penalties are now capped at 3x the item's market value to prevent exp
 - ✅ Minimum cap applied for items with 0 market value
 - ✅ UI displays maximum penalty with appropriate message
 - ✅ User notification when cap is applied (different messages for worthless vs. valuable items)
-- Ready for in-game testing
+- ✅ **In-game testing confirmed working as expected**
+  - Stone chunks (0 value) capped at 10 silver
+  - Normal items capped at 3x market value
+  - UI shows correct maximum penalties
+  - User messages display appropriately

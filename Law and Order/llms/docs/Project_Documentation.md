@@ -2,7 +2,7 @@
 
 **Version:** 1.6
 **For RimWorld:** 1.6.4628
-**Last Updated:** November 1, 2025
+**Last Updated:** November 2, 2025
 
 ---
 
@@ -30,18 +30,23 @@
 - [Ritual System Integration](#ritual-system-integration)
 - [Hearing Quality Mechanics](#hearing-quality-mechanics) (Updated Nov 2025)
 
-### [Section 5: Social Interaction System](#section-5-social-interaction-system)
+### [Section 5: Contraband System](#section-5-contraband-system)
+- [Overview](#contraband-overview)
+- [Penalty Caps](#contraband-penalty-caps) (Added Nov 2025)
+- [Usage Examples](#contraband-usage-examples)
+
+### [Section 6: Social Interaction System](#section-6-social-interaction-system)
 - [Overview](#social-interaction-overview)
 - [Court Interactions](#court-interactions)
 - [Implementation](#social-interaction-implementation)
 - [Timing and Progression](#interaction-timing)
 
-### [Section 6: Logging System](#section-6-logging-system)
+### [Section 7: Logging System](#section-7-logging-system)
 - [Tiered Logging](#tiered-logging)
 - [Usage Patterns](#logging-usage-patterns)
 - [Best Practices](#logging-best-practices)
 
-### [Section 7: Quick References](#section-7-quick-references)
+### [Section 8: Quick References](#section-8-quick-references)
 - [Crime System Quick Reference](#crime-quick-reference)
 - [UI Quick Reference](#ui-quick-reference)
 - [Logging Quick Reference](#logging-quick-reference)
@@ -727,7 +732,169 @@ Prisoner returned to cell
 
 ---
 
-## Section 5: Social Interaction System
+## Section 5: Contraband System
+
+### Contraband Overview
+
+The contraband system allows players to designate specific items as contraband, which results in debt penalties when prisoners are found possessing these items.
+
+**Key Features:**
+- Global contraband definitions per game world
+- Customizable silver penalties per item
+- Automatic scanning when prisoners captured or downed hostiles killed
+- Penalty caps to prevent exploitation
+- Category-based bulk operations
+- UI integration in Justice tab
+
+**How it Works:**
+1. Player designates items as contraband with silver penalty
+2. System automatically scans prisoner inventories during capture
+3. If contraband found, debt added to prisoner's record
+4. Debt appears in judiciary tab and justice window
+5. Penalties enforced through existing debt system
+
+### Contraband Penalty Caps
+
+**Added:** November 2, 2025 - Prevents exploitation of contraband penalties
+
+**Problem Solved:**
+Players could previously set absurd penalties (e.g., 10,000 silver for bread) with no consequences, leading to game-breaking exploitation.
+
+**Solution:**
+Contraband penalties are now capped at **3x the item's market value**, with a **minimum cap of 10 silver** for worthless items.
+
+**Cap Rules:**
+- **Normal items:** Maximum penalty = `item market value × 3`
+- **Worthless items (0 value):** Minimum cap = `10 silver`
+- **Cap notification:** User notified when attempted penalty exceeds cap
+- **Automatic enforcement:** SetContraband() method validates all penalties
+
+**Implementation Details:**
+
+**Constants:**
+```csharp
+// WorldComponent_ContrabandManager.cs
+private const float MAX_PENALTY_MULTIPLIER = 3.0f;
+private const int MIN_PENALTY_CAP = 10;
+```
+
+**Validation Logic:**
+```csharp
+public void SetContraband(ThingDef thingDef, int silverPenalty)
+{
+    float marketValue = thingDef.BaseMarketValue;
+    int maxPenalty = Mathf.RoundToInt(marketValue * MAX_PENALTY_MULTIPLIER);
+
+    // Ensure minimum cap for worthless items
+    if (maxPenalty < MIN_PENALTY_CAP)
+    {
+        maxPenalty = MIN_PENALTY_CAP;
+    }
+
+    if (silverPenalty > maxPenalty)
+    {
+        silverPenalty = maxPenalty;
+        // User notification displayed
+    }
+    // ... rest of method
+}
+```
+
+**Example Caps:**
+
+| Item | Market Value | Maximum Penalty | Calculation |
+|------|-------------|-----------------|-------------|
+| Stone chunks | 0 silver | 10 silver | Minimum cap |
+| Bread | 2 silver | 6 silver | 2 × 3 = 6 |
+| Medicine | 18 silver | 54 silver | 18 × 3 = 54 |
+| Gold | 10 silver | 30 silver | 10 × 3 = 30 |
+| Uranium | 70 silver | 210 silver | 70 × 3 = 210 |
+
+**UI Integration:**
+
+The Justice window contraband tab displays the maximum penalty for selected items:
+- **Worthless items:** "Maximum Penalty: 10 silver (min for worthless items)"
+- **Normal items:** "Maximum Penalty: X silver (3x market value)"
+
+**User Messages:**
+- When cap applied to worthless item: "Item penalty capped at 10 silver (minimum cap for worthless items)"
+- When cap applied to normal item: "Item penalty capped at X silver (3x market value of Y)"
+
+**Balance Impact:**
+- Prevents absurd penalties like 10,000 silver for bread
+- Automatically scales with item value
+- Allows meaningful penalties while maintaining balance
+- Even worthless items can be penalized (prevents junk hoarding)
+- Cannot be exploited for infinite debt generation
+
+### Contraband Usage Examples
+
+**Setting Contraband:**
+```csharp
+var manager = WorldComponent_ContrabandManager.Instance;
+
+// Single item
+manager.SetContraband(ThingDefOf.Smokeleaf, 50); // Will cap at marketValue × 3
+
+// Bulk category operations
+List<ThingDef> alcoholItems = GetAllAlcohol();
+manager.SetContrabandBulk(alcoholItems, 100);
+```
+
+**Querying Contraband:**
+```csharp
+var manager = WorldComponent_ContrabandManager.Instance;
+
+// Check if item is contraband
+bool isContraband = manager.IsContraband(ThingDefOf.Beer);
+
+// Get contraband definition
+var contrabandDef = manager.GetContrabandDefinition(ThingDefOf.Beer);
+if (contrabandDef != null)
+{
+    int penalty = contrabandDef.silverPenaltyPerItem;
+}
+
+// Calculate total contraband penalty for pawn
+int totalPenalty = manager.CalculateContrabandPenalty(prisoner, out var itemBreakdown);
+```
+
+**Removing Contraband:**
+```csharp
+var manager = WorldComponent_ContrabandManager.Instance;
+
+// Remove single item
+manager.RemoveContraband(ThingDefOf.Smokeleaf);
+
+// Remove category
+List<ThingDef> drugs = GetAllDrugs();
+manager.RemoveContrabandBulk(drugs);
+```
+
+**Penalty Cap Calculation Example:**
+```csharp
+ThingDef bread = ThingDefOf.MealSimple; // Market value: ~2 silver
+int maxPenalty = Mathf.RoundToInt(bread.BaseMarketValue * 3.0f); // = 6 silver
+
+// Attempt to set 10,000 silver penalty
+manager.SetContraband(bread, 10000);
+// Result: Capped at 6 silver, user notified
+
+ThingDef stoneChunk = ThingDefOf.ChunkSandstone; // Market value: 0 silver
+int minPenalty = 10; // Minimum cap applied
+
+// Attempt to set any penalty
+manager.SetContraband(stoneChunk, 50);
+// Result: Capped at 10 silver (minimum cap)
+```
+
+**Files Modified:**
+- `Source/Contraband/WorldComponent_ContrabandManager.cs` - Cap validation and enforcement
+- `Source/UI/MainTabWindow_Justice.cs` - UI display of caps
+
+---
+
+## Section 6: Social Interaction System
 
 ### Social Interaction Overview
 
@@ -964,7 +1131,7 @@ Now: Bob sentenced Alice for their crimes
 
 ---
 
-## Section 6: Logging System
+## Section 7: Logging System
 
 ### Tiered Logging
 
@@ -1101,7 +1268,7 @@ public static void Postfix(/* parameters */)
 
 ---
 
-## Section 7: Quick References
+## Section 8: Quick References
 
 ### Crime Quick Reference
 
@@ -1322,7 +1489,7 @@ public static class CourtroomUtils
 
 **Development:** Law and Order Mod Team
 **RimWorld Version:** 1.6.4628
-**Last Updated:** November 1, 2025
+**Last Updated:** November 2, 2025
 
 **Dependencies:**
 - RimWorld 1.6
