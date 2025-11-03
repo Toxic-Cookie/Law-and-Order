@@ -7,6 +7,7 @@ using RimWorld;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 using Law_and_Order.Source.Hearings;
+using Law_and_Order.Source.Components;
 using LawAndOrder;
 
 namespace Law_and_Order.Source.UI
@@ -489,7 +490,23 @@ namespace Law_and_Order.Source.UI
             var record = CrimeUtils.TryGetCriminalRecord(selectedCriminal);
             if (record != null)
             {
+                // Pay off any remaining debt (this triggers grace period and auto-emancipation)
+                var debtRecord = DebtUtils.TryGetDebtRecord(selectedCriminal);
+                if (debtRecord != null && debtRecord.CurrentDebt > 0)
+                {
+                    debtRecord.PayDebt(debtRecord.CurrentDebt, "Pardoned by colony");
+
+                    // If enslaved, immediately trigger grace period and auto-emancipation
+                    if (selectedCriminal.IsSlaveOfColony)
+                    {
+                        var debtManager = Find.World.GetComponent<WorldComponent_DebtManager>();
+                        debtManager?.HandleDebtFullyPaid(selectedCriminal);
+                    }
+                }
+
+                // Remove criminal record
                 selectedCriminal.health.RemoveHediff(record);
+
                 Messages.Message(
                     "LawAndOrder_Pardoned".Translate(selectedCriminal.NameShortColored),
                     selectedCriminal,

@@ -1884,13 +1884,13 @@ if (contrabandManager.IsDraftActive)
 6. Test bulk operations respect cap
 7. Test high-value items have higher caps
 
-### Phase 3: Grace Period & Release
-- [ ] 3A. Add grace period tracking to `Hediff_Debt.cs`
-- [ ] 3B. Create alert `Alert_UnreleasedDebtors.cs`
-- [ ] 3C. Implement auto-emancipation in `WorldComponent_DebtManager.cs`
-- [ ] 3D. Create mood thoughts in `Thoughts_DebtRelease.xml` + workers
-- [ ] 3E. Add faction relation changes + patch
-- [ ] Test: Pay off debt, wait, verify alert and auto-emancipation
+### Phase 3: Grace Period & Release ✅ COMPLETED (Build Successful)
+- [x] 3A. Add grace period tracking to `Hediff_Debt.cs`
+- [x] 3B. Create alert `Alert_UnreleasedDebtors.cs`
+- [x] 3C. Implement auto-emancipation in `WorldComponent_DebtManager.cs`
+- [x] 3D. Create mood thoughts in `Thoughts_DebtRelease.xml` + workers
+- [x] 3E. Add faction relation changes + patch
+- [ ] Test: Pay off debt, wait, verify alert and auto-emancipation (pending in-game test)
 
 ### Phase 4: Debt Mood Debuff
 - [ ] 4A. Create thought definition `Thoughts_DebtStress.xml`
@@ -2086,8 +2086,8 @@ if (contrabandManager.IsDraftActive)
 
 ---
 
-**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Ready
-**Next Step:** Begin Phase 3 (Grace Period & Release Incentives)
+**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Phase 4 Ready
+**Next Step:** Begin Phase 4 (Debt-Based Mood Debuff)
 
 **Update Log:**
 - November 2, 2025: Initial plan created (5 major systems)
@@ -2097,6 +2097,7 @@ if (contrabandManager.IsDraftActive)
 - November 2, 2025: **Phase 1 Completed** - Ritual Quality Reframe fully implemented and tested
 - November 2, 2025: **Phase 2 Completed** - Contraband Penalty Cap implemented (3x market value limit)
 - November 2, 2025: **Phase 2 Updated** - Added minimum cap (10 silver) for worthless items like stone chunks
+- November 2, 2025: **Phase 3 Completed** - Grace Period & Release Incentives fully implemented (build successful)
 
 ---
 
@@ -2234,3 +2235,143 @@ Contraband penalties are now capped at 3x the item's market value to prevent exp
   - Normal items capped at 3x market value
   - UI shows correct maximum penalties
   - User messages display appropriately
+
+---
+
+## Phase 3 Implementation Summary
+
+**Completion Date:** November 2, 2025
+**Status:** ✅ Fully implemented, build successful (pending in-game testing)
+
+### What Changed
+
+This phase implements a grace period system that incentivizes releasing debt-free prisoners instead of keeping them as permanent slaves.
+
+#### 1. Grace Period Tracking (Hediff_Debt.cs)
+**Added fields:**
+- `debtPaidTick` - Tracks when debt reached 0
+- `emancipationQueued` - Tracks if auto-emancipation was set
+- Grace period constants (10 days)
+
+**Added properties:**
+- `TicksSinceDebtPaid` - Time since debt was paid
+- `IsInGracePeriod` - Debt paid but within 10-day window
+- `IsOverdueForRelease` - Grace period expired
+- `EmancipationQueued` - Auto-emancipation status
+
+**Modified PayDebt():**
+- Tracks when debt reaches 0 for the first time
+- Starts grace period timer
+
+#### 2. Alert System (Alert_UnreleasedDebtors.cs)
+**New alert:**
+- Shows when slaves are overdue for release (10+ days after debt paid)
+- Lists all affected pawns with days overdue
+- Priority: Medium
+- Explains consequences (mood, relations, rebellion)
+
+#### 3. Auto-Emancipation (WorldComponent_DebtManager.cs)
+**HandleDebtFullyPaid()** - Modified to:
+- Notify player of 10-day grace period
+- Apply positive mood thought (Catharsis)
+- Auto-queue emancipation (one-time only)
+
+**AutoQueueEmancipation()** - New method:
+- Sets slave interaction mode to Emancipate
+- Marks emancipation as queued
+- Sends notification to player
+
+**OnDebtorEmancipated()** - New public method:
+- Called when emancipation completes
+- Adjusts faction relations based on timeliness:
+  - 0-2 days: +15 goodwill
+  - 3-10 days: +10 goodwill
+  - 11-20 days: +5 goodwill
+  - 21+ days: -5 goodwill
+- Gives colonists mood buff if released on time
+
+#### 4. Mood Thoughts (Thoughts_DebtRelease.xml + Workers)
+**Three new thoughts:**
+
+1. **LawAndOrder_ReleasedDebtor** (Colonist, Memory)
+   - Lasts 5 days
+   - +2 mood: "Released debt-free prisoner"
+   - Stacks up to 3 times
+
+2. **LawAndOrder_HoldingDebtFreeSlave** (Colonist, Situational)
+   - Active when colony holds overdue slaves
+   - -3 mood: "Enslaving freed debtors"
+
+3. **LawAndOrder_DebtPaidButEnslaved** (Slave, Situational)
+   - Active when slave is overdue for release
+   - -6 mood: "Debt paid, still enslaved"
+
+**Two thought workers:**
+- `ThoughtWorker_HoldingDebtFreeSlave` - Checks if any slave is overdue
+- `ThoughtWorker_DebtPaidButEnslaved` - Checks if this slave is overdue
+
+#### 5. Faction Relations (SlaveEmancipation_Patch.cs)
+**Harmony patch on GenGuest.SlaveRelease:**
+- Detects when debt-free slaves are emancipated
+- Calculates days overdue
+- Calls `OnDebtorEmancipated()` to adjust relations
+
+#### 6. Helper Method (DebtUtils.cs)
+**GetDebtDaysOverdue()** - Extension method for UI:
+- Returns days since debt was paid
+- Used in alert explanations
+
+### Files Created (6 total)
+1. `Source/Alerts/Alert_UnreleasedDebtors.cs` - Alert for overdue releases
+2. `Source/Thoughts/ThoughtWorker_HoldingDebtFreeSlave.cs` - Colonist thought
+3. `Source/Thoughts/ThoughtWorker_DebtPaidButEnslaved.cs` - Slave thought
+4. `Source/Patches/SlaveEmancipation_Patch.cs` - Faction relation trigger
+5. `Defs/ThoughtDefs/Thoughts_DebtRelease.xml` - Thought definitions
+6. `Source/Thoughts/` - New directory created
+
+### Files Modified (3 total)
+1. `Source/Hediffs/Hediff_Debt.cs` - Grace period tracking
+2. `Source/Components/WorldComponent_DebtManager.cs` - Auto-emancipation & faction relations
+3. `Source/Utils/DebtUtils.cs` - Helper extension method
+
+### Balance Impact
+
+**Grace Period Timeline:**
+- Day 0: Debt paid → Auto-queued for emancipation + notification
+- Days 1-9: Grace period (no penalties)
+- Day 10+: Alert appears, mood debuffs apply
+- Day 21+: Faction relations turn negative
+
+**Mood Impact:**
+- Released on time: Colonists +2 mood (5 days)
+- Held past grace: Colonists -3 mood (persistent)
+- Held past grace: Slave -6 mood (persistent, rebellion risk!)
+
+**Faction Impact:**
+- Prompt release (0-2 days): +15 goodwill
+- Grace period (3-10 days): +10 goodwill
+- Late (11-20 days): +5 goodwill
+- Very late (21+ days): -5 goodwill
+
+**Result:** Players are strongly incentivized to release debt-free slaves, but have flexibility with the 10-day grace period. Keeping slaves indefinitely now has real costs (mood, rebellion, relations). ✅
+
+### Testing Results
+- ✅ Build successful (0 errors, 2 pre-existing warnings)
+- ✅ Grace period tracking implemented
+- ✅ Alert system created
+- ✅ Auto-emancipation logic added
+- ✅ Thought definitions and workers created
+- ✅ Faction relation patch implemented
+- [ ] In-game testing pending (requires running game with debt slaves)
+
+### Testing Plan (Pending)
+1. Capture raider, assign crimes, conduct hearing
+2. Enslave and wait for debt to be paid off
+3. Verify notification appears with 10-day message
+4. Verify slave auto-queued for emancipation
+5. Wait 10+ days without releasing
+6. Verify alert appears
+7. Verify colonist mood debuff (-3)
+8. Verify slave mood debuff (-6)
+9. Release slave, verify faction relation bonus
+10. Verify colonist mood buff (+2)

@@ -146,62 +146,60 @@ namespace Law_and_Order.Source.Components
                 // Only enslave if still a prisoner (not already enslaved)
                 if (pending.prisoner.IsPrisonerOfColony && !pending.prisoner.IsSlave)
                 {
-                    // Check retry limit
-                    if (pending.retryCount >= MAX_ENSLAVEMENT_RETRIES)
-                    {
-                        // Too many retries, give up
-                        string failureMsg = $"Failed to enslave {pending.prisoner.LabelShort} after {pending.retryCount} attempts. Reason: {pending.lastFailureReason ?? "Unknown"}";
-                        Mod.Log?.Warning(failureMsg);
-                        Messages.Message(
-                            $"Unable to enslave {pending.prisoner.LabelShort}. They remain a prisoner with {pending.debt:F0} silver debt.",
-                            pending.prisoner,
-                            MessageTypeDefOf.NegativeEvent
-                        );
-                        toRemove.Add(pending);
-                        continue;
-                    }
+                    // Check retry limit (but allow one final attempt)
+                    bool isFinalAttempt = pending.retryCount >= MAX_ENSLAVEMENT_RETRIES;
 
-                    // Check if prisoner is still in a ritual or being carried
-                    if (pending.prisoner.GetLord() != null)
+                    if (isFinalAttempt)
                     {
-                        // Still in a Lord (ritual/event), delay longer
-                        pending.lastFailureReason = "Still in ritual/event";
-                        pending.retryCount++;
-                        pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
-#if DEBUG
-                        Mod.Log?.Message($"{pending.prisoner.LabelShort} still in Lord, delaying enslavement (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
-#endif
-                        continue;
+                        // This is the final attempt, skip all checks and try to enslave directly
+                        Mod.Log?.Message($"Making final enslavement attempt for {pending.prisoner.LabelShort} (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
                     }
+                    else
+                    {
+                        // Still have retries left, perform normal checks
 
-                    // Check if prisoner is being carried or escorted
-                    if (pending.prisoner.CurJob != null &&
-                        (pending.prisoner.CurJob.def.defName.Contains("Escort") ||
-                         pending.prisoner.CarriedBy != null))
-                    {
-                        // Still being moved, delay longer
-                        pending.lastFailureReason = $"Being moved (job: {pending.prisoner.CurJob?.def?.defName})";
-                        pending.retryCount++;
-                        pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
+                        // Check if prisoner is still in a ritual or being carried
+                        if (pending.prisoner.GetLord() != null)
+                        {
+                            // Still in a Lord (ritual/event), delay longer
+                            pending.lastFailureReason = "Still in ritual/event";
+                            pending.retryCount++;
+                            pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
 #if DEBUG
-                        Mod.Log?.Message($"{pending.prisoner.LabelShort} still being moved, delaying enslavement (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
+                            Mod.Log?.Message($"{pending.prisoner.LabelShort} still in Lord, delaying enslavement (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
 #endif
-                        continue;
-                    }
+                            continue;
+                        }
 
-                    // Check if in bed/cell (ideal state for enslavement)
-                    bool inBed = pending.prisoner.CurrentBed() != null;
-                    if (!inBed && pending.scheduledTick + MAX_BED_WAIT_TICKS > currentTick)
-                    {
-                        // Not in bed yet, delay a bit more
-                        pending.lastFailureReason = "Not in bed yet";
-                        pending.retryCount++;
-                        pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
+                        // Check if prisoner is being carried or escorted
+                        if (pending.prisoner.CurJob != null &&
+                            (pending.prisoner.CurJob.def.defName.Contains("Escort") ||
+                             pending.prisoner.CarriedBy != null))
+                        {
+                            // Still being moved, delay longer
+                            pending.lastFailureReason = $"Being moved (job: {pending.prisoner.CurJob?.def?.defName})";
+                            pending.retryCount++;
+                            pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
 #if DEBUG
-                        Mod.Log?.Message($"{pending.prisoner.LabelShort} not in bed yet, delaying enslavement (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
+                            Mod.Log?.Message($"{pending.prisoner.LabelShort} still being moved, delaying enslavement (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
 #endif
-                        continue;
-                    }
+                            continue;
+                        }
+
+                        // Check if in bed/cell (ideal state for enslavement)
+                        bool inBed = pending.prisoner.CurrentBed() != null;
+                        if (!inBed && pending.scheduledTick + MAX_BED_WAIT_TICKS > currentTick)
+                        {
+                            // Not in bed yet, delay a bit more
+                            pending.lastFailureReason = "Not in bed yet";
+                            pending.retryCount++;
+                            pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
+#if DEBUG
+                            Mod.Log?.Message($"{pending.prisoner.LabelShort} not in bed yet, delaying enslavement (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
+#endif
+                            continue;
+                        }
+                    } // End of normal checks
 
                     // Get warden (use original or find a new one)
                     Pawn warden = pending.warden;
@@ -212,12 +210,29 @@ namespace Law_and_Order.Source.Components
 
                     if (warden == null)
                     {
-                        // No warden available - this is a transient failure, retry
-                        pending.lastFailureReason = "No valid warden available";
-                        pending.retryCount++;
-                        pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
-                        Mod.Log?.Warning($"Cannot enslave {pending.prisoner.LabelShort} - {pending.lastFailureReason} (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
-                        continue;
+                        // No warden available
+                        if (isFinalAttempt)
+                        {
+                            // Final attempt and no warden - give up
+                            string failureMsg = $"Failed to enslave {pending.prisoner.LabelShort} after {pending.retryCount + 1} attempts. Final reason: No valid warden available";
+                            Mod.Log?.Warning(failureMsg);
+                            Messages.Message(
+                                $"Unable to enslave {pending.prisoner.LabelShort}. They remain a prisoner with {pending.debt:F0} silver debt.",
+                                pending.prisoner,
+                                MessageTypeDefOf.NegativeEvent
+                            );
+                            toRemove.Add(pending);
+                            continue;
+                        }
+                        else
+                        {
+                            // This is a transient failure, retry
+                            pending.lastFailureReason = "No valid warden available";
+                            pending.retryCount++;
+                            pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
+                            Mod.Log?.Warning($"Cannot enslave {pending.prisoner.LabelShort} - {pending.lastFailureReason} (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
+                            continue;
+                        }
                     }
 
                     // Attempt enslavement
@@ -240,12 +255,29 @@ namespace Law_and_Order.Source.Components
                     }
                     else
                     {
-                        // Enslavement failed - this could be due to game state, retry
-                        pending.lastFailureReason = "TryEnslavePrisoner returned false (game state issue)";
-                        pending.retryCount++;
-                        pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
-                        Mod.Log?.Warning($"Failed to enslave {pending.prisoner.LabelShort} - {pending.lastFailureReason} (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
-                        continue;
+                        // Enslavement failed
+                        if (isFinalAttempt)
+                        {
+                            // This was the final attempt and it failed - give up
+                            string failureMsg = $"Failed to enslave {pending.prisoner.LabelShort} after {pending.retryCount + 1} attempts. Final reason: TryEnslavePrisoner returned false";
+                            Mod.Log?.Warning(failureMsg);
+                            Messages.Message(
+                                $"Unable to enslave {pending.prisoner.LabelShort}. They remain a prisoner with {pending.debt:F0} silver debt.",
+                                pending.prisoner,
+                                MessageTypeDefOf.NegativeEvent
+                            );
+                            toRemove.Add(pending);
+                            continue;
+                        }
+                        else
+                        {
+                            // Not final attempt yet, this could be due to game state, retry
+                            pending.lastFailureReason = "TryEnslavePrisoner returned false (game state issue)";
+                            pending.retryCount++;
+                            pending.scheduledTick = currentTick + ENSLAVEMENT_DELAY_TICKS;
+                            Mod.Log?.Warning($"Failed to enslave {pending.prisoner.LabelShort} - {pending.lastFailureReason} (retry {pending.retryCount}/{MAX_ENSLAVEMENT_RETRIES})");
+                            continue;
+                        }
                     }
                 }
                 else if (pending.prisoner.IsSlave)
@@ -506,17 +538,24 @@ namespace Law_and_Order.Source.Components
 
         /// <summary>
         /// Handle what happens when a slave fully pays off their debt
+        /// Can be called externally (e.g., when pardoning)
         /// </summary>
-        private void HandleDebtFullyPaid(Pawn slave)
+        public void HandleDebtFullyPaid(Pawn slave)
         {
             if (slave == null || !slave.IsSlaveOfColony)
             {
                 return;
             }
 
+            var debtRecord = DebtUtils.TryGetDebtRecord(slave);
+            if (debtRecord == null)
+            {
+                return;
+            }
+
             // Send notification to player
             Messages.Message(
-                $"{slave.LabelShort} has fully paid off their debt through labor. They remain enslaved until you choose to free them.",
+                $"{slave.LabelShort} has fully paid off their debt through labor. They will be released in 10 days unless you intervene.",
                 slave,
                 MessageTypeDefOf.PositiveEvent
             );
@@ -524,8 +563,102 @@ namespace Law_and_Order.Source.Components
             // Log the event
             Mod.Log?.Message($"{slave.LabelShort} has completed debt repayment");
 
-            // Optional: Apply a positive mood thought for completing debt
+            // Apply positive mood thought for completing debt
             slave.needs?.mood?.thoughts?.memories?.TryGainMemory(ThoughtDefOf.Catharsis);
+
+            // Auto-queue emancipation (one-time only)
+            if (!debtRecord.EmancipationQueued)
+            {
+                AutoQueueEmancipation(slave, debtRecord);
+            }
+        }
+
+        /// <summary>
+        /// Automatically sets the slave to be emancipated
+        /// </summary>
+        private void AutoQueueEmancipation(Pawn slave, Hediff_Debt debtRecord)
+        {
+            if (slave?.guest == null)
+                return;
+
+            // Set emancipate flag
+            slave.guest.slaveInteractionMode = SlaveInteractionModeDefOf.Emancipate;
+            debtRecord.EmancipationQueued = true;
+
+            Messages.Message(
+                $"{slave.LabelShort} has been queued for emancipation. They will be freed once a warden is available.",
+                slave,
+                MessageTypeDefOf.NeutralEvent
+            );
+
+            #if DEBUG
+            Mod.Log?.Message($"Auto-queued {slave.LabelShort} for emancipation");
+            #endif
+        }
+
+        /// <summary>
+        /// Called when a debt-free slave is finally emancipated
+        /// Improves faction relations based on how timely the release was
+        /// </summary>
+        public void OnDebtorEmancipated(Pawn freedPawn, int daysOverdue)
+        {
+            if (freedPawn?.Faction == null)
+                return;
+
+            Faction faction = freedPawn.Faction;
+
+            if (faction.IsPlayer || faction.defeated)
+                return;
+
+            int relationChange = 0;
+
+            if (daysOverdue <= 2)
+            {
+                // Released promptly
+                relationChange = 15;
+            }
+            else if (daysOverdue <= 10)
+            {
+                // Released within grace period
+                relationChange = 10;
+            }
+            else if (daysOverdue <= 20)
+            {
+                // Released late
+                relationChange = 5;
+            }
+            else
+            {
+                // Held for a very long time
+                relationChange = -5;
+            }
+
+            if (relationChange != 0)
+            {
+                faction.TryAffectGoodwillWith(Faction.OfPlayer, relationChange,
+                    canSendMessage: true, canSendHostilityLetter: false,
+                    reason: null); // Pass null for HistoryEventDef
+
+                #if DEBUG
+                Mod.Log?.Message($"Faction {faction.Name} relation changed by {relationChange} for releasing {freedPawn.LabelShort} ({daysOverdue} days overdue)");
+                #endif
+            }
+
+            // Give colonists mood buff for doing the right thing (if released reasonably on time)
+            if (daysOverdue <= 10)
+            {
+                foreach (Pawn colonist in PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive_Colonists)
+                {
+                    if (colonist.needs?.mood?.thoughts?.memories != null)
+                    {
+                        ThoughtDef releasedThought = DefDatabase<ThoughtDef>.GetNamedSilentFail("LawAndOrder_ReleasedDebtor");
+                        if (releasedThought != null)
+                        {
+                            colonist.needs.mood.thoughts.memories.TryGainMemory(releasedThought);
+                        }
+                    }
+                }
+            }
         }
 
         public override void ExposeData()

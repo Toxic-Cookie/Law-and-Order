@@ -65,6 +65,14 @@ namespace Law_and_Order.Source.Hediffs
         private float totalDebtPaid = 0f;
         private List<DebtEntry> debtHistory = new List<DebtEntry>();
 
+        // Grace period tracking
+        private int debtPaidTick = -1;         // When debt reached 0
+        private bool emancipationQueued = false; // Has emancipate been auto-set?
+
+        // Grace period constants
+        private const int GRACE_PERIOD_DAYS = 10;
+        private const int GRACE_PERIOD_TICKS = GRACE_PERIOD_DAYS * GenDate.TicksPerDay;
+
         /// <summary>
         /// Current debt remaining (total owed - total paid)
         /// </summary>
@@ -84,6 +92,38 @@ namespace Law_and_Order.Source.Hediffs
         /// Full history of debt changes
         /// </summary>
         public IReadOnlyList<DebtEntry> DebtHistory => debtHistory.AsReadOnly();
+
+        /// <summary>
+        /// Number of ticks since debt was fully paid
+        /// </summary>
+        public int TicksSinceDebtPaid
+        {
+            get
+            {
+                if (debtPaidTick < 0 || CurrentDebt > 0)
+                    return 0;
+                return Find.TickManager.TicksGame - debtPaidTick;
+            }
+        }
+
+        /// <summary>
+        /// Is this pawn in the grace period (debt paid, but not yet overdue for release)?
+        /// </summary>
+        public bool IsInGracePeriod => TicksSinceDebtPaid > 0 && TicksSinceDebtPaid < GRACE_PERIOD_TICKS;
+
+        /// <summary>
+        /// Has the grace period expired and the pawn should be released?
+        /// </summary>
+        public bool IsOverdueForRelease => TicksSinceDebtPaid >= GRACE_PERIOD_TICKS;
+
+        /// <summary>
+        /// Has emancipation been queued for this pawn?
+        /// </summary>
+        public bool EmancipationQueued
+        {
+            get => emancipationQueued;
+            set => emancipationQueued = value;
+        }
 
         /// <summary>
         /// Add debt to this pawn's record
@@ -138,6 +178,17 @@ namespace Law_and_Order.Source.Hediffs
             totalDebtPaid += amountToPay;
             debtHistory.Add(new DebtEntry(DebtChangeType.Paid, amountToPay, reason));
 
+            // Track when debt was paid off (for grace period)
+            if (CurrentDebt <= 0.01f && debtPaidTick < 0) // Small epsilon for floating point errors
+            {
+                debtPaidTick = Find.TickManager.TicksGame;
+
+                if (Prefs.DevMode)
+                {
+                    Mod.Log?.Message($"{pawn?.NameShortColored} debt fully paid at tick {debtPaidTick}. Grace period started.");
+                }
+            }
+
             if (Prefs.DevMode)
             {
                 Mod.Log?.Message($"{pawn?.NameShortColored} paid {amountToPay:F0} silver debt: {reason}. Remaining: {CurrentDebt:F0}");
@@ -145,7 +196,7 @@ namespace Law_and_Order.Source.Hediffs
 
             // If debt is fully paid, keep the hediff as a historical record
             // This allows us to track that a pawn had debt and paid it off
-            if (CurrentDebt <= 0.01f) // Small epsilon for floating point errors
+            if (CurrentDebt <= 0.01f)
             {
                 ModLog.Debug($"{pawn?.NameShortColored} has fully paid their debt. Hediff kept for historical record.");
                 // Hediff is intentionally kept to maintain payment history
@@ -183,6 +234,8 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_Values.Look(ref totalDebtOwed, "totalDebtOwed", 0f);
             Scribe_Values.Look(ref totalDebtPaid, "totalDebtPaid", 0f);
             Scribe_Collections.Look(ref debtHistory, "debtHistory", LookMode.Deep);
+            Scribe_Values.Look(ref debtPaidTick, "debtPaidTick", -1);
+            Scribe_Values.Look(ref emancipationQueued, "emancipationQueued", false);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {

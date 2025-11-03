@@ -34,7 +34,8 @@
       "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\CrimeTrackingSystem.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\HugsLibLogging.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\QuickReference_Logging.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\JusticeUISystem.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\QuickReference_JusticeUI.md\")",
       "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\IMPLEMENTATION_SUMMARY.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\SETUP_GUIDE.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\COURT_RITUAL_PHASES.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\courtroom-setup-guide.md\" \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\\CODEBASE_ANALYSIS_REPORT.md\")",
       "Bash(mkdir:*)",
-      "Bash(copy \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")"
+      "Bash(copy \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": []

@@ -352,5 +352,17 @@ namespace Law_and_Order.Source.Utils
                 Mod.Log?.Message($"Applied {totalPenalty:F0} silver contraband debt to {criminal.LabelShort}");
             }
         }
+
+        /// <summary>
+        /// Get the number of days overdue for release (for UI display)
+        /// </summary>
+        public static int GetDebtDaysOverdue(this Pawn pawn)
+        {
+            var debtRecord = TryGetDebtRecord(pawn);
+            if (debtRecord == null)
+                return 0;
+
+            return debtRecord.TicksSinceDebtPaid / GenDate.TicksPerDay;
+        }
     }
 }
