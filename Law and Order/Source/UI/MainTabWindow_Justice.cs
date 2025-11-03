@@ -66,7 +66,7 @@ namespace Law_and_Order.Source.UI
         private const float LeftPanelWidth = 0.35f;
         private const float PanelGap = 17f;
 
-        public override Vector2 RequestedTabSize => new Vector2(1010f, 640f);
+        public override Vector2 RequestedTabSize => new Vector2(1010f, 720f);
 
         public override void PreOpen()
         {
@@ -563,7 +563,7 @@ namespace Law_and_Order.Source.UI
         private void DrawContrabandUI(Rect inRect)
         {
             // Reserve space for commit/cancel buttons at the bottom
-            float bottomButtonHeight = 50f;
+            float bottomButtonHeight = 90f;
             Rect bottomButtonRect = new Rect(inRect.x, inRect.yMax - bottomButtonHeight, inRect.width, bottomButtonHeight);
             inRect.height -= bottomButtonHeight + 10f; // 10f spacing
 
@@ -1183,12 +1183,12 @@ namespace Law_and_Order.Source.UI
 
                 Rect godModeTextRect = godModeRect.ContractedBy(5f);
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Text.Font = GameFont.Medium;
+                Text.Font = GameFont.Small;
                 GUI.color = new Color(0.3f, 1f, 0.3f);
                 Widgets.Label(godModeTextRect, $"GOD MODE: LOCKOUT BYPASSED");
 
-                Text.Font = GameFont.Small;
-                godModeTextRect.y += 20f;
+                Text.Font = GameFont.Tiny;
+                godModeTextRect.y += 16f;
                 Widgets.Label(godModeTextRect, $"(Would be locked for {daysRemaining:F1} more day(s))");
                 GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
@@ -1204,12 +1204,12 @@ namespace Law_and_Order.Source.UI
 
                 Rect lockoutTextRect = lockoutRect.ContractedBy(5f);
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Text.Font = GameFont.Medium;
+                Text.Font = GameFont.Small;
                 GUI.color = new Color(1f, 0.3f, 0.3f);
                 Widgets.Label(lockoutTextRect, $"CONTRABAND POLICY LOCKED");
 
-                Text.Font = GameFont.Small;
-                lockoutTextRect.y += 20f;
+                Text.Font = GameFont.Tiny;
+                lockoutTextRect.y += 16f;
                 Widgets.Label(lockoutTextRect, $"Cannot commit changes for {daysRemaining:F1} more day(s)");
                 GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
