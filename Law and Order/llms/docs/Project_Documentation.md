@@ -28,7 +28,7 @@
 ### [Section 4: Court Hearing System](#section-4-court-hearing-system)
 - [Courtroom Setup](#courtroom-setup)
 - [Ritual System Integration](#ritual-system-integration)
-- [Plea Bargain Mechanics](#plea-bargain-mechanics)
+- [Hearing Quality Mechanics](#hearing-quality-mechanics) (Updated Nov 2025)
 
 ### [Section 5: Social Interaction System](#section-5-social-interaction-system)
 - [Overview](#social-interaction-overview)
@@ -681,16 +681,28 @@ Prisoner returned to cell
   - Ritual quality calculated
   - Ends at 100% duration
 
-### Plea Bargain Mechanics
+### Hearing Quality Mechanics
 
-**Outcomes:** 4 quality-based outcomes
+**Updated:** November 2, 2025 - System reframed to eliminate ritual sabotage exploit
 
-| Outcome | Positivity | Chance | Debt Change | Effects |
-|---------|-----------|--------|-------------|---------|
-| **No Deal** | -2 | 10% | +15% | +20% suppression, -1.0 will, -1 mood (5 days) |
-| **Partial Deal** | -1 | 25% | No change | +10% suppression, -0.5 will, 0 mood (5 days) |
-| **Standard Plea** | +1 | 50% | -10% | +5% suppression, +1 mood (5 days) |
-| **Excellent Plea** | +2 | 15% | -25% | +2% suppression, +2 mood (5 days) |
+**Outcomes:** 4 quality-based hearing outcomes
+
+| Outcome | Positivity | Chance | Debt Change | Repayment Speed | Effects |
+|---------|-----------|--------|-------------|-----------------|---------|
+| **Poor Quality** | -2 | 10% | -25% | 0.6x (slow) | +20% suppression, -1.0 will, -1 mood (5 days) |
+| **Partial Quality** | -1 | 25% | -15% | 1.0x (normal) | +10% suppression, -0.5 will, 0 mood (5 days) |
+| **Standard Quality** | +1 | 50% | No change | 1.15x (faster) | +5% suppression, +1 mood (5 days) |
+| **Excellent Quality** | +2 | 15% | +10% | 1.4x (fastest) | +2% suppression, +2 mood (5 days) |
+
+**Key Balance Change:**
+- **High quality hearings** now impose harsher sentences BUT slaves work them off faster (motivated)
+- **Low quality hearings** now give lenient sentences BUT slaves work them off slower (demoralized)
+- **Result:** Similar total labor value, but high quality = efficient, low quality = slow
+- **Exploit eliminated:** No longer profitable to sabotage hearings
+
+**Example (500 silver debt):**
+- Excellent: 550 silver @ 49/day = ~11 days
+- Poor: 375 silver @ 21/day = ~18 days
 
 **Outcome Determination:**
 1. CRF calculates ritual quality (0.0-1.0)
@@ -698,8 +710,9 @@ Prisoner returned to cell
 3. CRF selects outcome based on quality
 4. CRF applies thought/memory to defendant
 5. RitualBehaviorWorker detects which memory was applied
-6. Maps memory to PleaBargainOutcome enum
+6. Maps memory to HearingOutcome enum (renamed from PleaBargainOutcome)
 7. Applies debt modifications via HearingUtils
+8. Daily repayment speed adjusted by WorldComponent_DebtManager
 
 **Mood Effects:**
 - **Defendant:** Receives outcome-specific thought
@@ -709,7 +722,7 @@ Prisoner returned to cell
 **After Hearing:**
 - If defendant has debt > 0, automatically enslaved
 - Smart delay system waits for prisoner to settle
-- Daily debt payments begin
+- Daily debt payments begin (modified by hearing quality)
 - Player notified of enslavement and estimated days
 
 ---

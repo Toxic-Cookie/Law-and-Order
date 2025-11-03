@@ -1828,17 +1828,60 @@ if (contrabandManager.IsDraftActive)
 
 ## Implementation Checklist
 
-### Phase 1: Ritual Quality Reframe ✅ COMPLETED
+### Phase 1: Ritual Quality Reframe ✅ COMPLETED (Tested & Working)
 - [x] 1A. Modify plea bargain debt modifiers in `HearingUtils.cs`
 - [x] 1B. Add repayment speed multipliers to `WorldComponent_DebtManager.cs`
 - [x] 1C. Update outcome descriptions in `RitualBehaviorWorker_CourtHearing.cs`
 - [x] 1D. Update XML thought descriptions in `Thoughts_PleaBargain.xml`
-- [ ] Test: Run hearing, verify debt changes and repayment speed
+- [x] 1E. Rename `PleaBargainOutcome` enum to reflect hearing quality
+- [x] 1F. Update ritual outcome messages in `Ritual_Hearing_CRF.xml`
+- [x] Test: Run hearing, verify debt changes and repayment speed ✅
 
-### Phase 2: Contraband Caps
+### Phase 2: Contraband Caps (READY TO START)
 - [ ] 2A. Add cap validation to `WorldComponent_ContrabandManager.cs`
 - [ ] 2B. Update UI to show cap in `MainTabWindow_Justice.cs`
 - [ ] Test: Try setting 10,000 silver penalty on bread, verify cap
+
+**Phase 2 Overview:**
+
+**Problem:** Players can set absurd penalties (e.g., 10,000 silver for bread) with no consequences.
+
+**Solution:** Cap contraband penalties at 3x the item's market value.
+
+**Why 3x?**
+- Allows meaningful penalties beyond base value
+- Prevents exploitation and absurdity
+- Still provides player agency for harsh penalties
+- Automatically scales with item value (expensive items = higher caps)
+
+**Implementation Details:**
+
+**File 1: WorldComponent_ContrabandManager.cs**
+- Add constant: `MAX_PENALTY_MULTIPLIER = 3.0f`
+- Modify `SetContraband()` method to validate and cap penalties
+- Log warning in dev mode when cap is applied
+- Bulk operations automatically respect cap (they call SetContraband)
+
+**File 2: MainTabWindow_Justice.cs**
+- Add UI label showing max allowed penalty per item
+- Display: "Maximum: {maxPenalty} silver (3x market value)"
+- Place near penalty input field in contraband detail panel
+- Calculate dynamically: `selectedThingDef.BaseMarketValue * 3.0f`
+
+**Examples:**
+- Bread (2 silver base) → Max 6 silver penalty
+- Medicine (18 silver base) → Max 54 silver penalty
+- Uranium (70 silver base) → Max 210 silver penalty
+- Gold (10 silver base) → Max 30 silver penalty
+
+**Testing Plan:**
+1. Open contraband tab
+2. Select bread (worth ~2 silver)
+3. Try to set 10,000 silver penalty
+4. Verify it gets capped at 6 silver
+5. Check that UI shows the cap before attempting
+6. Test bulk operations respect cap
+7. Test high-value items have higher caps
 
 ### Phase 3: Grace Period & Release
 - [ ] 3A. Add grace period tracking to `Hediff_Debt.cs`
@@ -2042,11 +2085,89 @@ if (contrabandManager.IsDraftActive)
 
 ---
 
-**Status:** Ready for implementation
-**Next Step:** Begin Phase 1 (Ritual Quality Reframe)
+**Status:** Phase 1 Complete ✅ | Phase 2 Ready
+**Next Step:** Begin Phase 2 (Contraband Penalty Cap)
 
 **Update Log:**
 - November 2, 2025: Initial plan created (5 major systems)
 - November 2, 2025: Added hypocrisy alert and policy cooldown system
 - November 2, 2025: Added draft mode for policy changes (Apply/Cancel buttons)
 - November 2, 2025: Added production debuff for crafting contraband items
+- November 2, 2025: **Phase 1 Completed** - Ritual Quality Reframe fully implemented and tested
+
+---
+
+## Phase 1 Implementation Summary
+
+**Completion Date:** November 2, 2025
+**Status:** ✅ Fully implemented and tested in-game
+
+### What Changed
+
+The ritual quality system was completely reframed to eliminate the exploit where players would intentionally sabotage hearings for more profit.
+
+#### 1. Debt Modifiers (Reversed)
+**Before:**
+- Excellent hearing: -25% debt (lenient)
+- Standard hearing: -10% debt
+- Partial hearing: 0% debt
+- Poor hearing: +15% debt (harsh)
+
+**After:**
+- Excellent hearing: +10% debt (harsh but efficient)
+- Standard hearing: 0% debt (fair)
+- Partial hearing: -15% debt (lenient but slow)
+- Poor hearing: -25% debt (very lenient but very slow)
+
+#### 2. Repayment Speed Multipliers (New)
+- Excellent hearing: 1.4x repayment speed (motivated worker)
+- Standard hearing: 1.15x repayment speed (normal worker)
+- Partial hearing: 1.0x repayment speed (baseline)
+- Poor hearing: 0.6x repayment speed (demoralized worker)
+
+#### 3. Enum Renaming
+Renamed `PleaBargainOutcome` enum values to reflect hearing quality:
+- `CriticalSuccess` → `Excellent`
+- `Success` → `Standard`
+- `Failure` → `Partial`
+- `CriticalFailure` → `Poor`
+
+#### 4. Message Updates
+- Updated all ritual outcome messages in XML
+- Updated thought definitions for spectators
+- Updated UI text to reflect hearing quality language
+
+### Files Modified (9 total)
+1. `Source/Hearings/HearingUtils.cs` - Debt modifiers & descriptions
+2. `Source/Components/WorldComponent_DebtManager.cs` - Repayment multipliers
+3. `Source/Rituals/RitualBehaviorWorker_CourtHearing.cs` - Outcome descriptions
+4. `Source/Hearings/HearingRecord.cs` - Enum definition
+5. `Source/UI/Dialog_ConductHearing.cs` - UI text & sounds
+6. `Defs/ThoughtDefs/Thoughts_PleaBargain.xml` - Defendant thoughts
+7. `Defs/RitualDefs/Ritual_Hearing_CRF.xml` - Ritual outcomes & spectator thoughts
+8. `llms/docs/Project_Notepad.md` - Documentation
+9. `llms/docs/Project_Documentation.md` - Technical docs (pending)
+
+### Balance Impact
+
+**Example: 500 silver debt**
+
+**High Quality (Excellent):**
+- Debt: 500 + 10% = 550 silver
+- Daily payment: 35 × 1.4 = 49 silver/day
+- **Total time: ~11 days**
+
+**Low Quality (Poor):**
+- Debt: 500 - 25% = 375 silver
+- Daily payment: 35 × 0.6 = 21 silver/day
+- **Total time: ~18 days**
+
+**Result:** High quality is more efficient but not more profitable. Exploit eliminated! ✅
+
+### Testing Results
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ In-game testing confirmed working as expected
+- ✅ Event messages display correctly
+- ✅ Debt modifiers apply correctly
+- ✅ Repayment speed varies with quality
+- ✅ Enum references updated throughout codebase
