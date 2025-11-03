@@ -18,7 +18,12 @@ namespace LawAndOrder
         // Minimum penalty cap for worthless items (market value = 0)
         private const int MIN_PENALTY_CAP = 10;
 
+        // Lockout duration: 15 days (one quadrum)
+        // RimWorld: 1 day = 60,000 ticks
+        private const int LOCKOUT_DURATION_TICKS = 15 * 60000;
+
         private List<ContrabandDefinition> contrabandDefinitions = new List<ContrabandDefinition>();
+        internal int lastCommitTick = -1; // -1 means never committed (internal for UI access)
 
         public WorldComponent_ContrabandManager(World world) : base(world)
         {
@@ -180,6 +185,62 @@ namespace LawAndOrder
         }
 
         /// <summary>
+        /// Records that contraband changes have been committed.
+        /// </summary>
+        public void RecordCommit()
+        {
+            lastCommitTick = Find.TickManager.TicksGame;
+        }
+
+        /// <summary>
+        /// Checks if contraband changes are currently locked out.
+        /// God mode bypasses the lockout.
+        /// </summary>
+        public bool IsInLockout()
+        {
+            // God mode bypasses lockout
+            if (Verse.DebugSettings.godMode)
+            {
+                return false;
+            }
+
+            if (lastCommitTick < 0)
+            {
+                return false; // Never committed before
+            }
+
+            int ticksSinceCommit = Find.TickManager.TicksGame - lastCommitTick;
+            return ticksSinceCommit < LOCKOUT_DURATION_TICKS;
+        }
+
+        /// <summary>
+        /// Gets the number of days remaining in the lockout period.
+        /// </summary>
+        public float GetLockoutDaysRemaining()
+        {
+            if (!IsInLockout())
+            {
+                return 0f;
+            }
+
+            int ticksSinceCommit = Find.TickManager.TicksGame - lastCommitTick;
+            int ticksRemaining = LOCKOUT_DURATION_TICKS - ticksSinceCommit;
+            return ticksRemaining / 60000f; // Convert ticks to days
+        }
+
+        /// <summary>
+        /// Gets the tick when the lockout will expire.
+        /// </summary>
+        public int GetLockoutExpiryTick()
+        {
+            if (lastCommitTick < 0)
+            {
+                return -1;
+            }
+            return lastCommitTick + LOCKOUT_DURATION_TICKS;
+        }
+
+        /// <summary>
         /// Gets a static reference to the contraband manager.
         /// </summary>
         public static WorldComponent_ContrabandManager Instance
@@ -194,6 +255,7 @@ namespace LawAndOrder
         {
             base.ExposeData();
             Scribe_Collections.Look(ref contrabandDefinitions, "contrabandDefinitions", LookMode.Deep);
+            Scribe_Values.Look(ref lastCommitTick, "lastCommitTick", -1);
 
             if (Scribe.mode == LoadSaveMode.LoadingVars && contrabandDefinitions == null)
             {

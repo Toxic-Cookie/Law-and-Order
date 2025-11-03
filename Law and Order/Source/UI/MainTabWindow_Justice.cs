@@ -13,6 +13,23 @@ using LawAndOrder;
 namespace Law_and_Order.Source.UI
 {
     /// <summary>
+    /// Tracks pending changes to contraband settings
+    /// </summary>
+    public class PendingContrabandChange
+    {
+        public ThingDef thingDef;
+        public int newPenalty;
+        public bool isRemoval;
+
+        public PendingContrabandChange(ThingDef thingDef, int newPenalty, bool isRemoval = false)
+        {
+            this.thingDef = thingDef;
+            this.newPenalty = newPenalty;
+            this.isRemoval = isRemoval;
+        }
+    }
+
+    /// <summary>
     /// Main tab window for the Law and Order justice system
     /// Displays criminals, their crimes, and allows scheduling hearings
     /// </summary>
@@ -42,6 +59,9 @@ namespace Law_and_Order.Source.UI
         private List<ContrabandCategoryNode> contrabandCategoryTree;
         private List<ContrabandCategoryNode> contrabandFlattenedList;
         private bool contrabandTreeNeedsRebuild = true;
+
+        // Pending changes tracking
+        private Dictionary<ThingDef, PendingContrabandChange> pendingContrabandChanges = new Dictionary<ThingDef, PendingContrabandChange>();
 
         private const float LeftPanelWidth = 0.35f;
         private const float PanelGap = 17f;
@@ -542,6 +562,11 @@ namespace Law_and_Order.Source.UI
 
         private void DrawContrabandUI(Rect inRect)
         {
+            // Reserve space for commit/cancel buttons at the bottom
+            float bottomButtonHeight = 50f;
+            Rect bottomButtonRect = new Rect(inRect.x, inRect.yMax - bottomButtonHeight, inRect.width, bottomButtonHeight);
+            inRect.height -= bottomButtonHeight + 10f; // 10f spacing
+
             // Split into left panel (item list) and right panel (configuration)
             Rect leftPanel = inRect;
             leftPanel.width = inRect.width * LeftPanelWidth;
@@ -554,6 +579,9 @@ namespace Law_and_Order.Source.UI
 
             // Draw the configuration panel
             DrawContrabandConfiguration(rightPanel);
+
+            // Draw commit/cancel buttons at the bottom
+            DrawContrabandCommitButtons(bottomButtonRect);
         }
 
         private void DrawContrabandItemList(Rect rect)
@@ -684,6 +712,13 @@ namespace Law_and_Order.Source.UI
                 ThingDef item = node.thingDef;
                 bool isSelected = selectedContrabandItem == item;
                 bool isContraband = WorldComponent_ContrabandManager.Instance.IsContraband(item);
+                bool hasPendingChange = pendingContrabandChanges.ContainsKey(item);
+
+                // Highlight pending changes with a special color
+                if (hasPendingChange)
+                {
+                    Widgets.DrawBoxSolid(workRect, new Color(1f, 0.8f, 0.2f, 0.2f));
+                }
 
                 if (isSelected)
                 {
@@ -700,15 +735,31 @@ namespace Law_and_Order.Source.UI
                     selectedContrabandItem = item;
                     selectedContrabandCategory = null; // Clear category selection
 
-                    // Load penalty if already set as contraband
-                    var existingDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
-                    if (existingDef != null)
+                    // Check if there's a pending change first
+                    if (hasPendingChange)
                     {
-                        contrabandPenaltyInput = existingDef.silverPenaltyPerItem.ToString();
+                        var pendingChange = pendingContrabandChanges[item];
+                        if (!pendingChange.isRemoval)
+                        {
+                            contrabandPenaltyInput = pendingChange.newPenalty.ToString();
+                        }
+                        else
+                        {
+                            contrabandPenaltyInput = "50"; // Default penalty
+                        }
                     }
+                    // Otherwise load penalty if already set as contraband
                     else
                     {
-                        contrabandPenaltyInput = "50"; // Default penalty
+                        var existingDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
+                        if (existingDef != null)
+                        {
+                            contrabandPenaltyInput = existingDef.silverPenaltyPerItem.ToString();
+                        }
+                        else
+                        {
+                            contrabandPenaltyInput = "50"; // Default penalty
+                        }
                     }
 
                     SoundDefOf.Click.PlayOneShotOnCamera(null);
@@ -724,17 +775,39 @@ namespace Law_and_Order.Source.UI
                 Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.MiddleLeft;
 
-                if (isContraband)
+                // Determine what to display based on pending changes
+                string labelText = "";
+                Color labelColor = Color.white;
+
+                if (hasPendingChange)
                 {
-                    GUI.color = new Color(0.9f, 0.2f, 0.2f);
+                    var pendingChange = pendingContrabandChanges[item];
+                    if (pendingChange.isRemoval)
+                    {
+                        labelColor = new Color(1f, 0.5f, 0.2f);
+                        var contrabandDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
+                        labelText = $"{item.LabelCap} ({contrabandDef.silverPenaltyPerItem} silver) [PENDING REMOVAL]";
+                    }
+                    else
+                    {
+                        labelColor = new Color(1f, 0.8f, 0.2f);
+                        labelText = $"{item.LabelCap} ({pendingChange.newPenalty} silver) [PENDING]";
+                    }
+                }
+                else if (isContraband)
+                {
+                    labelColor = new Color(0.9f, 0.2f, 0.2f);
                     var contrabandDef = WorldComponent_ContrabandManager.Instance.GetContrabandDefinition(item);
-                    Widgets.Label(textRect, $"{item.LabelCap} ({contrabandDef.silverPenaltyPerItem} silver)");
-                    GUI.color = Color.white;
+                    labelText = $"{item.LabelCap} ({contrabandDef.silverPenaltyPerItem} silver)";
                 }
                 else
                 {
-                    Widgets.Label(textRect, item.LabelCap);
+                    labelText = item.LabelCap;
                 }
+
+                GUI.color = labelColor;
+                Widgets.Label(textRect, labelText);
+                GUI.color = Color.white;
 
                 Text.Anchor = TextAnchor.UpperLeft;
             }
@@ -818,6 +891,7 @@ namespace Law_and_Order.Source.UI
 
             // Contraband configuration section
             bool isCurrentlyContraband = WorldComponent_ContrabandManager.Instance.IsContraband(selectedContrabandItem);
+            bool hasPendingChange = pendingContrabandChanges.ContainsKey(selectedContrabandItem);
 
             Rect configHeaderRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 25f);
             Text.Font = GameFont.Medium;
@@ -825,6 +899,26 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Small;
 
             innerRect.yMin += 30f;
+
+            // Show pending change indicator if there is one
+            if (hasPendingChange)
+            {
+                Rect pendingIndicatorRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 30f);
+                Widgets.DrawBoxSolid(pendingIndicatorRect, new Color(1f, 0.8f, 0.2f, 0.3f));
+                Rect pendingTextRect = pendingIndicatorRect.ContractedBy(5f);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = new Color(1f, 0.8f, 0.2f);
+
+                var pendingChange = pendingContrabandChanges[selectedContrabandItem];
+                string pendingText = pendingChange.isRemoval
+                    ? "Pending: Remove from contraband"
+                    : $"Pending: Set penalty to {pendingChange.newPenalty} silver";
+
+                Widgets.Label(pendingTextRect, pendingText);
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+                innerRect.yMin += 35f;
+            }
 
             // Penalty input
             Rect penaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.6f, 24f);
@@ -847,10 +941,11 @@ namespace Law_and_Order.Source.UI
                 {
                     if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
                     {
-                        WorldComponent_ContrabandManager.Instance.SetContraband(selectedContrabandItem, penalty);
+                        // Stage the change instead of applying immediately
+                        pendingContrabandChanges[selectedContrabandItem] = new PendingContrabandChange(selectedContrabandItem, penalty, false);
                         Messages.Message(
-                            "LawAndOrder_ContrabandUpdated".Translate(selectedContrabandItem.LabelCap),
-                            MessageTypeDefOf.PositiveEvent
+                            $"{selectedContrabandItem.LabelCap} update staged (not yet committed)",
+                            MessageTypeDefOf.NeutralEvent
                         );
                     }
                     else
@@ -865,9 +960,10 @@ namespace Law_and_Order.Source.UI
                 Rect removeButtonRect = new Rect(innerRect.x + buttonWidth + 10f, innerRect.y, buttonWidth, buttonHeight);
                 if (Widgets.ButtonText(removeButtonRect, "LawAndOrder_RemoveContraband".Translate()))
                 {
-                    WorldComponent_ContrabandManager.Instance.RemoveContraband(selectedContrabandItem);
+                    // Stage the removal instead of applying immediately
+                    pendingContrabandChanges[selectedContrabandItem] = new PendingContrabandChange(selectedContrabandItem, 0, true);
                     Messages.Message(
-                        "LawAndOrder_ContrabandRemoved".Translate(selectedContrabandItem.LabelCap),
+                        $"{selectedContrabandItem.LabelCap} removal staged (not yet committed)",
                         MessageTypeDefOf.NeutralEvent
                     );
                 }
@@ -880,9 +976,10 @@ namespace Law_and_Order.Source.UI
                 {
                     if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
                     {
-                        WorldComponent_ContrabandManager.Instance.SetContraband(selectedContrabandItem, penalty);
+                        // Stage the change instead of applying immediately
+                        pendingContrabandChanges[selectedContrabandItem] = new PendingContrabandChange(selectedContrabandItem, penalty, false);
                         Messages.Message(
-                            "LawAndOrder_ContrabandAdded".Translate(selectedContrabandItem.LabelCap),
+                            $"{selectedContrabandItem.LabelCap} addition staged (not yet committed)",
                             MessageTypeDefOf.PositiveEvent
                         );
                     }
@@ -962,9 +1059,14 @@ namespace Law_and_Order.Source.UI
                 if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
                 {
                     var items = selectedContrabandCategory.GetAllItems();
-                    int count = WorldComponent_ContrabandManager.Instance.SetContrabandBulk(items, penalty);
+                    int count = 0;
+                    foreach (var item in items)
+                    {
+                        pendingContrabandChanges[item] = new PendingContrabandChange(item, penalty, false);
+                        count++;
+                    }
                     Messages.Message(
-                        "LawAndOrder_BulkContrabandAdded".Translate(count, categoryLabel),
+                        $"{count} items in {categoryLabel} staged as contraband (not yet committed)",
                         MessageTypeDefOf.PositiveEvent
                     );
                 }
@@ -986,11 +1088,19 @@ namespace Law_and_Order.Source.UI
                 if (int.TryParse(contrabandPenaltyInput, out int penalty) && penalty > 0)
                 {
                     var items = selectedContrabandCategory.GetAllItems();
-                    int count = WorldComponent_ContrabandManager.Instance.UpdateContrabandBulk(items, penalty);
+                    int count = 0;
+                    foreach (var item in items)
+                    {
+                        if (WorldComponent_ContrabandManager.Instance.IsContraband(item))
+                        {
+                            pendingContrabandChanges[item] = new PendingContrabandChange(item, penalty, false);
+                            count++;
+                        }
+                    }
                     if (count > 0)
                     {
                         Messages.Message(
-                            "LawAndOrder_BulkContrabandUpdated".Translate(count, categoryLabel),
+                            $"{count} items in {categoryLabel} staged for update (not yet committed)",
                             MessageTypeDefOf.PositiveEvent
                         );
                     }
@@ -1018,11 +1128,19 @@ namespace Law_and_Order.Source.UI
             if (Widgets.ButtonText(removeAllButtonRect, "LawAndOrder_RemoveAllContraband".Translate()))
             {
                 var items = selectedContrabandCategory.GetAllItems();
-                int count = WorldComponent_ContrabandManager.Instance.RemoveContrabandBulk(items);
+                int count = 0;
+                foreach (var item in items)
+                {
+                    if (WorldComponent_ContrabandManager.Instance.IsContraband(item))
+                    {
+                        pendingContrabandChanges[item] = new PendingContrabandChange(item, 0, true);
+                        count++;
+                    }
+                }
                 if (count > 0)
                 {
                     Messages.Message(
-                        "LawAndOrder_BulkContrabandRemoved".Translate(count, categoryLabel),
+                        $"{count} items in {categoryLabel} staged for removal (not yet committed)",
                         MessageTypeDefOf.NeutralEvent
                     );
                 }
@@ -1034,6 +1152,237 @@ namespace Law_and_Order.Source.UI
                     );
                 }
             }
+        }
+
+        private void DrawContrabandCommitButtons(Rect rect)
+        {
+            var contrabandManager = WorldComponent_ContrabandManager.Instance;
+            bool isGodMode = DebugSettings.godMode;
+            bool wouldBeInLockout = false;
+            float daysRemaining = 0f;
+
+            // Check if we would be in lockout (without god mode bypass)
+            if (contrabandManager.lastCommitTick >= 0)
+            {
+                int ticksSinceCommit = Find.TickManager.TicksGame - contrabandManager.lastCommitTick;
+                wouldBeInLockout = ticksSinceCommit < 15 * 60000; // LOCKOUT_DURATION_TICKS
+                if (wouldBeInLockout)
+                {
+                    int ticksRemaining = (15 * 60000) - ticksSinceCommit;
+                    daysRemaining = ticksRemaining / 60000f;
+                }
+            }
+
+            bool isInLockout = contrabandManager.IsInLockout();
+
+            // Show god mode bypass indicator if god mode is active and would be locked
+            if (isGodMode && wouldBeInLockout)
+            {
+                Rect godModeRect = new Rect(rect.x, rect.y, rect.width, rect.height / 2f);
+                Widgets.DrawBoxSolid(godModeRect, new Color(0.2f, 0.8f, 0.2f, 0.3f));
+
+                Rect godModeTextRect = godModeRect.ContractedBy(5f);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Text.Font = GameFont.Medium;
+                GUI.color = new Color(0.3f, 1f, 0.3f);
+                Widgets.Label(godModeTextRect, $"GOD MODE: LOCKOUT BYPASSED");
+
+                Text.Font = GameFont.Small;
+                godModeTextRect.y += 20f;
+                Widgets.Label(godModeTextRect, $"(Would be locked for {daysRemaining:F1} more day(s))");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+
+                rect.y += rect.height / 2f + 5f;
+                rect.height = rect.height / 2f - 5f;
+            }
+            // Show lockout status prominently if not bypassed
+            else if (isInLockout)
+            {
+                Rect lockoutRect = new Rect(rect.x, rect.y, rect.width, rect.height / 2f);
+                Widgets.DrawBoxSolid(lockoutRect, new Color(0.8f, 0.2f, 0.2f, 0.3f));
+
+                Rect lockoutTextRect = lockoutRect.ContractedBy(5f);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Text.Font = GameFont.Medium;
+                GUI.color = new Color(1f, 0.3f, 0.3f);
+                Widgets.Label(lockoutTextRect, $"CONTRABAND POLICY LOCKED");
+
+                Text.Font = GameFont.Small;
+                lockoutTextRect.y += 20f;
+                Widgets.Label(lockoutTextRect, $"Cannot commit changes for {daysRemaining:F1} more day(s)");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+
+                rect.y += rect.height / 2f + 5f;
+                rect.height = rect.height / 2f - 5f;
+            }
+
+            // Only show buttons if there are pending changes or show status message
+            if (pendingContrabandChanges.Count == 0 && !isInLockout && !isGodMode)
+            {
+                // Show a message indicating no pending changes
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = new Color(0.7f, 0.7f, 0.7f);
+                Widgets.Label(rect, "No pending changes");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+            else if (pendingContrabandChanges.Count == 0 && !wouldBeInLockout)
+            {
+                // Show a message indicating no pending changes (god mode active but no lockout to show)
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = new Color(0.7f, 0.7f, 0.7f);
+                Widgets.Label(rect, "No pending changes");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+
+            float buttonWidth = 200f;
+            float buttonHeight = 40f;
+            float spacing = 15f;
+            float totalWidth = buttonWidth * 2 + spacing;
+            float startX = rect.x + (rect.width - totalWidth) / 2f;
+
+            // Pending changes indicator (only show if there are pending changes)
+            if (pendingContrabandChanges.Count > 0)
+            {
+                Rect pendingLabelRect = new Rect(rect.x, rect.y, rect.width / 3f, buttonHeight);
+                Text.Anchor = TextAnchor.MiddleLeft;
+                GUI.color = new Color(1f, 0.8f, 0.2f);
+                Widgets.Label(pendingLabelRect, $"{pendingContrabandChanges.Count} pending change(s)");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+
+                // Commit button (green when available, grey when locked)
+                Rect commitButtonRect = new Rect(startX, rect.y + (rect.height - buttonHeight) / 2f, buttonWidth, buttonHeight);
+
+                if (isInLockout)
+                {
+                    // Disabled button with tooltip
+                    GUI.color = new Color(0.5f, 0.5f, 0.5f);
+                    Widgets.ButtonText(commitButtonRect, "Commit Changes (Locked)");
+                    GUI.color = Color.white;
+
+                    if (Mouse.IsOver(commitButtonRect))
+                    {
+                        TooltipHandler.TipRegion(commitButtonRect, $"Contraband policy is locked for {daysRemaining:F1} more day(s)");
+                    }
+                }
+                else
+                {
+                    // Active button
+                    GUI.color = new Color(0.3f, 0.8f, 0.3f);
+                    if (Widgets.ButtonText(commitButtonRect, "Commit Changes"))
+                    {
+                        CommitContrabandChanges();
+                    }
+                    GUI.color = Color.white;
+                }
+
+                // Cancel button (red) - always enabled
+                Rect cancelButtonRect = new Rect(startX + buttonWidth + spacing, rect.y + (rect.height - buttonHeight) / 2f, buttonWidth, buttonHeight);
+                GUI.color = new Color(0.8f, 0.3f, 0.3f);
+                if (Widgets.ButtonText(cancelButtonRect, "Cancel Changes"))
+                {
+                    CancelContrabandChanges();
+                }
+                GUI.color = Color.white;
+            }
+        }
+
+        private void CommitContrabandChanges()
+        {
+            if (pendingContrabandChanges.Count == 0)
+            {
+                return;
+            }
+
+            // Check lockout
+            var contrabandManager = WorldComponent_ContrabandManager.Instance;
+            bool isGodMode = DebugSettings.godMode;
+
+            if (contrabandManager.IsInLockout())
+            {
+                float daysRemaining = contrabandManager.GetLockoutDaysRemaining();
+                Messages.Message(
+                    $"Cannot commit contraband changes. Policy is locked for {daysRemaining:F1} more day(s).",
+                    MessageTypeDefOf.RejectInput
+                );
+                return;
+            }
+
+            int addedCount = 0;
+            int updatedCount = 0;
+            int removedCount = 0;
+
+            foreach (var change in pendingContrabandChanges.Values)
+            {
+                if (change.isRemoval)
+                {
+                    contrabandManager.RemoveContraband(change.thingDef);
+                    removedCount++;
+                }
+                else
+                {
+                    bool wasContraband = contrabandManager.IsContraband(change.thingDef);
+                    contrabandManager.SetContraband(change.thingDef, change.newPenalty);
+                    if (wasContraband)
+                    {
+                        updatedCount++;
+                    }
+                    else
+                    {
+                        addedCount++;
+                    }
+                }
+            }
+
+            // Record the commit to start lockout period
+            contrabandManager.RecordCommit();
+
+            // Clear pending changes
+            pendingContrabandChanges.Clear();
+
+            // Rebuild tree to show updated contraband counts
+            contrabandTreeNeedsRebuild = true;
+
+            // Show success message
+            string message = "Contraband changes committed: ";
+            List<string> parts = new List<string>();
+            if (addedCount > 0) parts.Add($"{addedCount} added");
+            if (updatedCount > 0) parts.Add($"{updatedCount} updated");
+            if (removedCount > 0) parts.Add($"{removedCount} removed");
+            message += string.Join(", ", parts);
+
+            // Different message based on god mode
+            if (isGodMode)
+            {
+                message += "\n(God mode: Lockout bypassed)";
+            }
+            else
+            {
+                message += "\nContraband policy locked for 15 days.";
+            }
+
+            Messages.Message(message, MessageTypeDefOf.TaskCompletion);
+            SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
+        }
+
+        private void CancelContrabandChanges()
+        {
+            if (pendingContrabandChanges.Count == 0)
+            {
+                return;
+            }
+
+            int count = pendingContrabandChanges.Count;
+            pendingContrabandChanges.Clear();
+
+            Messages.Message($"Cancelled {count} pending contraband change(s)", MessageTypeDefOf.NeutralEvent);
+            SoundDefOf.CancelMode.PlayOneShotOnCamera(null);
         }
     }
 }
