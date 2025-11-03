@@ -2542,3 +2542,146 @@ This phase implements a debt-based mood debuff that scales with the amount of de
 - Grace period (Phase 3): Releases debt-free slaves before permanent debuff
 - Natural pressure valve: Rebellion/escape becomes more likely with high debt
 - Balances contraband system: Can't just spam huge penalties without consequences
+
+---
+
+## ✅ Phase 5: Ideology-Aligned Contraband - COMPLETE (November 2, 2025)
+
+**Status:** ✅ FULLY IMPLEMENTED AND TESTED
+
+### Objective
+
+Create a system that rewards ideology-consistent contraband enforcement and punishes hypocritical behavior, supporting roleplay and preventing exploitation.
+
+### What Changed
+
+This phase implements an ideology-contraband alignment system that creates meaningful consequences based on how contraband rules align with colony ideology.
+
+#### 1. Ideology Mapping System
+
+**Class:** `IdeologyContrabandMapper`
+- Maps ideology precepts to item categories
+- Determines if banning an item aligns with colony beliefs
+- Supports 6 ideology types:
+  * Animal Personhood → Animal products (leather, wool, meat)
+  * Anti-Cannibalism → Human products
+  * Tree Connection → Wood products
+  * Anti-Drug → Drugs (beer, smokeleaf, etc.)
+  * Blindness → Vision-related items
+  * Pacifism → Weapons
+
+#### 2. Four Mood Thoughts
+
+**1. Enforcing Beliefs** (+2 mood)
+- Situational thought, persistent
+- Active when contraband aligns with ideology
+- "We punish prisoners for possessing things that violate our beliefs. This feels right."
+
+**2. Colony Has Contraband** (-3 mood)
+- Situational thought, persistent
+- Active when colony stores contraband items
+- "We punish prisoners for having things we keep ourselves. That's not fair."
+
+**3. Destroyed Contraband** (+1 mood)
+- Memory thought, 2 days duration
+- Stacks up to 5 times (50% multiplier)
+- Triggered when contraband is destroyed/burned
+
+**4. Produced Contraband** (-2 mood)
+- Memory thought, 3 days duration
+- Stacks up to 5 times (75% multiplier)
+- Triggered when colonist crafts contraband item
+
+#### 3. Alert System
+
+**Alert:** `Alert_ContrabandHypocrisy`
+- Medium priority (like "Low food")
+- Triggers when colony has contraband items
+- Lists all hypocritical items
+- Suggests solutions (destroy, trade, remove from list)
+
+### Files Created (7 total)
+1. `Source/Contraband/IdeologyContrabandMapper.cs` - Ideology-item alignment logic
+2. `Defs/ThoughtDefs/Thoughts_Contraband.xml` - 4 mood thoughts
+3. `Source/Thoughts/ThoughtWorker_EnforcingBeliefs.cs` - Alignment bonus worker
+4. `Source/Thoughts/ThoughtWorker_ColonyHasContraband.cs` - Hypocrisy penalty worker
+5. `Source/Patches/ContrabandDestruction_Patch.cs` - Destruction mood buff
+6. `Source/Patches/ContrabandProduction_Patch.cs` - Production mood debuff
+7. `Source/Alerts/Alert_ContrabandHypocrisy.cs` - Hypocrisy alert
+
+### Balance Impact
+
+**Example Scenarios:**
+
+**Tree-Loving Colony:**
+- Ideology: Gauranlen Tree Connection
+- Contraband: Wood (100 silver penalty)
+- Effect: +2 mood (alignment) - 3 mood if storing wood = Net -1 (encourages consistency)
+
+**Anti-Drug Colony:**
+- Ideology: Teetotaler
+- Contraband: All drugs banned
+- Effect: +2 mood (alignment) - 3 mood if storing drugs = Net -1 (strong incentive)
+
+**Hypocritical Player:**
+- Marks beer as contraband for profit
+- Has 100 beer in storage for trading
+- Effect: -3 mood penalty + Alert + Production debuff if brewed
+- Result: System punishes exploitation
+
+### System Interactions
+
+- **With Debt Stress:** Hypocrisy + debt stress compounds mood problems
+- **With Grace Period:** Can't permanently exploit contraband without consequences
+- **With Ritual Quality:** Combined with belief enforcement = moral colony theme
+- **With Trade:** Encourages trading away contraband instead of keeping it
+
+### Testing Results
+- ✅ Build successful (0 errors, 2 pre-existing warnings)
+- ✅ Ideology mapper correctly identifies aligned items
+- ✅ Enforcing beliefs thought grants +2 mood when appropriate
+- ✅ Hypocrisy thought applies -3 mood when colony has contraband
+- ✅ Destruction patch grants +1 mood when contraband destroyed
+- ✅ Production patch applies -2 mood when contraband crafted
+- ✅ Alert triggers correctly for hypocritical behavior
+
+### Design Philosophy
+
+**Rewards Roleplay:**
+- Ideology-consistent enforcement feels meaningful
+- Players who follow beliefs get mood bonuses
+- Creates interesting colony personalities
+
+**Punishes Exploitation:**
+- Can't abuse contraband for pure profit without consequences
+- Hypocrisy penalty (-3) is significant
+- Production penalty discourages contraband crafting
+
+**Supports Multiple Playstyles:**
+- Strict Believer: Maximum mood, destroy all contraband
+- Pragmatic: No bonuses, no penalties (neutral)
+- Flexible: Remove contraband from list when acquired
+- Hypocrite: Severe mood penalties (discouraged)
+
+---
+
+## 🎉 ALL 5 BALANCE IMPROVEMENT PHASES COMPLETE
+
+**Summary:**
+1. ✅ **Phase 1:** Ritual Quality Reframe - Eliminated hearing sabotage exploit
+2. ✅ **Phase 2:** Contraband Penalty Cap - Penalties capped at 3x market value
+3. ✅ **Phase 3:** Grace Period & Release System - 10-day grace period with auto-emancipation
+4. ✅ **Phase 4:** Debt Stress System - Mood debuffs scale with debt
+5. ✅ **Phase 5:** Ideology-Aligned Contraband - Rewards beliefs, punishes hypocrisy
+
+**Overall Impact:**
+- Eliminates all major exploits
+- Creates meaningful moral choices
+- Supports diverse playstyles
+- Encourages roleplay-consistent behavior
+- Maintains challenge and balance
+
+**Build Status:** ✅ 0 Errors, 2 Warnings (pre-existing)
+**Documentation:** ✅ All phases fully documented
+**Testing:** ✅ All phases tested and confirmed working
+

@@ -64,6 +64,13 @@
 - [UI Quick Reference](#ui-quick-reference)
 - [Logging Quick Reference](#logging-quick-reference)
 
+### [Section 11: Ideology-Aligned Contraband](#section-11-ideology-aligned-contraband) (Added Nov 2025)
+- [Overview](#ideology-contraband-overview)
+- [Ideology Mapping System](#ideology-mapping-system)
+- [Mood Effects](#ideology-contraband-mood-effects)
+- [Alert System](#ideology-contraband-alerts)
+- [Usage Examples](#ideology-contraband-examples)
+
 ---
 
 ## Section 1: Crime Tracking System
@@ -2170,6 +2177,294 @@ public static class CourtroomUtils
     }
 }
 ```
+
+---
+
+## Section 11: Ideology-Aligned Contraband
+
+**Added:** November 2, 2025
+**Status:** ✅ Fully implemented
+
+### Ideology Contraband Overview
+
+The ideology-aligned contraband system creates meaningful consequences and rewards based on how contraband enforcement aligns with your colony's ideology. This system encourages roleplay and prevents hypocrisy by tracking whether the colony follows its own rules.
+
+**Key Features:**
+- Automatic detection of ideology-aligned contraband items
+- Mood bonuses for enforcing beliefs through contraband rules
+- Mood penalties for hypocrisy (having contraband items yourself)
+- Mood rewards for destroying contraband
+- Mood penalties for producing contraband
+- Alert system for detecting double standards
+
+**Core Philosophy:**
+- Rewards consistent ideology enforcement
+- Punishes hypocritical behavior
+- Creates interesting moral dilemmas for players
+- Supports various playstyles (strict believers, pragmatic survivors, etc.)
+
+### Ideology Mapping System
+
+**File:** `Source/Contraband/IdeologyContrabandMapper.cs`
+
+The mapper determines if banning an item aligns with colony ideology by checking various precepts:
+
+#### Supported Ideology Mappings
+
+**1. Animal Personhood / Ranching**
+- **Items:** Leather, wool, meat, eggs, milk, silk
+- **Logic:** Colonies that value animals would ban animal products
+- **Example:** A colony with "Animal Personhood" banning leather gets +2 mood
+
+**2. Cannibalism (Anti)**
+- **Items:** Human meat, human leather
+- **Logic:** Anti-cannibalism ideologies would ban human products
+- **Example:** Standard colonies banning human meat aligns with beliefs
+
+**3. Tree Connection / Nature**
+- **Items:** Wood, wooden products, lumber
+- **Logic:** Tree-loving ideologies would ban wood harvesting
+- **Example:** Gauranlen tree worshippers banning wood products
+
+**4. Drug Use**
+- **Items:** All drugs (smokeleaf, beer, flake, etc.)
+- **Logic:** Anti-drug ideologies would ban recreational drugs
+- **Example:** Teetotaler colony banning alcohol aligns with beliefs
+
+**5. Blindness / Darkness**
+- **Items:** Goggles, bionic eyes, vision-related items
+- **Logic:** Blindness-focused ideologies would ban vision aids
+- **Example:** Darkness worshippers banning night vision goggles
+
+**6. Violence (Pacifist)**
+- **Items:** Weapons (all types)
+- **Logic:** Pacifist ideologies would ban weapons
+- **Example:** Peaceful colony banning weapons aligns with beliefs
+
+#### Implementation Example
+
+```csharp
+// Check if item aligns with ideology
+bool aligns = IdeologyContrabandMapper.ItemAlignsWithIdeology(itemDef, colonistIdeo);
+
+if (aligns)
+{
+    // Colonist gets +2 mood: "enforcing our values"
+}
+```
+
+### Ideology Contraband Mood Effects
+
+#### Four Core Thoughts
+
+**1. Enforcing Beliefs** (+2 mood)
+- **Type:** Situational thought
+- **Condition:** Colony has at least one contraband item that aligns with ideology
+- **Duration:** Persistent while condition met
+- **Message:** "We punish prisoners for possessing things that violate our beliefs. This feels right."
+
+**2. Colony Has Contraband** (-3 mood)
+- **Type:** Situational thought
+- **Condition:** Colony storage or colonist inventory contains items marked as contraband
+- **Duration:** Persistent while condition met
+- **Message:** "We punish prisoners for having things we keep ourselves. That's not fair."
+
+**3. Destroyed Contraband** (+1 mood)
+- **Type:** Memory thought
+- **Duration:** 2 days
+- **Stacks:** Up to 5 times (50% multiplier per stack)
+- **Condition:** When player-owned contraband item is destroyed/burned
+- **Message:** "We properly disposed of illegal items. Keeping the colony clean."
+
+**4. Produced Contraband** (-2 mood)
+- **Type:** Memory thought
+- **Duration:** 3 days
+- **Stacks:** Up to 5 times (75% multiplier per stack)
+- **Condition:** When colonist crafts an item marked as contraband
+- **Message:** "I crafted something we punish prisoners for having. That feels wrong."
+
+#### Thought Workers
+
+**EnforcingBeliefs** (`ThoughtWorker_EnforcingBeliefs.cs`):
+```csharp
+protected override ThoughtState CurrentStateInternal(Pawn p)
+{
+    // Check if colonist's ideology aligns with any contraband items
+    foreach (var contrabandDef in contrabandDefinitions)
+    {
+        if (IdeologyContrabandMapper.ItemAlignsWithIdeology(contrabandDef.thingDef, p.Ideo))
+        {
+            return ThoughtState.ActiveAtStage(0); // +2 mood
+        }
+    }
+    return ThoughtState.Inactive;
+}
+```
+
+**ColonyHasContraband** (`ThoughtWorker_ColonyHasContraband.cs`):
+```csharp
+protected override ThoughtState CurrentStateInternal(Pawn p)
+{
+    // Check colony storage and colonist inventories for contraband
+    foreach (var contrabandDef in contrabandDefinitions)
+    {
+        var items = map.listerThings.ThingsOfDef(contrabandDef.thingDef);
+        if (items.Any(t => t.Faction == Faction.OfPlayer))
+        {
+            return ThoughtState.ActiveAtStage(0); // -3 mood
+        }
+    }
+    return ThoughtState.Inactive;
+}
+```
+
+### Ideology Contraband Alerts
+
+**Alert: Contraband Hypocrisy**
+
+**File:** `Source/Alerts/Alert_ContrabandHypocrisy.cs`
+
+**Trigger Conditions:**
+- Colony has at least one item in storage that is marked as contraband
+- OR colonist inventory contains contraband item
+
+**Priority:** Medium (same as "Need research" or "Low food")
+
+**Alert Message:**
+```
+Contraband hypocrisy
+
+The colony has items that are marked as contraband:
+  - Beer
+  - Smokeleaf
+  - Leather
+
+This is hypocritical - we punish prisoners for having items we keep ourselves.
+
+Colonists have a mood penalty (-3) for this double standard.
+
+Consider:
+  - Destroying these items (mood bonus)
+  - Trading/gifting them away
+  - Removing them from the contraband list
+```
+
+**Implementation:**
+```csharp
+public override AlertReport GetReport()
+{
+    List<ThingDef> hypocriticalItems = HypocriticalItems;
+    if (hypocriticalItems.Count == 0)
+        return false;
+
+    return AlertReport.Active;
+}
+```
+
+### Usage Examples
+
+#### Example 1: Tree-Loving Colony
+
+**Setup:**
+```
+Ideology: Gauranlen Tree Connection
+Contraband: WoodLog (100 silver penalty)
+```
+
+**Effects:**
+- ✅ All colonists: +2 mood ("enforcing our values")
+- ✅ If colony has wood in storage: -3 mood ("hypocritical laws")
+- ✅ When wood is burned: +1 mood for 2 days
+- ✅ If colonist crafts wooden furniture: -2 mood for 3 days
+
+**Net Effect:** Encourages consistent tree-loving behavior
+
+#### Example 2: Anti-Drug Colony
+
+**Setup:**
+```
+Ideology: Teetotaler precept
+Contraband: Beer, Smokeleaf, Yayo (all banned)
+```
+
+**Effects:**
+- ✅ All colonists: +2 mood (drugs align with ideology)
+- ✅ If colony stores drugs: -3 mood (hypocrisy alert)
+- ✅ If drugs are destroyed: +1 mood
+- ✅ If colonist brews beer: -2 mood
+
+**Net Effect:** Strong incentive to avoid drugs entirely
+
+#### Example 3: Pragmatic Colony (No Ideology Alignment)
+
+**Setup:**
+```
+Ideology: Generic / No strong precepts
+Contraband: Random items for profit exploitation
+```
+
+**Effects:**
+- ❌ No ideology alignment bonus
+- ✅ Still gets hypocrisy penalty if storing contraband
+- ✅ Still gets production/destruction mood effects
+- ✅ Alert still triggers for double standards
+
+**Net Effect:** Hypocrisy system still applies
+
+#### Example 4: Hypocritical Player
+
+**Scenario:**
+```
+Player marks beer as contraband (50 silver penalty)
+Player has 100 beer in storage for trading
+```
+
+**Effects:**
+- ❌ No alignment bonus (beer doesn't align with ideology)
+- ✅ -3 mood penalty for all colonists (hypocrisy)
+- ✅ Alert: "Contraband hypocrisy" appears
+- ✅ If player destroys beer: +1 mood for each colonist
+
+**Result:** System punishes inconsistent enforcement
+
+### Balance Implications
+
+**Rewards Roleplay:**
+- Ideology-consistent contraband rules feel meaningful
+- Players who follow their beliefs get mood bonuses
+- Creates interesting colony personalities
+
+**Punishes Exploitation:**
+- Can't abuse contraband system for pure profit
+- Hypocrisy penalty (-3) is significant
+- Production penalty discourages contraband crafting
+
+**Supports Multiple Playstyles:**
+- **Strict Believer:** Mark all ideology-opposing items, destroy colony stock → Maximum mood
+- **Pragmatic:** Only mark external threats, allow internal use → No bonuses, no penalties
+- **Hypocrite:** Mark everything but keep it → Severe mood penalties
+- **Flexible:** Remove contraband when colony acquires it → Avoids penalties
+
+**System Interactions:**
+- **With Debt Stress:** High contraband penalties + debt stress = rebellion risk
+- **With Grace Period:** Can't permanently exploit high-penalty contraband
+- **With Ritual Quality:** Efficient hearings + aligned contraband = moral colony
+- **With Trade:** Encourages trading away contraband instead of keeping it
+
+### Files Created/Modified
+
+**Created (7 files):**
+1. `Source/Contraband/IdeologyContrabandMapper.cs` - Ideology-item alignment logic
+2. `Defs/ThoughtDefs/Thoughts_Contraband.xml` - 4 mood thoughts
+3. `Source/Thoughts/ThoughtWorker_EnforcingBeliefs.cs` - Alignment bonus worker
+4. `Source/Thoughts/ThoughtWorker_ColonyHasContraband.cs` - Hypocrisy penalty worker
+5. `Source/Patches/ContrabandDestruction_Patch.cs` - Destruction mood buff
+6. `Source/Patches/ContrabandProduction_Patch.cs` - Production mood debuff
+7. `Source/Alerts/Alert_ContrabandHypocrisy.cs` - Hypocrisy alert
+
+**Build Status:**
+- ✅ 0 Errors, 2 Warnings (pre-existing obsolete API)
+- ✅ Successfully deployed to RimWorld Mods folder
 
 ---
 
