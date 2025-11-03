@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Verse;
 using Law_and_Order.Source.Utils;
+using System.Collections.Generic;
 
 namespace Law_and_Order.Source.Patches
 {
@@ -10,6 +11,68 @@ namespace Law_and_Order.Source.Patches
     /// </summary>
     public static class CourtroomCacheInvalidation_Patch
     {
+        // Debounce tracking: map -> tick of last invalidation
+        private static Dictionary<Map, int> lastInvalidationTick = new Dictionary<Map, int>();
+        private const int INVALIDATION_COOLDOWN_TICKS = 60; // 1 second at normal speed
+
+        /// <summary>
+        /// Check if a building is relevant to courtroom detection
+        /// </summary>
+        private static bool IsRelevantBuilding(Thing thing)
+        {
+            if (!(thing is Building building))
+            {
+                return false;
+            }
+
+            // Chairs and sittable furniture (potential courtroom seating)
+            if (building.def.building?.isSittable == true)
+            {
+                return true;
+            }
+
+            // Walls, doors, and other room-defining structures
+            // These can change room boundaries which affects which chairs are in which room
+            if (building.def.passability == Traversability.Impassable ||
+                building.def.fillPercent >= 0.99f ||
+                building.def.building?.isEdifice == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Invalidate cache with debouncing to prevent spam
+        /// </summary>
+        private static void TryInvalidateCache(Map map, string reason)
+        {
+            if (map == null)
+            {
+                return;
+            }
+
+            int currentTick = Find.TickManager.TicksGame;
+
+            // Check if we've invalidated recently
+            if (lastInvalidationTick.TryGetValue(map, out int lastTick))
+            {
+                if (currentTick - lastTick < INVALIDATION_COOLDOWN_TICKS)
+                {
+                    // Too soon, skip this invalidation
+                    return;
+                }
+            }
+
+            // Invalidate and update timestamp
+            CourtroomUtils.InvalidateCache(map);
+            lastInvalidationTick[map] = currentTick;
+
+            // Only log at trace level if debugging is needed
+            // ModLog.Trace($"Courtroom cache invalidated for map {map.uniqueID}: {reason}");
+        }
+
         /// <summary>
         /// Invalidate cache when a building is spawned (constructed/placed)
         /// </summary>
@@ -21,11 +84,10 @@ namespace Law_and_Order.Source.Patches
             {
                 try
                 {
-                    // Only invalidate for buildings (furniture, walls, etc.)
-                    if (__instance is Building)
+                    // Only invalidate for buildings that could affect courtrooms
+                    if (IsRelevantBuilding(__instance))
                     {
-                        CourtroomUtils.InvalidateCache(map);
-                        ModLog.Trace($"Courtroom cache invalidated for map {map?.uniqueID} due to building spawn: {__instance.def.defName}");
+                        TryInvalidateCache(map, $"building spawn: {__instance.def.defName}");
                     }
                 }
                 catch (System.Exception e)
@@ -47,12 +109,11 @@ namespace Law_and_Order.Source.Patches
             {
                 try
                 {
-                    // Only invalidate for buildings
-                    if (__instance is Building && __instance.Map != null)
+                    // Only invalidate for buildings that could affect courtrooms
+                    if (__instance.Map != null && IsRelevantBuilding(__instance))
                     {
                         Map map = __instance.Map;
-                        CourtroomUtils.InvalidateCache(map);
-                        ModLog.Trace($"Courtroom cache invalidated for map {map.uniqueID} due to building despawn: {__instance.def.defName}");
+                        TryInvalidateCache(map, $"building despawn: {__instance.def.defName}");
                     }
                 }
                 catch (System.Exception e)

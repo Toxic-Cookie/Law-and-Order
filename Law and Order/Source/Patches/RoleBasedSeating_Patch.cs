@@ -135,10 +135,9 @@ namespace Law_and_Order.Source.Patches
                 // This seat is valid!
                 spot = seatPos;
 
-#if DEBUG
-                Law_and_Order.Source.Mod.Log?.Message(
-                    $"[RoleBasedSeating] Found {roleNeeded} seat for {pawn.LabelShort} at {seatPos}");
-#endif
+                // Logging disabled to prevent spam - role-based seating is working correctly
+                // Law_and_Order.Source.Mod.Log?.Message(
+                //     $"[RoleBasedSeating] Found {roleNeeded} seat for {pawn.LabelShort} at {seatPos}");
 
                 return true;
             }

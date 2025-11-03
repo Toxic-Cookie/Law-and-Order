@@ -15,7 +15,10 @@ namespace Law_and_Order.Source.Alerts
     {
         private const int GRACE_PERIOD_DAYS = 7;
 
+        // Cache to avoid checking every tick
+        private const int CACHE_DURATION_TICKS = 250; // ~4 seconds at normal speed
         private List<Pawn> prisonersAwaitingHearingResult = new List<Pawn>();
+        private int lastUpdateTick = -999999;
 
         public Alert_OverdueHearings()
         {
@@ -27,6 +30,15 @@ namespace Law_and_Order.Source.Alerts
         {
             get
             {
+                int currentTick = Find.TickManager.TicksGame;
+
+                // Use cached result if still valid
+                if (currentTick - lastUpdateTick < CACHE_DURATION_TICKS)
+                {
+                    return prisonersAwaitingHearingResult;
+                }
+
+                // Cache expired, recalculate
                 prisonersAwaitingHearingResult.Clear();
 
                 foreach (Map map in Find.Maps)
@@ -36,26 +48,9 @@ namespace Law_and_Order.Source.Alerts
 
                     var prisoners = map.mapPawns.PrisonersOfColonySpawned;
 
-                    if (Prefs.DevMode && prisoners.Count > 0)
-                    {
-                        Law_and_Order.Source.Mod.Log?.Message($"[Alert_OverdueHearings] Checking {prisoners.Count} prisoners");
-                    }
-
                     foreach (Pawn prisoner in prisoners)
                     {
                         var criminalRecord = CrimeUtils.TryGetCriminalRecord(prisoner);
-
-                        if (Prefs.DevMode)
-                        {
-                            if (criminalRecord == null)
-                            {
-                                Law_and_Order.Source.Mod.Log?.Message($"[Alert_OverdueHearings] {prisoner.LabelShort}: No criminal record");
-                            }
-                            else
-                            {
-                                Law_and_Order.Source.Mod.Log?.Message($"[Alert_OverdueHearings] {prisoner.LabelShort}: {criminalRecord.TotalCrimeCount} crimes, hearing status: {criminalRecord.Hearing.status}");
-                            }
-                        }
 
                         // Skip if no criminal record or no crimes
                         if (criminalRecord == null || criminalRecord.TotalCrimeCount == 0)
@@ -67,19 +62,10 @@ namespace Law_and_Order.Source.Alerts
 
                         // Add all prisoners awaiting hearings (regardless of grace period)
                         prisonersAwaitingHearingResult.Add(prisoner);
-
-                        if (Prefs.DevMode)
-                        {
-                            Law_and_Order.Source.Mod.Log?.Message($"[Alert_OverdueHearings] Added {prisoner.LabelShort} to alert list");
-                        }
                     }
                 }
 
-                if (Prefs.DevMode)
-                {
-                    Law_and_Order.Source.Mod.Log?.Message($"[Alert_OverdueHearings] Total prisoners awaiting hearing: {prisonersAwaitingHearingResult.Count}");
-                }
-
+                lastUpdateTick = currentTick;
                 return prisonersAwaitingHearingResult;
             }
         }
@@ -89,20 +75,10 @@ namespace Law_and_Order.Source.Alerts
             // Only show alert if game has started properly
             if (Current.Game == null || Find.CurrentMap == null)
             {
-                if (Prefs.DevMode)
-                {
-                    Law_and_Order.Source.Mod.Log?.Message("[Alert_OverdueHearings] Game not initialized, skipping alert");
-                }
                 return false;
             }
 
             List<Pawn> pawns = PrisonersAwaitingHearing;
-
-            if (Prefs.DevMode)
-            {
-                Law_and_Order.Source.Mod.Log?.Message($"[Alert_OverdueHearings] GetReport returning {pawns.Count} pawns");
-            }
-
             return AlertReport.CulpritsAre(pawns);
         }
 
