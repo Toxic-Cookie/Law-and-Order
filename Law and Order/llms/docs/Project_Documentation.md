@@ -35,18 +35,25 @@
 - [Penalty Caps](#contraband-penalty-caps) (Added Nov 2025)
 - [Usage Examples](#contraband-usage-examples)
 
-### [Section 6: Social Interaction System](#section-6-social-interaction-system)
+### [Section 6: Grace Period & Release System](#section-6-grace-period-release-system) (Added Nov 2025)
+- [Overview](#grace-period-overview)
+- [Grace Period Mechanics](#grace-period-mechanics)
+- [Auto-Emancipation](#auto-emancipation)
+- [Mood and Faction Effects](#grace-period-effects)
+- [Pardon Integration](#pardon-integration)
+
+### [Section 7: Social Interaction System](#section-7-social-interaction-system)
 - [Overview](#social-interaction-overview)
 - [Court Interactions](#court-interactions)
 - [Implementation](#social-interaction-implementation)
 - [Timing and Progression](#interaction-timing)
 
-### [Section 7: Logging System](#section-7-logging-system)
+### [Section 8: Logging System](#section-8-logging-system)
 - [Tiered Logging](#tiered-logging)
 - [Usage Patterns](#logging-usage-patterns)
 - [Best Practices](#logging-best-practices)
 
-### [Section 8: Quick References](#section-8-quick-references)
+### [Section 9: Quick References](#section-9-quick-references)
 - [Crime System Quick Reference](#crime-quick-reference)
 - [UI Quick Reference](#ui-quick-reference)
 - [Logging Quick Reference](#logging-quick-reference)
@@ -894,7 +901,403 @@ manager.SetContraband(stoneChunk, 50);
 
 ---
 
-## Section 6: Social Interaction System
+## Section 6: Grace Period & Release System
+
+**Added:** November 2, 2025
+**Status:** ✅ Fully implemented and tested
+
+### Grace Period Overview
+
+The grace period system incentivizes releasing enslaved debtors after they've paid their debt, rather than keeping them permanently enslaved. It provides a 10-day grace period for releasing debt-free slaves before penalties apply.
+
+**Key Features:**
+- 10-day grace period after debt is paid
+- Automatic emancipation queuing
+- Mood penalties for both colonists and slaves if grace period expires
+- Faction relation bonuses for timely release
+- Alert system for overdue releases
+- Integrated with pardon system
+
+**Core Files:**
+- `Source/Hediffs/Hediff_Debt.cs` - Grace period tracking
+- `Source/Components/WorldComponent_DebtManager.cs` - Auto-emancipation and faction relations
+- `Source/Alerts/Alert_UnreleasedDebtors.cs` - Overdue release notifications
+- `Source/Patches/SlaveEmancipation_Patch.cs` - Faction relation triggers
+- `Defs/ThoughtDefs/Thoughts_DebtRelease.xml` - Mood effects
+
+---
+
+### Grace Period Mechanics
+
+#### Tracking System (`Hediff_Debt.cs`)
+
+The debt hediff tracks when debt reaches zero and manages the grace period:
+
+```csharp
+// Grace period tracking fields
+private int debtPaidTick = -1;         // When debt reached 0
+private bool emancipationQueued = false; // Auto-emancipation status
+
+private const int GRACE_PERIOD_DAYS = 10;
+private const int GRACE_PERIOD_TICKS = GRACE_PERIOD_DAYS * GenDate.TicksPerDay;
+
+// Properties
+public int TicksSinceDebtPaid { get; } // Time since debt paid
+public bool IsInGracePeriod { get; }   // Within 10-day window
+public bool IsOverdueForRelease { get; } // Grace period expired
+```
+
+**When Debt is Paid:**
+```csharp
+float amountPaid = debtRecord.PayDebt(amount, "Slave Labor");
+
+// Automatically triggers grace period timer if debt reaches 0
+if (debtRecord.CurrentDebt <= 0)
+{
+    // debtPaidTick is set automatically
+    // Grace period begins
+}
+```
+
+#### Grace Period Timeline
+
+```
+Day 0:   Debt reaches 0 → Grace period starts
+         - Notification sent to player
+         - Auto-queued for emancipation
+         - Catharsis mood buff applied
+
+Days 1-9: Grace period (no penalties)
+         - Player has time to release
+         - No negative effects
+
+Day 10+: Grace period expired
+         - Alert appears
+         - Colonists: -3 mood (persistent)
+         - Slave: -6 mood (rebellion risk!)
+         - Continues until release
+
+Release: Faction relations improve
+         - 0-2 days: +15 goodwill
+         - 3-10 days: +10 goodwill
+         - 11-20 days: +5 goodwill
+         - 21+ days: -5 goodwill
+```
+
+---
+
+### Auto-Emancipation
+
+#### Automatic Queuing (`WorldComponent_DebtManager.cs`)
+
+When debt is paid off through labor, the system automatically queues emancipation:
+
+```csharp
+public void HandleDebtFullyPaid(Pawn slave)
+{
+    var debtRecord = DebtUtils.TryGetDebtRecord(slave);
+    if (debtRecord == null) return;
+
+    // Send notification
+    Messages.Message(
+        $"{slave.LabelShort} has fully paid off their debt. " +
+        "They will be released in 10 days unless you intervene.",
+        slave,
+        MessageTypeDefOf.PositiveEvent
+    );
+
+    // Apply positive mood
+    slave.needs?.mood?.thoughts?.memories?.TryGainMemory(ThoughtDefOf.Catharsis);
+
+    // Auto-queue emancipation (one-time only)
+    if (!debtRecord.EmancipationQueued)
+    {
+        AutoQueueEmancipation(slave, debtRecord);
+    }
+}
+
+private void AutoQueueEmancipation(Pawn slave, Hediff_Debt debtRecord)
+{
+    // Set slave interaction mode to Emancipate
+    slave.guest.slaveInteractionMode = SlaveInteractionModeDefOf.Emancipate;
+    debtRecord.EmancipationQueued = true;
+
+    Messages.Message(
+        $"{slave.LabelShort} has been queued for emancipation.",
+        slave,
+        MessageTypeDefOf.NeutralEvent
+    );
+}
+```
+
+**Player Options:**
+- Let emancipation proceed (default)
+- Cancel emancipation (slave remains enslaved)
+- Release immediately (faction bonus)
+
+---
+
+### Mood and Faction Effects
+
+#### Alert System (`Alert_UnreleasedDebtors.cs`)
+
+Medium-priority alert appears when grace period expires:
+
+```csharp
+public class Alert_UnreleasedDebtors : Alert
+{
+    private List<Pawn> UnreleasedDebtors
+    {
+        get
+        {
+            // Find all slaves with expired grace period
+            foreach (Pawn slave in map.mapPawns.SlavesOfColonySpawned)
+            {
+                var debtRecord = DebtUtils.TryGetDebtRecord(slave);
+                if (debtRecord != null && debtRecord.IsOverdueForRelease)
+                {
+                    yield return slave;
+                }
+            }
+        }
+    }
+}
+```
+
+**Alert Content:**
+- Lists all overdue slaves
+- Shows days since debt paid
+- Explains consequences (mood, relations, rebellion)
+
+#### Colonist Mood Effects
+
+**Released on Time** (`LawAndOrder_ReleasedDebtor`):
+- Memory thought, lasts 5 days
+- +2 mood: "Released debt-free prisoner"
+- Stacks up to 3 times
+- Applies to all colonists
+
+**Holding Past Grace Period** (`LawAndOrder_HoldingDebtFreeSlave`):
+- Situational thought, persistent
+- -3 mood: "Enslaving freed debtors"
+- Active when ANY slave is overdue
+- Affects all colonists
+
+```csharp
+public class ThoughtWorker_HoldingDebtFreeSlave : ThoughtWorker
+{
+    protected override ThoughtState CurrentStateInternal(Pawn p)
+    {
+        if (!p.IsColonist || p.IsSlave) return false;
+
+        // Check all maps for overdue slaves
+        foreach (Map map in Find.Maps)
+        {
+            foreach (Pawn slave in map.mapPawns.SlavesOfColonySpawned)
+            {
+                var debtRecord = DebtUtils.TryGetDebtRecord(slave);
+                if (debtRecord != null && debtRecord.IsOverdueForRelease)
+                {
+                    return true; // Found at least one
+                }
+            }
+        }
+        return false;
+    }
+}
+```
+
+#### Slave Mood Effects
+
+**Debt Paid, Still Enslaved** (`LawAndOrder_DebtPaidButEnslaved`):
+- Situational thought, persistent
+- -6 mood: "Debt paid, still enslaved"
+- High rebellion risk
+- Active until released
+
+```csharp
+public class ThoughtWorker_DebtPaidButEnslaved : ThoughtWorker
+{
+    protected override ThoughtState CurrentStateInternal(Pawn p)
+    {
+        if (!p.IsSlave) return false;
+
+        var debtRecord = DebtUtils.TryGetDebtRecord(p);
+        return debtRecord != null && debtRecord.IsOverdueForRelease;
+    }
+}
+```
+
+#### Faction Relations (`SlaveEmancipation_Patch.cs`)
+
+Harmony patch detects when slaves are released and adjusts relations:
+
+```csharp
+[HarmonyPatch(typeof(GenGuest), "SlaveRelease")]
+public static class SlaveEmancipation_Patch
+{
+    static void Postfix(Pawn p)
+    {
+        var debtRecord = DebtUtils.TryGetDebtRecord(p);
+        if (debtRecord != null && debtRecord.TicksSinceDebtPaid > 0)
+        {
+            int daysOverdue = debtRecord.TicksSinceDebtPaid / GenDate.TicksPerDay;
+
+            var debtManager = Find.World.GetComponent<WorldComponent_DebtManager>();
+            debtManager?.OnDebtorEmancipated(p, daysOverdue);
+        }
+    }
+}
+```
+
+**Relation Changes:**
+```csharp
+public void OnDebtorEmancipated(Pawn freedPawn, int daysOverdue)
+{
+    int relationChange = 0;
+
+    if (daysOverdue <= 2)        relationChange = 15;  // Prompt
+    else if (daysOverdue <= 10)  relationChange = 10;  // Grace period
+    else if (daysOverdue <= 20)  relationChange = 5;   // Late
+    else                         relationChange = -5;  // Very late
+
+    freedPawn.Faction.TryAffectGoodwillWith(Faction.OfPlayer, relationChange);
+
+    // Give colonists mood buff if released on time
+    if (daysOverdue <= 10)
+    {
+        foreach (Pawn colonist in colonists)
+        {
+            colonist.needs.mood.thoughts.memories.TryGainMemory(
+                DefDatabase<ThoughtDef>.GetNamed("LawAndOrder_ReleasedDebtor")
+            );
+        }
+    }
+}
+```
+
+---
+
+### Pardon Integration
+
+#### Pardon Triggers Grace Period (`MainTabWindow_Justice.cs`)
+
+When a player pardons an enslaved pawn, it triggers all grace period mechanics:
+
+```csharp
+private void PardonCriminal()
+{
+    var debtRecord = DebtUtils.TryGetDebtRecord(selectedCriminal);
+    if (debtRecord != null && debtRecord.CurrentDebt > 0)
+    {
+        // Pay off debt (triggers grace period)
+        debtRecord.PayDebt(debtRecord.CurrentDebt, "Pardoned by colony");
+
+        // If enslaved, trigger grace period immediately
+        if (selectedCriminal.IsSlaveOfColony)
+        {
+            var debtManager = Find.World.GetComponent<WorldComponent_DebtManager>();
+            debtManager?.HandleDebtFullyPaid(selectedCriminal);
+        }
+    }
+
+    // Remove criminal record
+    selectedCriminal.health.RemoveHediff(criminalRecord);
+}
+```
+
+**Pardon Effects:**
+1. All debt paid with reason "Pardoned by colony"
+2. Grace period starts (10 days)
+3. Notification sent to player
+4. Auto-queued for emancipation
+5. Catharsis mood buff applied
+6. Criminal record removed
+7. Debt hediff remains (historical record)
+
+---
+
+### Usage Examples
+
+#### Example 1: Natural Debt Repayment
+
+```csharp
+// Slave works off debt gradually
+var debtRecord = DebtUtils.TryGetDebtRecord(slave);
+debtRecord.CurrentDebt; // 500 silver
+
+// Each day, WorldComponent_DebtManager processes payment
+ProcessSlaveDebtPayment(slave); // -35 silver/day (average)
+
+// After ~14 days, debt reaches 0
+// Automatically:
+// - debtPaidTick set to current tick
+// - Grace period begins
+// - Player notified
+// - Emancipation queued
+```
+
+#### Example 2: Player Pardons
+
+```csharp
+// Player clicks "Pardon" button in Justice UI
+PardonCriminal();
+
+// Immediately:
+// - Debt paid: "Pardoned by colony"
+// - Grace period starts
+// - Emancipation queued
+// - Criminal record removed
+```
+
+#### Example 3: Grace Period Expires
+
+```csharp
+// 10+ days after debt paid, still enslaved
+var debtRecord = DebtUtils.TryGetDebtRecord(slave);
+debtRecord.IsOverdueForRelease; // true
+
+// Automatically:
+// - Alert appears
+// - Colonists: -3 mood
+// - Slave: -6 mood (rebellion risk!)
+```
+
+#### Example 4: Timely Release
+
+```csharp
+// Player releases within grace period (day 5)
+GenGuest.SlaveRelease(slave);
+
+// Automatically:
+// - Faction: +10 goodwill
+// - All colonists: +2 mood for 5 days
+// - Alert clears
+```
+
+---
+
+### Bug Fixes
+
+#### Fix 1: Harmony Patch Parameter Mismatch
+**Issue:** Patch used `slave` but method uses `p`
+**Fix:** Match parameter names exactly
+
+#### Fix 2: Void Method Return Capture
+**Issue:** Tried to capture `__result` from void method
+**Fix:** Remove `__result` parameter
+
+#### Fix 3: Pardon Didn't Trigger Grace Period
+**Issue:** Pardoning only removed crimes, not debt
+**Fix:** Pay debt and call `HandleDebtFullyPaid()` on pardon
+
+#### Fix 4: Premature Failure Messages
+**Issue:** Failed enslavement without final attempt
+**Fix:** Skip checks on retry 20+, make final attempt
+
+---
+
+## Section 7: Social Interaction System
 
 ### Social Interaction Overview
 
@@ -1131,7 +1534,7 @@ Now: Bob sentenced Alice for their crimes
 
 ---
 
-## Section 7: Logging System
+## Section 8: Logging System
 
 ### Tiered Logging
 
@@ -1268,7 +1671,7 @@ public static void Postfix(/* parameters */)
 
 ---
 
-## Section 8: Quick References
+## Section 9: Quick References
 
 ### Crime Quick Reference
 
