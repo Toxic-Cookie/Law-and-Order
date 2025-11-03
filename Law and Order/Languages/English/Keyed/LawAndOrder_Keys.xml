@@ -155,4 +155,8 @@
   <LawAndOrder_NoContrabandToUpdate>No contraband items to update in this category</LawAndOrder_NoContrabandToUpdate>
   <LawAndOrder_NoContrabandToRemove>No contraband items to remove in this category</LawAndOrder_NoContrabandToRemove>
 
+  <!-- Alerts -->
+  <LawAndOrder_Alert_CourtroomNeeded>Courtroom needed</LawAndOrder_Alert_CourtroomNeeded>
+  <LawAndOrder_Alert_CourtroomNeededDesc>You have prisoners awaiting hearings, but no courtroom has been set up.\n\nTo create a courtroom, you need:\n  - An enclosed room (indoors)\n  - At least one chair designated as Judge seat\n  - At least one chair designated as Defendant seat\n\nSelect chairs in a room and use the 'Designate Chair Role' button to set up courtroom seating.</LawAndOrder_Alert_CourtroomNeededDesc>
+
 </LanguageData>
