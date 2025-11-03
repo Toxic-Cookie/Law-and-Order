@@ -1,6 +1,6 @@
 # Law and Order - Project Tracker
 
-**Last Updated:** November 2, 2025
+**Last Updated:** November 3, 2025
 **Current Status:** ✅ Production Ready - Balance Improvements 100% Complete (5/5 Phases Done)
 
 **Recent Updates:**
@@ -9,6 +9,7 @@
 - ✅ **Phase 3 Complete (Nov 2, 2025):** Grace Period & Release System - 10-day grace period with auto-emancipation
 - ✅ **Phase 4 Complete (Nov 2, 2025):** Debt Stress System - Mood debuffs scale with debt (-1 per 250 silver)
 - ✅ **Phase 5 Complete (Nov 2, 2025):** Ideology-Aligned Contraband - Rewards beliefs, punishes hypocrisy
+- ✅ **Overdue Hearing Penalties (Nov 3, 2025):** Penalties for holding prisoners without hearings (7-day grace period)
 
 ---
 
@@ -192,6 +193,22 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - ✅ Documentation updated in Project_Documentation.md (Section 11)
 - ✅ Documentation updated in Project_Tracker.md
 - ✅ All 5 balance improvement phases now complete
+
+**2025-11-03: Overdue Hearing Penalties**
+- ✅ Created Alert_OverdueHearings.cs (medium priority alert for prisoners awaiting hearing)
+- ✅ Implemented ThoughtWorker_HoldingPrisonersAwaitingHearing.cs (-3 mood for colonists)
+- ✅ Created Thoughts_OverdueHearings.xml with "denying prisoners due process" thought
+- ✅ 7-day grace period from first crime before mood penalty applies
+- ✅ Alert shows during grace period as reminder (not just after)
+- ✅ Similar to existing debt-free slave penalties
+- ✅ Alert lists all prisoners with days waiting or days remaining
+- ✅ Provides consequences for not conducting hearings promptly
+- ✅ Updated Alert_UnreleasedDebtors to also show during grace period
+- ✅ Both alerts now show overdue and grace period pawns separately
+- ✅ Fixed alert checks to use proper game state validation (not work priorities)
+- ✅ Added debug logging for troubleshooting (Dev Mode only)
+- ✅ Build successful (0 errors, 2 pre-existing warnings)
+- ✅ Deployed to mod folder successfully
 
 ---
 
