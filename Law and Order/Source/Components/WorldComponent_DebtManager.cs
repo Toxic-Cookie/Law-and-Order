@@ -5,6 +5,7 @@ using RimWorld.Planet;
 using Verse;
 using Verse.AI.Group;
 using Law_and_Order.Source.Hediffs;
+using Law_and_Order.Source.Hearings;
 using Law_and_Order.Source.Utils;
 
 namespace Law_and_Order.Source.Components
@@ -41,6 +42,13 @@ namespace Law_and_Order.Source.Components
         // Suppression efficiency constants
         private const float MIN_SUPPRESSION_EFFICIENCY = 0.5f; // Minimum efficiency at 0 suppression
         private const float SUPPRESSION_EFFICIENCY_RANGE = 0.5f; // Range from min to max (0.5-1.0)
+
+        // Ritual quality affects how efficiently slaves work off debt
+        // High quality ritual = motivated worker, low quality = demoralized worker
+        private const float REPAYMENT_MULTIPLIER_EXCELLENT = 1.4f;  // Excellent ritual = 40% faster
+        private const float REPAYMENT_MULTIPLIER_STANDARD = 1.15f;  // Standard ritual = 15% faster
+        private const float REPAYMENT_MULTIPLIER_PARTIAL = 1.0f;    // Partial = normal speed
+        private const float REPAYMENT_MULTIPLIER_NODEAL = 0.6f;     // No deal = 40% slower (demoralized)
 
         private int tickCounter = 0;
 
@@ -458,6 +466,39 @@ namespace Law_and_Order.Source.Components
                     float suppressionMultiplier = MIN_SUPPRESSION_EFFICIENCY + (suppression.CurLevel * SUPPRESSION_EFFICIENCY_RANGE);
                     payment *= suppressionMultiplier;
                 }
+            }
+
+            // Factor 5: Ritual quality affects motivation/efficiency
+            // Check the hearing record to see what outcome they got
+            var criminalRecord = CrimeUtils.TryGetCriminalRecord(slave);
+            if (criminalRecord?.Hearing != null)
+            {
+                float ritualMultiplier = 1.0f;
+
+                switch (criminalRecord.Hearing.pleaBargainOutcome)
+                {
+                    case PleaBargainOutcome.Excellent:
+                        ritualMultiplier = REPAYMENT_MULTIPLIER_EXCELLENT;
+                        break;
+                    case PleaBargainOutcome.Standard:
+                        ritualMultiplier = REPAYMENT_MULTIPLIER_STANDARD;
+                        break;
+                    case PleaBargainOutcome.Partial:
+                        ritualMultiplier = REPAYMENT_MULTIPLIER_PARTIAL;
+                        break;
+                    case PleaBargainOutcome.Poor:
+                        ritualMultiplier = REPAYMENT_MULTIPLIER_NODEAL;
+                        break;
+                }
+
+                payment *= ritualMultiplier;
+
+                #if DEBUG
+                if (ritualMultiplier != 1.0f)
+                {
+                    Mod.Log?.Message($"{slave.LabelShort}: Ritual quality multiplier = {ritualMultiplier:F2}x");
+                }
+                #endif
             }
 
             return payment;

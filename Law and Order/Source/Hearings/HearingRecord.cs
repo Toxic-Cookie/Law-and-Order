@@ -4,15 +4,15 @@ using RimWorld;
 namespace Law_and_Order.Source.Hearings
 {
     /// <summary>
-    /// Represents the outcome of a plea bargain attempt
+    /// Represents the quality outcome of a court hearing ritual
     /// </summary>
     public enum PleaBargainOutcome
     {
-        NotAttempted,       // Prisoner has not tried to plea bargain
-        CriticalSuccess,    // Roll 96-100: -25% debt
-        Success,            // Roll within success range: -10% debt
-        Failure,            // Roll within failure range: No change
-        CriticalFailure     // Roll 1-5: +15% debt (Contempt of Court)
+        NotAttempted,       // Hearing has not been conducted
+        Excellent,          // Roll 96-100: Professional hearing (+10% debt, 1.4x repayment speed)
+        Standard,           // Roll within success range: Fair hearing (no debt change, 1.15x repayment speed)
+        Partial,            // Roll within failure range: Sloppy hearing (-15% debt, 1.0x repayment speed)
+        Poor                // Roll 1-5: Incompetent hearing (-25% debt, 0.6x repayment speed)
     }
 
     /// <summary>

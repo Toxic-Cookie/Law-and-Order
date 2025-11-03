@@ -154,54 +154,54 @@ namespace Law_and_Order.Source.Rituals
         }
 
         /// <summary>
-        /// Determine plea outcome based on which CRF memory was applied
+        /// Determine hearing quality outcome based on which CRF memory was applied
         /// </summary>
         private PleaBargainOutcome DetermineOutcomeFromMemories(Pawn defendant)
         {
             if (defendant?.needs?.mood?.thoughts?.memories == null)
             {
-                return PleaBargainOutcome.Failure; // Default to no change
+                return PleaBargainOutcome.Partial; // Default to partial
             }
 
             var memories = defendant.needs.mood.thoughts.memories.Memories;
 
-            // Check which CRF ritual memory was applied (in reverse order of severity)
+            // Check which CRF ritual memory was applied (in reverse order of quality)
             if (memories.Any(m => m.def.defName == "LawAndOrder_CourtHearingExcellentPlea"))
             {
-                return PleaBargainOutcome.CriticalSuccess; // Best outcome
+                return PleaBargainOutcome.Excellent; // Best quality
             }
             else if (memories.Any(m => m.def.defName == "LawAndOrder_CourtHearingStandardPlea"))
             {
-                return PleaBargainOutcome.Success; // Good outcome
+                return PleaBargainOutcome.Standard; // Good quality
             }
             else if (memories.Any(m => m.def.defName == "LawAndOrder_CourtHearingPartialDeal"))
             {
-                return PleaBargainOutcome.Failure; // Neutral outcome
+                return PleaBargainOutcome.Partial; // Partial quality
             }
             else if (memories.Any(m => m.def.defName == "LawAndOrder_CourtHearingNoDeal"))
             {
-                return PleaBargainOutcome.CriticalFailure; // Worst outcome
+                return PleaBargainOutcome.Poor; // Poor quality
             }
 
-            // Default to neutral if no memory found
-            return PleaBargainOutcome.Failure;
+            // Default to partial if no memory found
+            return PleaBargainOutcome.Partial;
         }
 
         /// <summary>
-        /// Get human-readable description of plea outcome
+        /// Get human-readable description of hearing quality outcome
         /// </summary>
         private string GetPleaOutcomeDescription(PleaBargainOutcome outcome)
         {
             switch (outcome)
             {
-                case PleaBargainOutcome.CriticalSuccess:
-                    return "Impressive plea, debt reduced 25%";
-                case PleaBargainOutcome.Success:
-                    return "Plea accepted, debt reduced 10%";
-                case PleaBargainOutcome.Failure:
-                    return "Plea rejected, no debt change";
-                case PleaBargainOutcome.CriticalFailure:
-                    return "Contempt of court, debt increased 15%";
+                case PleaBargainOutcome.Excellent:
+                    return "Professional hearing, full sentence imposed (+10% debt, fast repayment)";
+                case PleaBargainOutcome.Standard:
+                    return "Fair hearing, standard sentence (no debt change, normal repayment)";
+                case PleaBargainOutcome.Partial:
+                    return "Sloppy hearing, lenient sentence (-15% debt, slow repayment)";
+                case PleaBargainOutcome.Poor:
+                    return "Incompetent hearing, very lenient sentence (-25% debt, very slow repayment)";
                 default:
                     return "Unknown outcome";
             }

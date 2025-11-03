@@ -167,48 +167,48 @@
       </li>
     </comps>
 
-    <!-- Outcome chances map to plea bargain results -->
+    <!-- Outcome chances map to hearing quality results -->
     <outcomeChances>
-      <!-- No Deal (Terrible outcome) -->
+      <!-- Poor Quality (Incompetent hearing) -->
       <li>
-        <label>No Deal</label>
+        <label>Poor Quality</label>
         <chance>0.10</chance>
         <memory>LawAndOrder_CourtHearingNoDeal</memory>
-        <description>The defendant refused to cooperate. Full punishment applied.</description>
+        <description>The hearing was a mess. The judge seemed confused and went very easy on the sentence.</description>
         <positivityIndex>-2</positivityIndex>
       </li>
 
-      <!-- Partial Deal (Poor outcome) -->
+      <!-- Partial Quality (Sloppy hearing) -->
       <li>
-        <label>Partial Deal</label>
+        <label>Partial Quality</label>
         <chance>0.25</chance>
         <memory>LawAndOrder_CourtHearingPartialDeal</memory>
-        <description>The defendant made a partial plea. Some leniency granted.</description>
+        <description>The hearing was somewhat disorganized. The judge handed down a lenient sentence.</description>
         <positivityIndex>-1</positivityIndex>
       </li>
 
-      <!-- Standard Plea (Good outcome) -->
+      <!-- Standard Quality (Fair hearing) -->
       <li>
-        <label>Standard Plea</label>
+        <label>Standard Quality</label>
         <chance>0.50</chance>
         <memory>LawAndOrder_CourtHearingStandardPlea</memory>
-        <description>The defendant accepted a standard plea bargain. Reduced sentence.</description>
+        <description>The hearing proceeded fairly. The judge handed down a standard, just sentence.</description>
         <positivityIndex>1</positivityIndex>
       </li>
 
-      <!-- Excellent Plea (Best outcome) -->
+      <!-- Excellent Quality (Professional hearing) -->
       <li>
-        <label>Excellent Plea</label>
+        <label>Excellent Quality</label>
         <chance>0.15</chance>
         <memory>LawAndOrder_CourtHearingExcellentPlea</memory>
-        <description>The defendant fully cooperated. Significant sentence reduction and debt forgiveness.</description>
+        <description>The hearing was conducted with professionalism. The judge imposed a full, proper sentence.</description>
         <positivityIndex>2</positivityIndex>
       </li>
     </outcomeChances>
 
     <!-- Custom effects using CRF modExtensions -->
     <modExtensions>
-      <!-- No Deal: Full debt, high suppression -->
+      <!-- Poor Quality: Lenient sentence, high demoralization -->
       <li Class="TPRitualAttachableOutcomes.RitualAttachableOutcomeEffectDef_TP_Custom">
         <triggerPositivityIndex>
           <li>-2</li>
@@ -224,7 +224,7 @@
         </node>
       </li>
 
-      <!-- Partial Deal: Moderate effects -->
+      <!-- Partial Quality: Moderate effects -->
       <li Class="TPRitualAttachableOutcomes.RitualAttachableOutcomeEffectDef_TP_Custom">
         <triggerPositivityIndex>
           <li>-1</li>
@@ -240,7 +240,7 @@
         </node>
       </li>
 
-      <!-- Standard Plea: Light effects -->
+      <!-- Standard Quality: Light effects -->
       <li Class="TPRitualAttachableOutcomes.RitualAttachableOutcomeEffectDef_TP_Custom">
         <triggerPositivityIndex>
           <li>1</li>
@@ -255,7 +255,7 @@
         </node>
       </li>
 
-      <!-- Excellent Plea: Minimal effects, positive thought -->
+      <!-- Excellent Quality: Minimal suppression, high motivation -->
       <li Class="TPRitualAttachableOutcomes.RitualAttachableOutcomeEffectDef_TP_Custom">
         <triggerPositivityIndex>
           <li>2</li>
@@ -280,8 +280,8 @@
     <stackLimit>3</stackLimit>
     <stages>
       <li>
-        <label>harsh court hearing</label>
-        <description>The defendant refused to cooperate. Justice must be harsh.</description>
+        <label>incompetent court hearing</label>
+        <description>The hearing was a mess. The judge seemed confused but went easy on the sentence.</description>
         <baseMoodEffect>-1</baseMoodEffect>
       </li>
     </stages>
@@ -294,8 +294,8 @@
     <stackLimit>3</stackLimit>
     <stages>
       <li>
-        <label>partial plea deal</label>
-        <description>The defendant showed some willingness to cooperate.</description>
+        <label>sloppy court hearing</label>
+        <description>The hearing was somewhat disorganized. Justice was served, but not impressively.</description>
         <baseMoodEffect>0</baseMoodEffect>
       </li>
     </stages>
@@ -309,7 +309,7 @@
     <stages>
       <li>
         <label>fair court hearing</label>
-        <description>The defendant cooperated and received a fair sentence.</description>
+        <description>The hearing was conducted fairly. Justice was properly served.</description>
         <baseMoodEffect>1</baseMoodEffect>
       </li>
     </stages>
@@ -322,8 +322,8 @@
     <stackLimit>3</stackLimit>
     <stages>
       <li>
-        <label>merciful court hearing</label>
-        <description>The defendant fully cooperated. Justice can be merciful.</description>
+        <label>professional court hearing</label>
+        <description>The hearing was conducted with professionalism. True justice was served.</description>
         <baseMoodEffect>2</baseMoodEffect>
       </li>
     </stages>

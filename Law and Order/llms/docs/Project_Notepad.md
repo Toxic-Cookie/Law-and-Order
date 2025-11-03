@@ -1828,11 +1828,11 @@ if (contrabandManager.IsDraftActive)
 
 ## Implementation Checklist
 
-### Phase 1: Ritual Quality Reframe
-- [ ] 1A. Modify plea bargain debt modifiers in `HearingUtils.cs`
-- [ ] 1B. Add repayment speed multipliers to `WorldComponent_DebtManager.cs`
-- [ ] 1C. Update outcome descriptions in `RitualBehaviorWorker_CourtHearing.cs`
-- [ ] 1D. Update XML thought descriptions in `Thoughts_PleaBargain.xml`
+### Phase 1: Ritual Quality Reframe ✅ COMPLETED
+- [x] 1A. Modify plea bargain debt modifiers in `HearingUtils.cs`
+- [x] 1B. Add repayment speed multipliers to `WorldComponent_DebtManager.cs`
+- [x] 1C. Update outcome descriptions in `RitualBehaviorWorker_CourtHearing.cs`
+- [x] 1D. Update XML thought descriptions in `Thoughts_PleaBargain.xml`
 - [ ] Test: Run hearing, verify debt changes and repayment speed
 
 ### Phase 2: Contraband Caps

@@ -16,7 +16,7 @@
     </stages>
   </ThoughtDef>
 
-  <!-- Humiliated from critical failure (prisoner receives this) -->
+  <!-- Incompetent hearing - very lenient sentence (prisoner receives this) -->
   <ThoughtDef>
     <defName>LawAndOrder_HumiliatedInCourt</defName>
     <thoughtClass>Thought_Memory</thoughtClass>
@@ -24,14 +24,14 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>humiliated in court</label>
-        <description>I made a fool of myself trying to plead my case. The adjudicator was not impressed.</description>
-        <baseMoodEffect>-5</baseMoodEffect>
+        <label>incompetent court hearing</label>
+        <description>The hearing was a mess. The judge seemed confused and went easy on me. I'll take it, but this wasn't real justice.</description>
+        <baseMoodEffect>2</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>
 
-  <!-- Relieved from successful plea (prisoner receives this) -->
+  <!-- Fair hearing - standard sentence (prisoner receives this) -->
   <ThoughtDef>
     <defName>LawAndOrder_PleaAccepted</defName>
     <thoughtClass>Thought_Memory</thoughtClass>
@@ -39,14 +39,14 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>plea accepted</label>
-        <description>The adjudicator accepted my plea for leniency. My sentence was reduced.</description>
-        <baseMoodEffect>3</baseMoodEffect>
+        <label>fair court hearing</label>
+        <description>The hearing was conducted properly. I received a fair sentence for my crimes. I can accept that.</description>
+        <baseMoodEffect>1</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>
 
-  <!-- Greatly relieved from critical success (prisoner receives this) -->
+  <!-- Professional hearing - harsh sentence but motivated (prisoner receives this) -->
   <ThoughtDef>
     <defName>LawAndOrder_PleaImpressive</defName>
     <thoughtClass>Thought_Memory</thoughtClass>
@@ -54,14 +54,14 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>impressive plea</label>
-        <description>I managed to significantly reduce my sentence through skillful negotiation. I feel proud of myself.</description>
-        <baseMoodEffect>8</baseMoodEffect>
+        <label>professional court hearing</label>
+        <description>The hearing was conducted with professionalism. The sentence is harsh but fair. At least I can work it off efficiently.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>
 
-  <!-- Disappointed from failed plea (prisoner receives this) -->
+  <!-- Sloppy hearing - lenient sentence but slow repayment (prisoner receives this) -->
   <ThoughtDef>
     <defName>LawAndOrder_PleaRejected</defName>
     <thoughtClass>Thought_Memory</thoughtClass>
@@ -69,9 +69,9 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>plea rejected</label>
-        <description>My plea for leniency fell on deaf ears. The sentence stands.</description>
-        <baseMoodEffect>-2</baseMoodEffect>
+        <label>sloppy court hearing</label>
+        <description>The hearing was poorly conducted. The judge went easy on my sentence, but I feel demoralized by the whole process.</description>
+        <baseMoodEffect>1</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>

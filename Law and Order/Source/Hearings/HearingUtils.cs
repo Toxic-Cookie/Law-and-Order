@@ -20,10 +20,11 @@ namespace Law_and_Order.Source.Hearings
         private const float MAX_CHANCE = 0.95f;        // 95% maximum
 
         // Plea bargain debt modifiers
-        private const float CRITICAL_SUCCESS_MODIFIER = -0.25f;  // -25% debt
-        private const float SUCCESS_MODIFIER = -0.10f;           // -10% debt
-        private const float FAILURE_MODIFIER = 0f;               // No change
-        private const float CRITICAL_FAILURE_MODIFIER = 0.15f;   // +15% debt
+        // High quality = harsh sentence, low quality = lenient
+        private const float EXCELLENT_PLEA_MODIFIER = 0.10f;     // +10% debt (harsh sentence)
+        private const float STANDARD_PLEA_MODIFIER = 0f;         // No change (standard)
+        private const float PARTIAL_PLEA_MODIFIER = -0.15f;      // -15% debt (lenient)
+        private const float NO_DEAL_MODIFIER = -0.25f;           // -25% debt (very lenient)
 
         // Dice roll constants (d100: 1-100)
         private const int DICE_MIN = 1;
@@ -139,29 +140,29 @@ namespace Law_and_Order.Source.Hearings
             float successChance = CalculatePleaChance(prisoner, adjudicator);
             roll = Rand.Range(DICE_MIN, DICE_MAX); // d100: 1-100
 
-            // Critical failure (1-5)
+            // Poor outcome (1-5) - Incompetent hearing
             if (roll <= CRITICAL_FAILURE_THRESHOLD)
             {
-                return PleaBargainOutcome.CriticalFailure;
+                return PleaBargainOutcome.Poor;
             }
 
-            // Critical success (96-100)
+            // Excellent outcome (96-100) - Professional hearing
             if (roll >= CRITICAL_SUCCESS_THRESHOLD)
             {
-                return PleaBargainOutcome.CriticalSuccess;
+                return PleaBargainOutcome.Excellent;
             }
 
-            // Normal success/failure based on calculated chance
+            // Standard/Partial outcome based on calculated chance
             // Convert chance to percentage threshold (e.g., 45% = roll must be 56 or higher to succeed)
             int successThreshold = Mathf.RoundToInt((1f - successChance) * 100f);
 
             if (roll > successThreshold)
             {
-                return PleaBargainOutcome.Success;
+                return PleaBargainOutcome.Standard;
             }
             else
             {
-                return PleaBargainOutcome.Failure;
+                return PleaBargainOutcome.Partial;
             }
         }
 
@@ -181,31 +182,33 @@ namespace Law_and_Order.Source.Hearings
 
             switch (outcome)
             {
-                case PleaBargainOutcome.CriticalSuccess:
-                    modifier = CRITICAL_SUCCESS_MODIFIER;
-                    reason = "Plea Bargain (Impressed)";
-                    // Apply positive mood to prisoner
+                case PleaBargainOutcome.Excellent:
+                    modifier = EXCELLENT_PLEA_MODIFIER;
+                    reason = "Professional Hearing";
+                    // Apply mood to prisoner
                     prisoner.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_PleaImpressive);
                     // Adjudicator is impressed
                     adjudicator?.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_ImpressedByPlea);
                     break;
 
-                case PleaBargainOutcome.Success:
-                    modifier = SUCCESS_MODIFIER;
-                    reason = "Plea Bargain (Accepted)";
-                    // Apply small positive mood to prisoner
+                case PleaBargainOutcome.Standard:
+                    modifier = STANDARD_PLEA_MODIFIER;
+                    reason = "Fair Hearing";
+                    // Apply mood to prisoner
                     prisoner.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_PleaAccepted);
                     break;
 
-                case PleaBargainOutcome.Failure:
-                    // Small negative mood to prisoner
+                case PleaBargainOutcome.Partial:
+                    modifier = PARTIAL_PLEA_MODIFIER;
+                    reason = "Sloppy Hearing";
+                    // Apply mood to prisoner
                     prisoner.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_PleaRejected);
-                    return;
+                    break;
 
-                case PleaBargainOutcome.CriticalFailure:
-                    modifier = CRITICAL_FAILURE_MODIFIER;
-                    reason = "Contempt of Court";
-                    // Apply humiliation to prisoner
+                case PleaBargainOutcome.Poor:
+                    modifier = NO_DEAL_MODIFIER;
+                    reason = "Incompetent Hearing";
+                    // Apply mood to prisoner
                     prisoner.needs?.mood?.thoughts?.memories?.TryGainMemory(LawAndOrder_ThoughtDefOf.LawAndOrder_HumiliatedInCourt);
                     break;
             }
@@ -396,26 +399,26 @@ namespace Law_and_Order.Source.Hearings
         }
 
         /// <summary>
-        /// Get a human-readable description of the plea bargain outcome
+        /// Get a human-readable description of the hearing quality outcome
         /// </summary>
         public static string GetPleaOutcomeDescription(PleaBargainOutcome outcome)
         {
             switch (outcome)
             {
-                case PleaBargainOutcome.CriticalSuccess:
-                    return "With a silver tongue, the prisoner masterfully expresses remorse and appeals to the colony's better nature, leaving the warden genuinely impressed.";
+                case PleaBargainOutcome.Excellent:
+                    return "The hearing was conducted with professionalism and efficiency. The judge imposed a full, proper sentence, and the defendant understands they can work it off quickly through motivated labor.";
 
-                case PleaBargainOutcome.Success:
-                    return "The prisoner makes a coherent and reasonable case for leniency. The warden, though not swayed emotionally, agrees to a minor reduction.";
+                case PleaBargainOutcome.Standard:
+                    return "The hearing proceeded fairly. The judge handed down a standard sentence that the defendant can accept as just.";
 
-                case PleaBargainOutcome.Failure:
-                    return "The prisoner's plea is unconvincing and falls on deaf ears. The sentence stands as calculated.";
+                case PleaBargainOutcome.Partial:
+                    return "The hearing was somewhat disorganized. The judge went easy on the sentence, but the whole proceeding left the defendant feeling unmotivated.";
 
-                case PleaBargainOutcome.CriticalFailure:
-                    return "The prisoner's foolish attempt to talk their way out is insulting. They may have lied, shown no remorse, or directly insulted the warden, digging themselves into a deeper hole.";
+                case PleaBargainOutcome.Poor:
+                    return "The hearing was a complete mess. The confused judge handed down a very lenient sentence, but the defendant feels demoralized by the unprofessional proceedings.";
 
                 default:
-                    return "No plea bargain attempted.";
+                    return "No hearing conducted.";
             }
         }
 

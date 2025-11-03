@@ -274,21 +274,21 @@ namespace Law_and_Order.Source.UI
 
             switch (hearing.pleaBargainOutcome)
             {
-                case PleaBargainOutcome.CriticalSuccess:
+                case PleaBargainOutcome.Excellent:
                     outcomeColor = new Color(0.2f, 1f, 0.2f);
-                    outcomeText = "Critical Success!";
+                    outcomeText = "Excellent Quality!";
                     break;
-                case PleaBargainOutcome.Success:
+                case PleaBargainOutcome.Standard:
                     outcomeColor = new Color(0.5f, 1f, 0.5f);
-                    outcomeText = "Success";
+                    outcomeText = "Standard Quality";
                     break;
-                case PleaBargainOutcome.Failure:
+                case PleaBargainOutcome.Partial:
                     outcomeColor = new Color(1f, 0.7f, 0.3f);
-                    outcomeText = "Failure";
+                    outcomeText = "Partial Quality";
                     break;
-                case PleaBargainOutcome.CriticalFailure:
+                case PleaBargainOutcome.Poor:
                     outcomeColor = new Color(1f, 0.2f, 0.2f);
-                    outcomeText = "Critical Failure!";
+                    outcomeText = "Poor Quality!";
                     break;
             }
 
@@ -381,7 +381,7 @@ namespace Law_and_Order.Source.UI
             hearing.debtAfterPlea = debtRecord.CurrentDebt;
 
             // Play sound
-            if (outcome == PleaBargainOutcome.CriticalSuccess || outcome == PleaBargainOutcome.Success)
+            if (outcome == PleaBargainOutcome.Excellent || outcome == PleaBargainOutcome.Standard)
             {
                 SoundDefOf.ExecuteTrade.PlayOneShotOnCamera();
             }
