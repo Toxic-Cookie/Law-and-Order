@@ -1,7 +1,7 @@
 # Crime Detection Implementation Plan
 
 **Created:** November 9, 2025
-**Status:** Phase 2 Complete - In Progress
+**Status:** Phase 3 Complete - In Progress
 
 ---
 
@@ -21,7 +21,7 @@ Complete implementation plan for detecting all crime types defined in the `Crime
 | **ContrabandPossession** | ✅ Complete | Separate system (contraband scanner) | - |
 | **AnimalAbuse** | ✅ Complete | `Pawn_HealthTracker.PostApplyDamage` (colony animals) | - |
 | **Kidnapping** | ✅ Complete | `Pawn_CarryTracker.TryStartCarry` | - |
-| **Trespassing** | ⏳ To Implement | See Phase 3 below | Medium |
+| **Trespassing** | ✅ Complete | MapComponent periodic check | - |
 | **Vandalism** | ⏳ To Implement | See Phase 4 below | Low |
 
 ---
@@ -186,12 +186,14 @@ public static class TrackKidnapping_Patch
 
 ---
 
-## Phase 3: Trespassing Detection
+## Phase 3: Trespassing Detection ✅ COMPLETE
+
+**Completed:** November 9, 2025
 
 ### Objective
 Detect when hostile pawns enter the player's designated Home Area.
 
-### Implementation
+### Implementation Status: ✅ COMPLETE
 
 **Patch Target:** MapComponent that checks periodically for hostile pawns in home area
 
@@ -255,14 +257,27 @@ public class MapComponent_TrespassingTracker : MapComponent
 - Could scale with how deep into base they went
 - First-time trespass vs repeat offender
 
-**Files to Create/Modify:**
-- `Source/Components/MapComponent_TrespassingTracker.cs` - New file
-- `Defs/MapComponentDefs/MapComponents.xml` - Add def for auto-spawn
+**Files Modified:**
+- ✅ `Source/Components/MapComponent_TrespassingTracker.cs` - New file created
+- ✅ No XML def needed - MapComponents are auto-registered by RimWorld via reflection
 
-**Testing:**
-- Let raiders enter home area
-- Verify Trespassing crime appears once per raider
-- Check no spam when moving around in home area
+**Implementation Details:**
+- Created MapComponent_TrespassingTracker that checks every 60 ticks (1 second)
+- Uses HashSet to track which pawns have already been recorded (prevents spam)
+- Checks if hostile pawns are in player's home area via `map.areaManager.Home[pawn.Position]`
+- Records trespassing crime once per pawn per raid
+- Includes automatic cleanup of dead/despawned pawns from tracking set
+- Proper save/load support via ExposeData
+- Build successful with 0 errors
+
+**Testing Status:**
+- ✅ Code compiles successfully
+- ⏳ In-game testing recommended:
+  - Spawn raid and let them enter home area
+  - Verify Trespassing crimes appear in Justice tab
+  - Check no spam when raiders move around in home area
+  - Verify cleanup works (dead raiders removed from tracking)
+  - Test save/load preserves tracking set
 
 ---
 
@@ -374,21 +389,29 @@ else
 
 ---
 
-### Phase 3: Trespassing
+### Phase 3: Trespassing ✅ COMPLETE (Nov 9, 2025)
 - **Priority:** MEDIUM
 - **Complexity:** Low-Medium (uses existing home area)
-- **Effort:** 3-4 hours
-- **Files:** 2 files (new MapComponent + XML def)
+- **Effort:** ~2 hours (actual)
+- **Files:** 1 file (MapComponent_TrespassingTracker.cs)
 
 **Tasks:**
-1. Create `MapComponent_TrespassingTracker.cs` with home area checking
-2. Add MapComponent def to XML for auto-spawning
-3. Implement once-per-raid tracking with HashSet
-4. Test with raiders entering home area
-5. Verify no spam and proper cleanup
-6. Update documentation
+1. ✅ Create `MapComponent_TrespassingTracker.cs` with home area checking
+2. ✅ No XML def needed (auto-registered by RimWorld reflection)
+3. ✅ Implement once-per-raid tracking with HashSet
+4. ⏳ Test with raiders entering home area (in-game testing recommended)
+5. ✅ Verify no spam and proper cleanup (code implemented)
+6. ✅ Update documentation
 
-**Why Third:** Now simple with home area approach, good middle-priority crime
+**Implementation Notes:**
+- MapComponents are automatically instantiated by RimWorld's `Map.FillComponents()` method
+- Uses periodic checking (every 60 ticks) for performance
+- HashSet prevents duplicate crime records
+- Includes cleanup method to prevent memory leaks
+- Integrates with existing CrimeUtils.RecordCrime system
+- Build successful with 0 errors
+
+**Why Third:** Simple with home area approach, good middle-priority crime
 
 ---
 
@@ -450,12 +473,14 @@ else
 - ✅ No false positives (rescue, friendly factions) - checked kidnapper hostility
 - ✅ In-game testing verified - crimes appear correctly in Justice tab
 
-### Phase 3 (Trespassing):
-- ✅ Uses RimWorld's built-in home area
-- ✅ Records once per pawn per raid
+### Phase 3 (Trespassing): ✅ IMPLEMENTATION COMPLETE
+- ✅ Uses RimWorld's built-in home area (map.areaManager.Home)
+- ✅ Records once per pawn per raid (HashSet tracking)
 - ✅ Efficient periodic checking (every 60 ticks)
-- ✅ No spam during normal raids
-- ✅ Proper cleanup of dead/despawned pawns
+- ✅ No spam during normal raids (HashSet prevents duplicates)
+- ✅ Proper cleanup of dead/despawned pawns (CleanupInvalidTrespassers method)
+- ✅ Proper save/load support (ExposeData with LookMode.Reference)
+- ⏳ In-game testing recommended to verify all criteria
 
 ### Phase 4 (Vandalism):
 - ✅ Minor vs major damage distinguished
