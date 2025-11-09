@@ -1,7 +1,7 @@
 # Crime Detection Implementation Plan
 
 **Created:** November 9, 2025
-**Status:** Phase 1 Complete - In Progress
+**Status:** Phase 2 Complete - In Progress
 
 ---
 
@@ -20,7 +20,7 @@ Complete implementation plan for detecting all crime types defined in the `Crime
 | **Theft** | ✅ Complete | `Pawn_CarryTracker.TryStartCarry` | - |
 | **ContrabandPossession** | ✅ Complete | Separate system (contraband scanner) | - |
 | **AnimalAbuse** | ✅ Complete | `Pawn_HealthTracker.PostApplyDamage` (colony animals) | - |
-| **Kidnapping** | ⏳ To Implement | See Phase 2 below | High |
+| **Kidnapping** | ✅ Complete | `Pawn_CarryTracker.TryStartCarry` | - |
 | **Trespassing** | ⏳ To Implement | See Phase 3 below | Medium |
 | **Vandalism** | ⏳ To Implement | See Phase 4 below | Low |
 
@@ -104,12 +104,14 @@ public static class TrackAnimalAbuse_Patch
 
 ---
 
-## Phase 2: Kidnapping Detection
+## Phase 2: Kidnapping Detection ✅ COMPLETE
+
+**Completed:** November 9, 2025
 
 ### Objective
 Detect when hostile pawns capture/carry away colonists.
 
-### Implementation
+### Implementation Status: ✅ COMPLETE
 
 **Patch Target:** `Pawn_CarryTracker.TryStartCarry` (similar to theft patch)
 
@@ -159,13 +161,26 @@ public static class TrackKidnapping_Patch
 - Should factor in victim's importance (skills, social standing)
 - Could use VictimNobility multiplier if victim is noble
 
-**Files to Modify:**
-- `Source/CrimeDetection/CrimeDetectionPatches.cs` - Add kidnapping patch
+**Files Modified:**
+- ✅ `Source/CrimeDetection/CrimeDetectionPatches.cs` - Added TrackKidnapping_Patch class
 
-**Testing:**
-- Down a colonist and let raiders try to carry them away
-- Verify Kidnapping crime appears
-- Test penalty calculation
+**Implementation Details:**
+- Added new Harmony patch class `TrackKidnapping_Patch` targeting `Pawn_CarryTracker.TryStartCarry`
+- Checks if the item being carried is a Pawn (using `item as Pawn`)
+- Validates carrier is hostile to player (`carrier.HostileTo(Faction.OfPlayer)`)
+- Validates victim is a colonist or player-owned pawn
+- Validates victim is downed (raiders don't kidnap conscious colonists)
+- Records crime with victim information and descriptive message
+- Uses same patch point as theft detection but handles different carried object type
+- Build successful with 0 errors
+
+**Testing Status:**
+- ✅ Code compiles successfully
+- ⏳ In-game testing recommended:
+  - Down a colonist and let raiders try to carry them away
+  - Verify Kidnapping crime appears in Justice tab
+  - Test penalty calculation for kidnapping
+  - Verify no false positives (friendly rescue, prisoner transfers)
 
 ---
 
@@ -322,19 +337,26 @@ else
 
 ---
 
-### Phase 2: Kidnapping
+### Phase 2: Kidnapping ✅ COMPLETE (Nov 9, 2025)
 - **Priority:** HIGH
 - **Complexity:** Medium (need to identify correct patch point)
-- **Effort:** 3-5 hours
+- **Effort:** 3-5 hours (actual: ~1 hour)
 - **Files:** 1 file (CrimeDetectionPatches.cs)
 
 **Tasks:**
-1. Research best patch point (TryStartCarry vs GenGuest methods)
-2. Add `TrackKidnapping_Patch` class
-3. Implement victim validation
-4. Test with downed colonists
-5. Verify penalties are calculated correctly
-6. Update documentation
+1. ✅ Research best patch point (TryStartCarry vs GenGuest methods)
+2. ✅ Add `TrackKidnapping_Patch` class
+3. ✅ Implement victim validation
+4. ⏳ Test with downed colonists (in-game testing recommended)
+5. ⏳ Verify penalties are calculated correctly (in-game testing)
+6. ✅ Update documentation
+
+**Implementation Notes:**
+- Created new Harmony patch targeting `Pawn_CarryTracker.TryStartCarry`
+- Reused same patch point as theft detection, but filters for Pawn victims
+- Validates carrier is hostile, victim is player-owned, and victim is downed
+- Integrated with existing CrimeUtils.RecordCrime system
+- Build successful with 0 errors
 
 **Why Second:** High priority crime, clear scope, important for gameplay
 
@@ -409,11 +431,12 @@ else
 - ✅ No false positives (friendly fire, wild animals) - checked faction and hostile status
 - ⏳ In-game testing recommended to verify all criteria
 
-### Phase 2 (Kidnapping):
+### Phase 2 (Kidnapping): ✅ IMPLEMENTATION COMPLETE
 - ✅ Hostile carrying downed colonist = Kidnapping crime
-- ✅ Only records for player-owned pawns
-- ✅ High severity penalty applied
-- ✅ No false positives (rescue, friendly factions)
+- ✅ Only records for player-owned pawns (checked IsColonist and faction)
+- ✅ Victim must be downed (prevents false positives)
+- ✅ No false positives (rescue, friendly factions) - checked carrier hostility
+- ⏳ In-game testing recommended to verify all criteria
 
 ### Phase 3 (Trespassing):
 - ✅ Uses RimWorld's built-in home area

@@ -1,6 +1,7 @@
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using Verse.AI;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 
@@ -216,6 +217,52 @@ namespace Law_and_Order.Source.CrimeDetection
                 catch (System.Exception e)
                 {
                     Law_and_Order.Source.Mod.Log?.Error($"Error in theft tracking patch: {e.Message}\n{e.StackTrace}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tracks kidnapping when hostile pawns are given a kidnap job
+        /// </summary>
+        [HarmonyPatch(typeof(RimWorld.JobGiver_Kidnap), "TryGiveJob")]
+        public static class TrackKidnapping_Patch
+        {
+            static void Postfix(Pawn pawn, Job __result)
+            {
+                try
+                {
+                    // Only track if a kidnap job was successfully created
+                    if (__result == null)
+                        return;
+
+                    // Get the victim from the job target
+                    Pawn victim = __result.targetA.Thing as Pawn;
+                    if (victim == null)
+                        return;
+
+                    // Only track if kidnapper is hostile to player
+                    if (!pawn.HostileTo(Faction.OfPlayer))
+                        return;
+
+                    // Only track if victim is a colonist or player-owned pawn
+                    if (!victim.IsColonist && victim.Faction != Faction.OfPlayer)
+                        return;
+
+                    // Only track if victim is downed (this should always be true for kidnapping, but double-check)
+                    if (!victim.Downed)
+                        return;
+
+                    // Record the kidnapping crime
+                    CrimeUtils.RecordCrime(
+                        criminal: pawn,
+                        crimeType: CrimeType.Kidnapping,
+                        victim: victim,
+                        additionalInfo: $"Attempted to kidnap {victim.NameShortColored}"
+                    );
+                }
+                catch (System.Exception e)
+                {
+                    Law_and_Order.Source.Mod.Log?.Error($"Error in kidnapping tracking patch: {e.Message}\n{e.StackTrace}");
                 }
             }
         }

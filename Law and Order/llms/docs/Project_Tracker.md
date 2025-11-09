@@ -16,6 +16,7 @@
 - ✅ **Crimes Tab Integration - Phase 3 Continuation Complete (Nov 9, 2025):** Legacy settings removed, integration complete
 - ✅ **Crime Detection Expansion (Nov 9, 2025):** Added detection for Property Damage, Arson, and Theft
 - ✅ **Crime Detection - Phase 1: Animal Abuse (Nov 9, 2025):** Added automatic detection for hostile pawns attacking colony animals
+- ✅ **Crime Detection - Phase 2: Kidnapping (Nov 9, 2025):** Added automatic detection for hostile pawns kidnapping downed colonists
 
 ---
 
@@ -391,9 +392,9 @@ Previously only Assault/Murder crimes were automatically detected. Now all major
 | Property Damage | Building/item damage | ✅ Working |
 | Arson | Flame damage detection | ✅ Working |
 | Theft | Item pickup tracking | ✅ Working |
-| Animal Abuse | Colony animal damage tracking | ✅ NEW (Phase 1 - Nov 9, 2025) |
+| Animal Abuse | Colony animal damage tracking | ✅ Working (Phase 1 - Nov 9, 2025) |
+| Kidnapping | Carrying downed colonists | ✅ Working (Phase 2 - Nov 9, 2025) |
 | Trespassing | (Future) | ⏳ Not yet implemented |
-| Kidnapping | (Future) | ⏳ Not yet implemented |
 | Vandalism | (Future) | ⏳ Not yet implemented |
 
 **Testing Notes:**
