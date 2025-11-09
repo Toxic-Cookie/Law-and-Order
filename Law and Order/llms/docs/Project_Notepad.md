@@ -357,9 +357,331 @@ Based on analysis of RimWorld 1.6 source code at `C:\Users\Giovanni\source\repos
 17. `CalculateDebtForCrimeNew()` - Public API for new penalty system
 
 **Next Steps:**
-- Integration with crime detection points (optional - new system ready but not required)
-- Testing with actual gameplay scenarios
-- Verifying multipliers work correctly
+- Phase 3 Continuation: Full integration and legacy system removal
+
+---
+
+## Phase 3 Continuation: Integration & Legacy System Removal
+
+### Goal
+Replace the legacy hardcoded crime penalty system with the new configurable Crimes Tab system, and remove all obsolete mod settings.
+
+### Current State Analysis
+
+**Legacy System Components to Remove:**
+
+1. **Old Mod Settings (LawAndOrderSettings.cs)** - SUPERSEDED by Crimes Tab:
+   - `ArmedTrespassing` (150 silver) → Use `Trespassing` crime in new system
+   - `ArsonBase` (250 silver) → Use `Arson` crime in new system
+   - `TheftMultiplier` (1.5x) → Use `Theft` crime penalties in new system
+   - `Assault` (350 silver) → Use assault-related crimes (GunshotWound, StabWound, etc.)
+   - `DownedColonist` (750 silver) → Calculated based on actual injuries now
+   - `AssaultAnimal` (100 silver) → Use `AssaultAnimal` crime in new system
+   - `KillAnimalMultiplier` (2x) → Part of penalty calculation now
+   - `KillBondedAnimalMultiplier` (3x) → Part of penalty calculation now
+   - `KillBondedAnimalBonus` (500 silver) → Integrated into crime penalty
+   - `Murder` (5000 silver) → Use `Murder` crime in new system
+   - `PropertyDestructionMultiplier` (1.2x) → Use property destruction crimes
+   - `BannedWeaponModifier` (1.25x) → Can be added as multiplier if needed
+   - `RepeatOffenderModifier` (1.5x) → **KEEP** - Now `RepeatOffender` multiplier
+
+2. **Legacy Calculation Method (DebtUtils.cs):**
+   - `CalculateDebtForCrime(Crime crime)` - Uses old settings, superseded by `CalculateDebtForCrimeNew()`
+   - Large switch statement with hardcoded values
+   - Needs to be replaced or redirected to new system
+
+3. **Crime Detection Integration Points:**
+   - `CrimeDetectionPatches.cs:TrackAssault_Patch` - Records crimes but doesn't calculate debt
+   - `CrimeUtils.RecordCrime()` - Records crimes but doesn't apply debt automatically
+   - Need to add automatic debt calculation when crimes are recorded
+
+### Integration Plan
+
+#### Step 1: Update Crime Detection to Use New System
+
+**File:** `Source/CrimeDetection/CrimeDetectionPatches.cs`
+
+**Changes Needed:**
+```csharp
+// In TrackAssault_Patch Postfix:
+// OLD: Just record the crime
+CrimeUtils.RecordCrime(criminal: attacker, crimeType: crimeType, victim: victim, damageDealt: totalDamageDealt);
+
+// NEW: Record crime AND calculate debt using new system
+var crime = CrimeUtils.RecordCrime(criminal: attacker, crimeType: crimeType, victim: victim, damageDealt: totalDamageDealt);
+
+// Calculate debt using new penalty management system
+float penalty = DebtUtils.CalculateDebtForCrimeNew(
+    criminal: attacker,
+    victim: victim,
+    damageInfo: dinfo,
+    crimeDefName: null  // Auto-detect based on damage
+);
+
+if (penalty > 0)
+{
+    var debtRecord = DebtUtils.GetOrCreateDebtRecord(attacker);
+    string crimeType = DebtUtils.DetermineCrimeType(dinfo, victim);
+    debtRecord.AddDebt(penalty, $"{crimeType} vs {victim.LabelShort}");
+}
+```
+
+#### Step 2: Create Migration Method
+
+**File:** `Source/Components/WorldComponent_CrimePenaltyManager.cs`
+
+**Add Migration from Old Settings:**
+```csharp
+/// <summary>
+/// Migrate old mod settings to new crime penalty system (one-time migration)
+/// </summary>
+public void MigrateFromLegacySettings()
+{
+    if (hasMigratedLegacySettings)
+        return;
+
+    // Map old settings to new crimes
+    UpdateCrimePenalty("Trespassing", LawAndOrderSettings.ArmedTrespassing.Value);
+    UpdateCrimePenalty("Arson", LawAndOrderSettings.ArsonBase.Value);
+    UpdateCrimePenalty("Murder", LawAndOrderSettings.Murder.Value);
+    // ... etc
+
+    hasMigratedLegacySettings = true;
+    Log.Message("[Law & Order] Migrated legacy penalty settings to new Crimes Tab system");
+}
+```
+
+#### Step 3: Deprecate Legacy DebtUtils Methods
+
+**File:** `Source/Utils/DebtUtils.cs`
+
+**Changes:**
+1. Mark `CalculateDebtForCrime(Crime crime)` as `[Obsolete]`
+2. Redirect it to call `CalculateDebtForCrimeNew()` internally
+3. Add migration path for existing code
+
+```csharp
+/// <summary>
+/// [LEGACY] Calculate debt for a crime - DEPRECATED, use CalculateDebtForCrimeNew() instead
+/// This method now redirects to the new penalty management system
+/// </summary>
+[System.Obsolete("Use CalculateDebtForCrimeNew() for new code. This method maintained for compatibility.")]
+public static float CalculateDebtForCrime(Crime crime)
+{
+    if (crime == null) return 0f;
+
+    // Try to use new system if available
+    var manager = WorldComponent_CrimePenaltyManager.Instance;
+    if (manager != null)
+    {
+        // Map old CrimeType enum to new crime defNames
+        string crimeDefName = MapLegacyCrimeTypeToDefName(crime.crimeType);
+
+        if (!string.IsNullOrEmpty(crimeDefName))
+        {
+            var crimeDef = manager.GetCrimeDefinition(crimeDefName);
+            if (crimeDef != null)
+            {
+                // Use new system with victim/damage info if available
+                DamageInfo? damageInfo = null; // Could reconstruct from crime data
+                float penalty = CalculateDebtForCrimeNew(
+                    criminal: null,  // Not needed for basic calc
+                    victim: crime.victim,
+                    damageInfo: damageInfo,
+                    crimeDefName: crimeDefName
+                );
+
+                if (penalty > 0)
+                    return penalty;
+            }
+        }
+    }
+
+    // Fallback to legacy calculation if new system unavailable
+    return CalculateDebtForCrimeLegacy(crime);
+}
+
+private static string MapLegacyCrimeTypeToDefName(CrimeType crimeType)
+{
+    switch (crimeType)
+    {
+        case CrimeType.Trespassing: return "Trespassing";
+        case CrimeType.Arson: return "Arson";
+        case CrimeType.Theft: return "Theft";
+        case CrimeType.Assault: return "Assault";  // Generic, will detect specific type
+        case CrimeType.Murder: return "Murder";
+        case CrimeType.AnimalAbuse: return "AssaultAnimal";
+        case CrimeType.PropertyDestruction: return "BuildingDestruction";
+        case CrimeType.Kidnapping: return "Kidnapping";
+        default: return null;
+    }
+}
+
+private static float CalculateDebtForCrimeLegacy(Crime crime)
+{
+    // Keep existing switch statement as fallback
+    // [existing code from old CalculateDebtForCrime]
+}
+```
+
+#### Step 4: Remove Obsolete Settings from UI
+
+**File:** `Source/Settings/LawAndOrderSettingsWindow.cs`
+
+**Changes:**
+1. Remove all crime penalty sliders
+2. Add note directing users to Crimes Tab
+3. Keep essential settings:
+   - `DefaultSilverPerDay` (labor value)
+   - `LogLevel` (debugging)
+   - `ContrabandPerDrug` (contraband specific, not in Crimes Tab)
+
+```csharp
+public override void DoSettingsWindowContents(Rect inRect)
+{
+    Listing_Standard listing = new Listing_Standard();
+    listing.Begin(inRect);
+
+    // Add info message about Crimes Tab
+    listing.Gap(12f);
+    Text.Font = GameFont.Medium;
+    listing.Label("Crime Penalties");
+    Text.Font = GameFont.Small;
+    listing.Label("Crime penalties are now configured in the Justice Menu (Crimes Tab).");
+    listing.Gap(12f);
+
+    // Prison Labor Settings
+    listing.Gap(12f);
+    Text.Font = GameFont.Medium;
+    listing.Label("Prison Labor");
+    Text.Font = GameFont.Small;
+    DrawSetting(listing, "Default Silver Per Day", LawAndOrderSettings.DefaultSilverPerDay, "silver/day");
+
+    // Contraband (still uses settings, not in Crimes Tab)
+    listing.Gap(12f);
+    Text.Font = GameFont.Medium;
+    listing.Label("Contraband");
+    Text.Font = GameFont.Small;
+    DrawSetting(listing, "Per Drug Item", LawAndOrderSettings.ContrabandPerDrug, "silver");
+
+    // Debug Settings
+    listing.Gap(12f);
+    Text.Font = GameFont.Medium;
+    listing.Label("Debug");
+    Text.Font = GameFont.Small;
+    if (listing.ButtonTextLabeled("Log Level", LawAndOrderSettings.LogLevel.Value.ToString()))
+    {
+        // Cycle through log levels
+        var values = System.Enum.GetValues(typeof(LogLevel));
+        int currentIndex = System.Array.IndexOf(values, LawAndOrderSettings.LogLevel.Value);
+        int nextIndex = (currentIndex + 1) % values.Length;
+        LawAndOrderSettings.LogLevel.Value = (LogLevel)values.GetValue(nextIndex);
+    }
+
+    listing.End();
+}
+```
+
+#### Step 5: Update CrimeUtils.RecordCrime()
+
+**File:** `Source/Utils/CrimeUtils.cs`
+
+**Add automatic debt calculation:**
+```csharp
+public static Crime RecordCrime(
+    Pawn criminal,
+    CrimeType crimeType,
+    Pawn victim = null,
+    Thing targetThing = null,
+    float damageDealt = 0f,
+    string additionalInfo = null,
+    DamageInfo? damageInfo = null  // NEW: Pass damage info for penalty calculation
+)
+{
+    // ... existing crime recording code ...
+
+    // NEW: Automatically calculate and apply debt using new system
+    if (damageInfo.HasValue && victim != null)
+    {
+        float penalty = DebtUtils.CalculateDebtForCrimeNew(
+            criminal: criminal,
+            victim: victim,
+            damageInfo: damageInfo,
+            crimeDefName: null  // Auto-detect
+        );
+
+        if (penalty > 0)
+        {
+            var debtRecord = DebtUtils.GetOrCreateDebtRecord(criminal);
+            string crimeDefName = DebtUtils.DetermineCrimeType(damageInfo, victim);
+            debtRecord.AddDebt(penalty, $"{crimeDefName} vs {victim.LabelShort}");
+        }
+    }
+
+    return crime;
+}
+```
+
+### Implementation Checklist
+
+**Phase 3.1: Crime Detection Integration**
+- [ ] Update `CrimeDetectionPatches.cs:TrackAssault_Patch` to use new system
+- [ ] Update `CrimeUtils.RecordCrime()` to accept DamageInfo and auto-calculate debt
+- [ ] Test assault/murder detection uses new penalty calculations
+- [ ] Verify multipliers apply correctly (nobility, repeat offender, etc.)
+
+**Phase 3.2: Legacy System Migration**
+- [ ] Add `MigrateFromLegacySettings()` to WorldComponent_CrimePenaltyManager
+- [ ] Mark old `CalculateDebtForCrime(Crime)` as obsolete
+- [ ] Create `MapLegacyCrimeTypeToDefName()` helper
+- [ ] Create `CalculateDebtForCrimeLegacy()` fallback method
+- [ ] Test backward compatibility with existing saves
+
+**Phase 3.3: Settings Cleanup**
+- [ ] Remove crime penalty settings from LawAndOrderSettingsWindow.cs
+- [ ] Remove crime penalty settings from LawAndOrderSettings.cs (mark obsolete, don't delete immediately)
+- [ ] Update settings UI to direct users to Crimes Tab
+- [ ] Keep only: DefaultSilverPerDay, LogLevel, ContrabandPerDrug
+- [ ] Add translation keys for new settings UI text
+
+**Phase 3.4: Testing & Validation**
+- [ ] Test new penalty calculations match expected values
+- [ ] Test all 10 multiplier types work correctly
+- [ ] Test crime type detection for all damage types
+- [ ] Test legacy saves load correctly with migration
+- [ ] Test Crimes Tab UI changes reflect in actual gameplay
+- [ ] Performance test with many crimes/prisoners
+
+**Phase 3.5: Documentation Updates**
+- [ ] Update user documentation about Crimes Tab
+- [ ] Add migration notes for existing players
+- [ ] Update changelog with breaking changes
+- [ ] Document which settings were removed and why
+- [ ] Add examples of using new system in modding guide
+
+### Expected Benefits
+
+1. **Consistency**: All crime penalties use the same configurable system
+2. **Player Control**: Fine-grained control through Crimes Tab UI instead of buried settings
+3. **Flexibility**: Min/max ranges provide contextual variation, not fixed values
+4. **Moddability**: Other mods can add custom crimes via the penalty manager
+5. **Maintenance**: One system to maintain instead of two parallel systems
+6. **Performance**: No redundant calculations or settings checks
+
+### Backward Compatibility Strategy
+
+1. **Existing Saves**: Migration runs once, converts old settings to new crime penalties
+2. **Legacy Code**: Old methods redirect to new system, marked obsolete but still functional
+3. **Settings**: Old setting values used as initial crimes tab values, then hidden from UI
+4. **Documentation**: Clear upgrade path documented for players
+
+### Testing Scenarios
+
+1. **New Game**: Verify default penalties match documented values
+2. **Load Old Save**: Verify migration converts settings correctly
+3. **Configure Crimes Tab**: Verify changes immediately affect debt calculations
+4. **Multipliers**: Verify each multiplier type applies correctly
+5. **Edge Cases**: Very high/low penalties, disabled multipliers, missing crime defs
 
 ## Current Status: Phase 2 Complete ✅
 

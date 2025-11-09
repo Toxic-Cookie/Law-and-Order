@@ -292,7 +292,54 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 **Files Modified:**
 - `Source/Utils/DebtUtils.cs` - Added Phase 3 integration region with 17 new methods
 
-**Next Step (Optional):** Integrate CalculateDebtForCrimeNew() with existing crime detection points
+**Next Step:** Phase 3 Continuation - See detailed plan below
+
+**2025-11-09: Phase 3 Continuation Plan - Integration & Legacy Removal**
+
+Comprehensive plan created for completing Phase 3 integration:
+
+**Objectives:**
+1. Integrate new penalty system with crime detection patches
+2. Migrate legacy mod settings to Crimes Tab
+3. Deprecate obsolete methods and settings
+4. Clean up settings UI
+5. Ensure backward compatibility
+
+**Legacy Components to Remove:**
+- 11 old mod settings superseded by Crimes Tab (ArmedTrespassing, ArsonBase, TheftMultiplier, etc.)
+- Legacy `CalculateDebtForCrime(Crime)` method (mark obsolete, redirect to new system)
+- Crime penalty sliders from settings UI
+
+**Integration Points:**
+- `CrimeDetectionPatches.TrackAssault_Patch` - Add automatic debt calculation
+- `CrimeUtils.RecordCrime()` - Accept DamageInfo parameter
+- `DebtUtils` - Add legacy migration helpers
+
+**Implementation Phases:**
+- **Phase 3.1**: Crime Detection Integration (4 tasks)
+- **Phase 3.2**: Legacy System Migration (5 tasks)
+- **Phase 3.3**: Settings Cleanup (5 tasks)
+- **Phase 3.4**: Testing & Validation (6 tasks)
+- **Phase 3.5**: Documentation Updates (5 tasks)
+
+**Backward Compatibility Strategy:**
+- One-time migration on first load
+- Obsolete methods redirect to new system
+- Legacy fallback for missing data
+- Clear upgrade documentation
+
+**Expected Benefits:**
+- Unified configurable penalty system
+- Enhanced player control through Crimes Tab UI
+- Contextual penalty variation (min-max ranges)
+- Improved moddability
+- Simplified maintenance
+
+**Documentation:**
+- Full integration plan in Project_Notepad.md (300+ lines)
+- Detailed implementation steps in Project_Documentation.md
+- Code examples for all integration points
+- Testing scenarios documented
 
 ---
 

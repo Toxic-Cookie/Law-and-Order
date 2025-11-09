@@ -2940,11 +2940,13 @@ foreach (var node in flatList)
 - Added 160+ translation keys to LawAndOrder_Keys.xml
 - Fixed all compilation errors and null reference exceptions
 
-**Phase 3: Integration** 🔄 NEXT (See detailed plan below)
-- Integrate penalty system with DebtUtils.CalculateDebtForCrime()
-- Implement smart penalty calculation within min-max range based on damage/severity
-- Apply configured multipliers during actual crime debt calculation
-- Test integration with existing crime tracking system
+**Phase 3: Integration** 🔄 IN PROGRESS
+- ✅ Core penalty calculation system implemented in DebtUtils.cs (~700 lines)
+- ✅ CalculateDebtForCrimeNew() public API created
+- ✅ All 17 helper methods implemented (body part scoring, multipliers, crime detection)
+- ⏳ Crime detection patches integration (see Phase 3 Continuation plan)
+- ⏳ Legacy system migration and deprecation
+- ⏳ Settings cleanup (remove superseded mod settings)
 
 **Phase 4: Testing & Polish** ⏳ PENDING
 - End-to-end testing of full crime penalty pipeline
@@ -3381,6 +3383,148 @@ public static string DetermineCrimeType(DamageInfo dinfo, Pawn victim)
     return "SuperficialWound";
 }
 ```
+
+### Phase 3 Continuation Plan: Integration & Legacy Removal
+
+#### Overview
+Phase 3 core implementation is complete with all penalty calculation methods in place. The continuation focuses on integrating the new system with existing crime detection and removing legacy components.
+
+#### Components to Remove/Replace
+
+**1. Legacy Mod Settings (SUPERSEDED by Crimes Tab):**
+- `ArmedTrespassing` (150 silver) → `Trespassing` crime
+- `ArsonBase` (250 silver) → `Arson` crime
+- `TheftMultiplier` (1.5x) → `Theft` crime penalties
+- `Assault` (350 silver) → Assault-related crimes (GunshotWound, StabWound, etc.)
+- `DownedColonist` (750 silver) → Calculated based on actual injuries
+- `AssaultAnimal` (100 silver) → `AssaultAnimal` crime
+- `Murder` (5000 silver) → `Murder` crime
+- `PropertyDestructionMultiplier` (1.2x) → Property destruction crimes
+- `BannedWeaponModifier` (1.25x) → Can be added as multiplier
+- `RepeatOffenderModifier` (1.5x) → Already exists as `RepeatOffender` multiplier
+
+**2. Legacy Calculation Method:**
+- `DebtUtils.CalculateDebtForCrime(Crime crime)` → Mark obsolete, redirect to new system
+- Switch statement with hardcoded values → Replace with dynamic lookups
+
+**3. Crime Detection Integration:**
+- `CrimeDetectionPatches.TrackAssault_Patch` → Add automatic debt calculation
+- `CrimeUtils.RecordCrime()` → Accept DamageInfo and auto-calculate debt
+
+#### Integration Steps
+
+**Step 1: Crime Detection Integration**
+```csharp
+// In CrimeDetectionPatches.cs TrackAssault_Patch:
+float penalty = DebtUtils.CalculateDebtForCrimeNew(
+    criminal: attacker,
+    victim: victim,
+    damageInfo: dinfo,
+    crimeDefName: null  // Auto-detect
+);
+
+if (penalty > 0)
+{
+    var debtRecord = DebtUtils.GetOrCreateDebtRecord(attacker);
+    string crimeType = DebtUtils.DetermineCrimeType(dinfo, victim);
+    debtRecord.AddDebt(penalty, $"{crimeType} vs {victim.LabelShort}");
+}
+```
+
+**Step 2: Legacy Migration**
+Add migration method to WorldComponent_CrimePenaltyManager:
+- One-time migration from old settings to new crime penalties
+- Preserves player's configured values
+- Sets flag to prevent re-migration
+
+**Step 3: Deprecate Legacy Methods**
+- Mark `CalculateDebtForCrime(Crime)` as `[Obsolete]`
+- Redirect to new system when available
+- Keep fallback for compatibility
+- Add `MapLegacyCrimeTypeToDefName()` helper
+
+**Step 4: Settings UI Cleanup**
+Remove crime penalty sliders, keep only:
+- `DefaultSilverPerDay` (prison labor)
+- `LogLevel` (debugging)
+- `ContrabandPerDrug` (contraband-specific)
+
+**Step 5: Update CrimeUtils**
+- Add optional `DamageInfo?` parameter to `RecordCrime()`
+- Automatically calculate debt when damage info provided
+- Maintain backward compatibility
+
+#### Backward Compatibility
+
+**Existing Saves:**
+- Migration runs once on first load
+- Converts old settings to new crime penalties
+- Preserves player configuration
+
+**Legacy Code:**
+- Old methods marked obsolete but still functional
+- Redirect to new system when available
+- Fallback to legacy calculation if needed
+
+**Settings:**
+- Old values used as initial Crimes Tab values
+- Then hidden from UI with redirect message
+- Settings technically still exist for compatibility
+
+#### Testing Requirements
+
+1. **New Game**: Default penalties match documented values
+2. **Load Old Save**: Migration preserves configured penalties
+3. **Configure Crimes Tab**: Changes immediately affect calculations
+4. **Multipliers**: All 10 types apply correctly
+5. **Crime Detection**: Assault, murder, property damage all use new system
+6. **Edge Cases**: Missing crime defs, disabled multipliers, extreme values
+
+#### Implementation Checklist
+
+**Phase 3.1: Crime Detection Integration**
+- [ ] Update TrackAssault_Patch to use CalculateDebtForCrimeNew()
+- [ ] Update CrimeUtils.RecordCrime() signature
+- [ ] Test assault detection with new penalties
+- [ ] Verify multipliers apply (nobility, repeat offender, wartime, etc.)
+
+**Phase 3.2: Legacy Migration**
+- [ ] Add MigrateFromLegacySettings() method
+- [ ] Mark CalculateDebtForCrime(Crime) obsolete
+- [ ] Create MapLegacyCrimeTypeToDefName() helper
+- [ ] Create CalculateDebtForCrimeLegacy() fallback
+- [ ] Test save compatibility
+
+**Phase 3.3: Settings Cleanup**
+- [ ] Remove crime penalty sliders from UI
+- [ ] Mark obsolete settings (don't delete yet)
+- [ ] Add redirect message to Crimes Tab
+- [ ] Keep essential settings only
+- [ ] Add translation keys
+
+**Phase 3.4: Testing**
+- [ ] Test penalty calculations
+- [ ] Test multiplier application
+- [ ] Test crime type detection (25+ damage types)
+- [ ] Test save migration
+- [ ] Test UI changes reflect in gameplay
+- [ ] Performance test
+
+**Phase 3.5: Documentation**
+- [ ] Update user docs about Crimes Tab
+- [ ] Add migration notes
+- [ ] Update changelog
+- [ ] Document removed settings
+- [ ] Add modding examples
+
+#### Expected Benefits
+
+1. **Consistency**: Single configurable system for all crime penalties
+2. **Player Control**: Fine-grained UI control vs buried settings
+3. **Flexibility**: Contextual ranges vs fixed values
+4. **Moddability**: Other mods can add custom crimes
+5. **Maintenance**: One system to maintain
+6. **Performance**: No redundant calculations
 
 ### Files Created (Phase 1)
 
