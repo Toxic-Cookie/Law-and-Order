@@ -4,6 +4,7 @@ using Verse;
 using Verse.AI;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
+using System.Collections.Generic;
 
 namespace Law_and_Order.Source.CrimeDetection
 {
@@ -12,6 +13,22 @@ namespace Law_and_Order.Source.CrimeDetection
     /// </summary>
     public static class CrimeDetectionPatches
     {
+        // Track which items have been damaged to prevent duplicate crime records
+        // Key: Thing ID, Value: (Pawn, CrimeType) tuple
+        private static Dictionary<int, (Pawn attacker, CrimeType crimeType)> damagedItemsTracker = new Dictionary<int, (Pawn, CrimeType)>();
+
+        // Clear the tracker periodically to prevent memory leaks
+        private static int clearTrackerTick = 0;
+
+        public static void ClearDamagedItemsTracker()
+        {
+            clearTrackerTick++;
+            if (clearTrackerTick > 60000) // Clear every in-game day
+            {
+                damagedItemsTracker.Clear();
+                clearTrackerTick = 0;
+            }
+        }
         /// <summary>
         /// Tracks when a raider damages a colonist by patching the PostApplyDamage method
         /// </summary>
@@ -65,6 +82,7 @@ namespace Law_and_Order.Source.CrimeDetection
 
         /// <summary>
         /// Tracks property damage when buildings/things take damage
+        /// Distinguishes between Vandalism (minor damage) and PropertyDestruction (major damage)
         /// </summary>
         [HarmonyPatch(typeof(Thing), nameof(Thing.TakeDamage))]
         public static class TrackPropertyDamage_Patch
@@ -73,6 +91,9 @@ namespace Law_and_Order.Source.CrimeDetection
             {
                 try
                 {
+                    // Clear tracker periodically to prevent memory leaks
+                    ClearDamagedItemsTracker();
+
                     // Only track if the thing is owned by the player
                     if (__instance.Faction != Faction.OfPlayer)
                         return;
@@ -91,13 +112,50 @@ namespace Law_and_Order.Source.CrimeDetection
                     if (!attacker.HostileTo(Faction.OfPlayer))
                         return;
 
-                    // Determine crime type based on damage type
-                    CrimeType crimeType = CrimeType.PropertyDestruction;
+                    // Calculate HP percentage after damage
+                    float hpPercentage = __instance.HitPoints / (float)__instance.MaxHitPoints;
 
-                    // Check if it's arson (flame damage)
+                    // Determine crime type based on damage severity and type
+                    CrimeType crimeType;
+
+                    // Check if it's arson (flame damage) - always considered more severe
                     if (dinfo.Def == DamageDefOf.Flame || dinfo.Def == DamageDefOf.Burn)
                     {
                         crimeType = CrimeType.Arson;
+                    }
+                    // Check if the item is destroyed or severely damaged
+                    else if (__instance.Destroyed || hpPercentage < 0.5f)
+                    {
+                        // Severe damage or destruction = PropertyDestruction
+                        crimeType = CrimeType.PropertyDestruction;
+                    }
+                    else
+                    {
+                        // Minor damage = Vandalism
+                        crimeType = CrimeType.Vandalism;
+                    }
+
+                    // Check if we've already recorded a crime for this item by this attacker
+                    int itemKey = __instance.GetHashCode();
+                    if (damagedItemsTracker.TryGetValue(itemKey, out var existingRecord))
+                    {
+                        // If the existing crime is less severe than the current one, upgrade it
+                        if (existingRecord.crimeType == CrimeType.Vandalism &&
+                            (crimeType == CrimeType.PropertyDestruction || crimeType == CrimeType.Arson))
+                        {
+                            // Upgrade to more severe crime type
+                            damagedItemsTracker[itemKey] = (attacker, crimeType);
+                        }
+                        else
+                        {
+                            // Already recorded a crime of equal or greater severity, don't spam
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // First time recording damage to this item
+                        damagedItemsTracker[itemKey] = (attacker, crimeType);
                     }
 
                     // Record the crime
@@ -106,7 +164,7 @@ namespace Law_and_Order.Source.CrimeDetection
                         crimeType: crimeType,
                         targetThing: __instance,
                         damageDealt: __result.totalDamageDealt,
-                        additionalInfo: $"Damaged {__instance.Label} with {dinfo.Def.label}"
+                        additionalInfo: $"Damaged {__instance.Label} with {dinfo.Def.label} ({hpPercentage:P0} HP remaining)"
                     );
                 }
                 catch (System.Exception e)

@@ -298,6 +298,10 @@
   <LawAndOrder_Crime_ToxicBuildup_Desc>Causing toxic buildup in colonists</LawAndOrder_Crime_ToxicBuildup_Desc>
 
   <!-- Crime Definitions - Property Destruction -->
+  <LawAndOrder_Crime_Vandalism>Vandalism</LawAndOrder_Crime_Vandalism>
+  <LawAndOrder_Crime_Vandalism_Desc>Minor property damage (structure HP above 50%)</LawAndOrder_Crime_Vandalism_Desc>
+  <LawAndOrder_Crime_PropertyDestruction>Property Destruction</LawAndOrder_Crime_PropertyDestruction>
+  <LawAndOrder_Crime_PropertyDestruction_Desc>Severe property damage (structure HP below 50%)</LawAndOrder_Crime_PropertyDestruction_Desc>
   <LawAndOrder_Crime_Sapping>Sapping</LawAndOrder_Crime_Sapping>
   <LawAndOrder_Crime_Sapping_Desc>Tunneling to breach colony walls</LawAndOrder_Crime_Sapping_Desc>
   <LawAndOrder_Crime_Breaching>Breaching</LawAndOrder_Crime_Breaching>
