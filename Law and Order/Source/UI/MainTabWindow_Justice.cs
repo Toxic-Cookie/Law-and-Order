@@ -1710,9 +1710,19 @@ namespace Law_and_Order.Source.UI
 
             // Header with crime name
             Text.Font = GameFont.Medium;
-            Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 32f);
+            Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width - 180f, 32f);
             Widgets.Label(headerRect, selectedCrime.label);
             Text.Font = GameFont.Small;
+
+            // View Multipliers button (top right)
+            Rect multipliersButtonRect = new Rect(innerRect.xMax - 170f, innerRect.y, 170f, 32f);
+            if (Widgets.ButtonText(multipliersButtonRect, "LawAndOrder_ViewMultipliers".Translate()))
+            {
+                showMultipliers = true;
+                selectedCrime = null;
+                selectedCrimeCategory = null;
+                SoundDefOf.Click.PlayOneShotOnCamera(null);
+            }
 
             innerRect.yMin += 40f;
 
@@ -1831,9 +1841,19 @@ namespace Law_and_Order.Source.UI
 
             // Header with category name
             Text.Font = GameFont.Medium;
-            Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 32f);
+            Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width - 180f, 32f);
             Widgets.Label(headerRect, selectedCrimeCategory.GetLabel());
             Text.Font = GameFont.Small;
+
+            // View Multipliers button (top right)
+            Rect multipliersButtonRect = new Rect(innerRect.xMax - 170f, innerRect.y, 170f, 32f);
+            if (Widgets.ButtonText(multipliersButtonRect, "LawAndOrder_ViewMultipliers".Translate()))
+            {
+                showMultipliers = true;
+                selectedCrime = null;
+                selectedCrimeCategory = null;
+                SoundDefOf.Click.PlayOneShotOnCamera(null);
+            }
 
             innerRect.yMin += 40f;
 
