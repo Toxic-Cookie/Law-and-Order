@@ -18,6 +18,7 @@
 - ✅ **Crime Detection - Phase 1: Animal Abuse (Nov 9, 2025):** Added automatic detection for hostile pawns attacking colony animals
 - ✅ **Crime Detection - Phase 2: Kidnapping (Nov 9, 2025):** Added automatic detection for hostile pawns kidnapping downed colonists (patches JobGiver_Kidnap)
 - ✅ **Crime Detection - Phase 3: Trespassing (Nov 9, 2025):** Added automatic detection for hostile pawns entering player home area (MapComponent periodic checking) - TESTED AND VERIFIED
+- ✅ **Crime Detection - Phase 4: Vandalism (Nov 9, 2025):** Added distinction between Vandalism (>50% HP) and PropertyDestruction (<50% HP) with duplicate prevention system - TESTED AND VERIFIED
 
 ---
 
@@ -390,18 +391,65 @@ Previously only Assault/Murder crimes were automatically detected. Now all major
 |------------|------------------|--------|
 | Assault | Pawn damage tracking | ✅ Working |
 | Murder | Pawn death tracking | ✅ Working |
-| Property Damage | Building/item damage | ✅ Working |
+| Property Damage | Building/item damage (<50% HP) | ✅ Working |
 | Arson | Flame damage detection | ✅ Working |
 | Theft | Item pickup tracking | ✅ Working |
 | Animal Abuse | Colony animal damage tracking | ✅ Working (Phase 1 - Nov 9, 2025) |
 | Kidnapping | Kidnap job assignment (`JobGiver_Kidnap.TryGiveJob`) | ✅ Working (Phase 2 - Nov 9, 2025) |
 | Trespassing | MapComponent home area check | ✅ Working (Phase 3 - Nov 9, 2025) |
-| Vandalism | (Future) | ⏳ Not yet implemented |
+| Vandalism | HP threshold check (>50% HP) | ✅ Working (Phase 4 - Nov 9, 2025) |
 
 **Testing Notes:**
-- Test in-game with raiders to verify all crime types are detected
-- Check dev mode logs to see crime recording messages
-- Verify penalties are calculated correctly using new system
+- ✅ All crime types tested and verified in-game
+- ✅ Dev mode logs show correct crime recording
+- ✅ Penalties calculated correctly using new contextual system
+
+---
+
+**2025-11-09: Crime Detection - Phase 4: Vandalism Detection** ✅ **COMPLETE AND TESTED**
+
+Implemented automatic distinction between minor property damage (Vandalism) and severe property damage (PropertyDestruction):
+
+**Implementation Details:**
+- Extended existing `Thing.TakeDamage` patch with HP threshold logic
+- Three-tier crime system: Arson > PropertyDestruction > Vandalism
+- Vandalism: >50% HP remaining (minor damage)
+- PropertyDestruction: <50% HP remaining or destroyed (severe damage)
+- Arson: Always takes priority for flame damage
+- Dictionary tracking prevents duplicate crime records
+- Automatic crime severity upgrade (Vandalism → PropertyDestruction when item takes more damage)
+- Memory leak prevention (tracker clears every 60,000 ticks)
+
+**Technical Highlights:**
+- HP percentage calculation: `__instance.HitPoints / (float)__instance.MaxHitPoints`
+- Duplicate prevention via `Dictionary<int, (Pawn, CrimeType)>` using Thing.GetHashCode()
+- Smart upgrade logic: Only records new crime if severity increases
+- Periodic cleanup: `ClearDamagedItemsTracker()` every in-game day
+- Translation keys added for both Vandalism and PropertyDestruction
+
+**Files Modified:**
+- `Source/CrimeDetection/CrimeDetectionPatches.cs` - Added Dictionary tracking and HP threshold logic
+- `Languages/English/Keyed/LawAndOrder_Keys.xml` - Added translation keys
+
+**Build Status:**
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ Mod deployed to RimWorld Mods folder
+
+**Testing Status:**
+- ✅ In-game testing completed and verified
+- ✅ Vandalism crimes appear for minor damage (>50% HP)
+- ✅ PropertyDestruction crimes appear for severe damage (<50% HP)
+- ✅ Crime severity upgrades working correctly
+- ✅ No spam from multiple hits on same building
+- ✅ Arson takes priority for flame damage
+- ✅ Crimes show correct types in Justice tab
+
+**Benefits:**
+- Clear distinction between minor and major property damage
+- No duplicate crime spam from repeated hits
+- Automatic escalation when damage worsens
+- Memory-safe with automatic cleanup
+- Player-friendly crime categorization
 
 ---
 

@@ -347,12 +347,14 @@ else
 
 **Testing Status:**
 - ✅ Code compiles successfully
-- ⏳ In-game testing recommended:
-  - Spawn raid and let them damage buildings slightly (should record Vandalism)
-  - Let them continue damaging same building below 50% HP (should upgrade to PropertyDestruction)
-  - Verify no spam when multiple hits on same building
-  - Test with flame damage (should record Arson regardless of HP)
-  - Check crime records in Justice tab show correct crime types
+- ✅ In-game testing completed and verified:
+  - ✅ Vandalism crimes appear when raiders damage buildings (>50% HP)
+  - ✅ PropertyDestruction crimes appear when severe damage occurs (<50% HP)
+  - ✅ Crime severity upgrades working (Vandalism → PropertyDestruction)
+  - ✅ No spam from multiple hits on same building (Dictionary tracking works)
+  - ✅ Arson takes priority for flame damage
+  - ✅ Crimes show correct types in Justice tab
+  - ✅ System working as intended
 
 ---
 
@@ -455,7 +457,7 @@ else
 2. ✅ Modify existing PropertyDamage patch with HP percentage logic
 3. ✅ Add duplicate prevention system with item tracking
 4. ✅ Add translation keys for Vandalism and PropertyDestruction
-5. ⏳ Test with minor vs major damage (in-game testing recommended)
+5. ✅ Test with minor vs major damage (in-game testing verified working)
 6. ✅ Update documentation
 
 **Implementation Notes:**
@@ -519,14 +521,14 @@ else
 - ✅ Proper save/load support (ExposeData with LookMode.Reference)
 - ✅ In-game testing verified - crimes appear correctly in Justice tab
 
-### Phase 4 (Vandalism): ✅ IMPLEMENTATION COMPLETE
+### Phase 4 (Vandalism): ✅ COMPLETE AND TESTED
 - ✅ Minor vs major damage distinguished (>50% HP = Vandalism, <50% HP = PropertyDestruction)
 - ✅ Penalty scales with damage severity (separate crime types)
 - ✅ No duplicate crime records (Dictionary tracking prevents spam)
 - ✅ Automatic crime severity upgrade (Vandalism → PropertyDestruction when item takes more damage)
 - ✅ Arson takes priority over other property crimes
 - ✅ Memory leak prevention (tracker clears every 60,000 ticks)
-- ⏳ In-game testing recommended to verify all criteria
+- ✅ In-game testing verified - all criteria working correctly
 
 ---
 
