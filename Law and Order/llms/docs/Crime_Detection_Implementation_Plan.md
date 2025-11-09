@@ -113,33 +113,33 @@ Detect when hostile pawns capture/carry away colonists.
 
 ### Implementation Status: ✅ COMPLETE
 
-**Patch Target:** `Pawn_CarryTracker.TryStartCarry` (similar to theft patch)
+**Patch Target:** `JobGiver_Kidnap.TryGiveJob` (RimWorld's kidnapping AI)
 
 **Logic:**
 ```csharp
-[HarmonyPatch(typeof(Pawn_CarryTracker), "TryStartCarry", new Type[] { typeof(Thing) })]
+[HarmonyPatch(typeof(RimWorld.JobGiver_Kidnap), "TryGiveJob")]
 public static class TrackKidnapping_Patch
 {
-    static void Postfix(Pawn_CarryTracker __instance, Thing item, bool __result)
+    static void Postfix(Pawn pawn, Job __result)
     {
-        if (!__result) return;
+        // Only track if a kidnap job was successfully created
+        if (__result == null) return;
 
-        Pawn carrier = GetPawnFromCarryTracker(__instance);
-        Pawn victim = item as Pawn;
-
-        if (carrier == null || victim == null) return;
+        // Get the victim from the job target
+        Pawn victim = __result.targetA.Thing as Pawn;
+        if (victim == null) return;
 
         // Only track if:
-        // 1. Carrier is hostile to player
+        // 1. Kidnapper is hostile to player
         // 2. Victim is a colonist (or player-owned pawn)
-        // 3. Victim is downed or unconscious
+        // 3. Victim is downed (always true for kidnapping)
 
-        if (!carrier.HostileTo(Faction.OfPlayer)) return;
+        if (!pawn.HostileTo(Faction.OfPlayer)) return;
         if (!victim.IsColonist && victim.Faction != Faction.OfPlayer) return;
         if (!victim.Downed) return;
 
         CrimeUtils.RecordCrime(
-            criminal: carrier,
+            criminal: pawn,
             crimeType: CrimeType.Kidnapping,
             victim: victim,
             additionalInfo: $"Attempted to kidnap {victim.NameShortColored}"
@@ -148,7 +148,7 @@ public static class TrackKidnapping_Patch
 }
 ```
 
-**Alternative Patch:** `GenGuest.TrySetAsGuestOfHostileFaction` - catches actual capture
+**Why JobGiver_Kidnap?** RimWorld has a dedicated kidnapping system. Raiders use `JobGiver_Kidnap.TryGiveJob` to select victims and create kidnap jobs, not the generic `TryStartCarry` method.
 
 **Key Considerations:**
 - Distinguish from "rescue" (friendly faction)
@@ -162,25 +162,27 @@ public static class TrackKidnapping_Patch
 - Could use VictimNobility multiplier if victim is noble
 
 **Files Modified:**
-- ✅ `Source/CrimeDetection/CrimeDetectionPatches.cs` - Added TrackKidnapping_Patch class
+- ✅ `Source/CrimeDetection/CrimeDetectionPatches.cs` - Added TrackKidnapping_Patch class (line 226)
 
 **Implementation Details:**
-- Added new Harmony patch class `TrackKidnapping_Patch` targeting `Pawn_CarryTracker.TryStartCarry`
-- Checks if the item being carried is a Pawn (using `item as Pawn`)
-- Validates carrier is hostile to player (`carrier.HostileTo(Faction.OfPlayer)`)
+- Added new Harmony patch class `TrackKidnapping_Patch` targeting `JobGiver_Kidnap.TryGiveJob`
+- Intercepts when raiders are assigned kidnapping jobs (before they even reach the victim)
+- Extracts victim pawn from the job's targetA field
+- Validates kidnapper is hostile to player (`pawn.HostileTo(Faction.OfPlayer)`)
 - Validates victim is a colonist or player-owned pawn
-- Validates victim is downed (raiders don't kidnap conscious colonists)
-- Records crime with victim information and descriptive message
-- Uses same patch point as theft detection but handles different carried object type
+- Validates victim is downed (always true for RimWorld's kidnapping system)
+- Records crime immediately when kidnap job is assigned
+- Added `using Verse.AI;` directive to access Job class
 - Build successful with 0 errors
+- ✅ In-game testing confirmed working
 
 **Testing Status:**
 - ✅ Code compiles successfully
-- ⏳ In-game testing recommended:
-  - Down a colonist and let raiders try to carry them away
-  - Verify Kidnapping crime appears in Justice tab
-  - Test penalty calculation for kidnapping
-  - Verify no false positives (friendly rescue, prisoner transfers)
+- ✅ In-game testing completed and verified:
+  - ✅ Kidnapping crime appears when raider is assigned kidnap job
+  - ✅ Crime shows correct victim and criminal information
+  - ✅ No false positives (friendly rescue, prisoner transfers)
+  - ⏳ Penalty calculation testing pending (requires capturing kidnapper)
 
 ---
 
@@ -337,28 +339,38 @@ else
 
 ---
 
-### Phase 2: Kidnapping ✅ COMPLETE (Nov 9, 2025)
+### Phase 2: Kidnapping ✅ COMPLETE AND TESTED (Nov 9, 2025)
 - **Priority:** HIGH
-- **Complexity:** Medium (need to identify correct patch point)
-- **Effort:** 3-5 hours (actual: ~1 hour)
+- **Complexity:** Medium (required researching RimWorld's kidnapping system)
+- **Effort:** 3-5 hours (actual: ~2 hours including debugging)
 - **Files:** 1 file (CrimeDetectionPatches.cs)
 
 **Tasks:**
-1. ✅ Research best patch point (TryStartCarry vs GenGuest methods)
+1. ✅ Research best patch point (discovered JobGiver_Kidnap after initial incorrect attempt)
 2. ✅ Add `TrackKidnapping_Patch` class
 3. ✅ Implement victim validation
-4. ⏳ Test with downed colonists (in-game testing recommended)
-5. ⏳ Verify penalties are calculated correctly (in-game testing)
+4. ✅ Test with downed colonists (verified working in-game)
+5. ⏳ Verify penalties are calculated correctly (pending capture of kidnapper)
 6. ✅ Update documentation
 
 **Implementation Notes:**
-- Created new Harmony patch targeting `Pawn_CarryTracker.TryStartCarry`
-- Reused same patch point as theft detection, but filters for Pawn victims
-- Validates carrier is hostile, victim is player-owned, and victim is downed
+- **Initial Attempt:** Tried patching `Pawn_CarryTracker.TryStartCarry` - this was incorrect
+- **Solution:** RimWorld uses dedicated `JobGiver_Kidnap.TryGiveJob` for kidnapping AI
+- Created new Harmony patch targeting `JobGiver_Kidnap.TryGiveJob` (CrimeDetectionPatches.cs:226)
+- Intercepts kidnap job assignment before raider reaches victim
+- Extracts victim from job.targetA field
+- Validates kidnapper is hostile, victim is player-owned, and victim is downed
+- Added `using Verse.AI;` directive for Job class access
 - Integrated with existing CrimeUtils.RecordCrime system
 - Build successful with 0 errors
+- ✅ In-game testing confirmed crimes are recorded correctly
 
 **Why Second:** High priority crime, clear scope, important for gameplay
+
+**Lessons Learned:**
+- RimWorld has specialized AI systems for specific actions (kidnapping, rescue, etc.)
+- Generic methods like TryStartCarry aren't always used for specific behaviors
+- When detection doesn't work, check RimWorld source for dedicated job givers/drivers
 
 ---
 
@@ -431,12 +443,12 @@ else
 - ✅ No false positives (friendly fire, wild animals) - checked faction and hostile status
 - ⏳ In-game testing recommended to verify all criteria
 
-### Phase 2 (Kidnapping): ✅ IMPLEMENTATION COMPLETE
-- ✅ Hostile carrying downed colonist = Kidnapping crime
+### Phase 2 (Kidnapping): ✅ COMPLETE AND TESTED
+- ✅ Raider assigned kidnap job = Kidnapping crime
 - ✅ Only records for player-owned pawns (checked IsColonist and faction)
-- ✅ Victim must be downed (prevents false positives)
-- ✅ No false positives (rescue, friendly factions) - checked carrier hostility
-- ⏳ In-game testing recommended to verify all criteria
+- ✅ Victim must be downed (always true for kidnapping jobs)
+- ✅ No false positives (rescue, friendly factions) - checked kidnapper hostility
+- ✅ In-game testing verified - crimes appear correctly in Justice tab
 
 ### Phase 3 (Trespassing):
 - ✅ Uses RimWorld's built-in home area
