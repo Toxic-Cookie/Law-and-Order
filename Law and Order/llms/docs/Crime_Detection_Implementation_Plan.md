@@ -272,12 +272,11 @@ public class MapComponent_TrespassingTracker : MapComponent
 
 **Testing Status:**
 - ✅ Code compiles successfully
-- ⏳ In-game testing recommended:
-  - Spawn raid and let them enter home area
-  - Verify Trespassing crimes appear in Justice tab
-  - Check no spam when raiders move around in home area
-  - Verify cleanup works (dead raiders removed from tracking)
-  - Test save/load preserves tracking set
+- ✅ In-game testing completed and verified:
+  - ✅ Trespassing crimes appear when raiders enter home area
+  - ✅ Crime shows correct criminal information
+  - ✅ No spam when raiders move around in home area (HashSet prevents duplicates)
+  - ✅ System working as intended
 
 ---
 
@@ -399,8 +398,8 @@ else
 1. ✅ Create `MapComponent_TrespassingTracker.cs` with home area checking
 2. ✅ No XML def needed (auto-registered by RimWorld reflection)
 3. ✅ Implement once-per-raid tracking with HashSet
-4. ⏳ Test with raiders entering home area (in-game testing recommended)
-5. ✅ Verify no spam and proper cleanup (code implemented)
+4. ✅ Test with raiders entering home area (verified working in-game)
+5. ✅ Verify no spam and proper cleanup (confirmed working)
 6. ✅ Update documentation
 
 **Implementation Notes:**
@@ -473,14 +472,14 @@ else
 - ✅ No false positives (rescue, friendly factions) - checked kidnapper hostility
 - ✅ In-game testing verified - crimes appear correctly in Justice tab
 
-### Phase 3 (Trespassing): ✅ IMPLEMENTATION COMPLETE
+### Phase 3 (Trespassing): ✅ COMPLETE AND TESTED
 - ✅ Uses RimWorld's built-in home area (map.areaManager.Home)
 - ✅ Records once per pawn per raid (HashSet tracking)
 - ✅ Efficient periodic checking (every 60 ticks)
 - ✅ No spam during normal raids (HashSet prevents duplicates)
 - ✅ Proper cleanup of dead/despawned pawns (CleanupInvalidTrespassers method)
 - ✅ Proper save/load support (ExposeData with LookMode.Reference)
-- ⏳ In-game testing recommended to verify all criteria
+- ✅ In-game testing verified - crimes appear correctly in Justice tab
 
 ### Phase 4 (Vandalism):
 - ✅ Minor vs major damage distinguished

@@ -17,7 +17,7 @@
 - ✅ **Crime Detection Expansion (Nov 9, 2025):** Added detection for Property Damage, Arson, and Theft
 - ✅ **Crime Detection - Phase 1: Animal Abuse (Nov 9, 2025):** Added automatic detection for hostile pawns attacking colony animals
 - ✅ **Crime Detection - Phase 2: Kidnapping (Nov 9, 2025):** Added automatic detection for hostile pawns kidnapping downed colonists (patches JobGiver_Kidnap)
-- ✅ **Crime Detection - Phase 3: Trespassing (Nov 9, 2025):** Added automatic detection for hostile pawns entering player home area (MapComponent periodic checking)
+- ✅ **Crime Detection - Phase 3: Trespassing (Nov 9, 2025):** Added automatic detection for hostile pawns entering player home area (MapComponent periodic checking) - TESTED AND VERIFIED
 
 ---
 
@@ -402,6 +402,49 @@ Previously only Assault/Murder crimes were automatically detected. Now all major
 - Test in-game with raiders to verify all crime types are detected
 - Check dev mode logs to see crime recording messages
 - Verify penalties are calculated correctly using new system
+
+---
+
+**2025-11-09: Crime Detection - Phase 3: Trespassing Detection** ✅ **COMPLETE AND TESTED**
+
+Implemented automatic detection for hostile pawns entering the player's home area:
+
+**Implementation Details:**
+- Created `MapComponent_TrespassingTracker.cs` with periodic checking system
+- Uses RimWorld's built-in home area system (`map.areaManager.Home`)
+- Checks every 60 ticks (1 second) for performance optimization
+- HashSet tracking prevents duplicate crime records (records once per pawn per raid)
+- Automatic cleanup of dead/despawned pawns to prevent memory leaks
+- Proper save/load support via ExposeData with LookMode.Reference
+- No XML def needed - MapComponents auto-register via RimWorld reflection
+
+**Technical Highlights:**
+- Discovered `Map.FillComponents()` automatically instantiates all MapComponent subclasses
+- Validates hostile status: `pawn.HostileTo(Faction.OfPlayer)`
+- Checks home area: `map.areaManager.Home[pawn.Position]`
+- Records via existing `CrimeUtils.RecordCrime()` system
+- Integrates seamlessly with penalty calculation system
+
+**Files Created:**
+- `Source/Components/MapComponent_TrespassingTracker.cs` - New MapComponent
+
+**Build Status:**
+- ✅ Build successful (0 errors, 2 pre-existing warnings)
+- ✅ Mod deployed to RimWorld Mods folder
+
+**Testing Status:**
+- ✅ In-game testing completed and verified
+- ✅ Trespassing crimes appear when raiders enter home area
+- ✅ Crime shows correct criminal information
+- ✅ No spam when raiders move around in home area
+- ✅ HashSet tracking working as intended
+
+**Benefits:**
+- Simple player-understandable definition (home area)
+- No custom UI needed (uses existing home area tool)
+- Performance-optimized with periodic checking
+- Prevents duplicate crime spam
+- Memory-safe with automatic cleanup
 
 ---
 
