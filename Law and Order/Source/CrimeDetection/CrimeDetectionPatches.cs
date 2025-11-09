@@ -116,6 +116,56 @@ namespace Law_and_Order.Source.CrimeDetection
         }
 
         /// <summary>
+        /// Tracks when hostile pawns damage or kill colony animals
+        /// </summary>
+        [HarmonyPatch(typeof(Pawn_HealthTracker), "PostApplyDamage")]
+        public static class TrackAnimalAbuse_Patch
+        {
+            static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, float totalDamageDealt)
+            {
+                try
+                {
+                    // Get the victim pawn (the pawn who owns this health tracker)
+                    Pawn victim = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+
+                    // Get the attacker
+                    Pawn attacker = dinfo.Instigator as Pawn;
+
+                    // Basic validation checks
+                    if (victim == null || attacker == null)
+                        return;
+
+                    // Only track if attacker is hostile to player
+                    if (!attacker.HostileTo(Faction.OfPlayer))
+                        return;
+
+                    // Check if victim is a colony animal (not wild, not hostile)
+                    if (!victim.RaceProps.Animal)
+                        return;
+
+                    if (victim.Faction != Faction.OfPlayer)
+                        return;
+
+                    // Record the animal abuse crime with DamageInfo for penalty calculation
+                    CrimeUtils.RecordCrime(
+                        criminal: attacker,
+                        crimeType: CrimeType.AnimalAbuse,
+                        victim: victim,
+                        damageDealt: totalDamageDealt,
+                        additionalInfo: $"Attacked {victim.Label} with {dinfo.Weapon?.label ?? "Unknown"}",
+                        wasVictimDowned: victim.Downed,
+                        wasVictimKilled: victim.Dead,
+                        damageInfo: dinfo  // Pass DamageInfo to use new penalty system
+                    );
+                }
+                catch (System.Exception e)
+                {
+                    Law_and_Order.Source.Mod.Log?.Error($"Error in animal abuse tracking patch: {e.Message}\n{e.StackTrace}");
+                }
+            }
+        }
+
+        /// <summary>
         /// Tracks theft when hostile pawns pick up player items
         /// </summary>
         [HarmonyPatch(typeof(Pawn_CarryTracker), "TryStartCarry", new System.Type[] { typeof(Thing) })]

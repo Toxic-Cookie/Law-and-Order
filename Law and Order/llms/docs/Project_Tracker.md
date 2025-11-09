@@ -15,6 +15,7 @@
 - ✅ **Crimes Tab Integration - Phase 3 Core (Nov 9, 2025):** Penalty calculation system fully implemented in DebtUtils.cs
 - ✅ **Crimes Tab Integration - Phase 3 Continuation Complete (Nov 9, 2025):** Legacy settings removed, integration complete
 - ✅ **Crime Detection Expansion (Nov 9, 2025):** Added detection for Property Damage, Arson, and Theft
+- ✅ **Crime Detection - Phase 1: Animal Abuse (Nov 9, 2025):** Added automatic detection for hostile pawns attacking colony animals
 
 ---
 
@@ -387,11 +388,13 @@ Previously only Assault/Murder crimes were automatically detected. Now all major
 |------------|------------------|--------|
 | Assault | Pawn damage tracking | ✅ Working |
 | Murder | Pawn death tracking | ✅ Working |
-| Property Damage | Building/item damage | ✅ NEW |
-| Arson | Flame damage detection | ✅ NEW |
-| Theft | Item pickup tracking | ✅ NEW |
+| Property Damage | Building/item damage | ✅ Working |
+| Arson | Flame damage detection | ✅ Working |
+| Theft | Item pickup tracking | ✅ Working |
+| Animal Abuse | Colony animal damage tracking | ✅ NEW (Phase 1 - Nov 9, 2025) |
 | Trespassing | (Future) | ⏳ Not yet implemented |
-| Animal Abuse | (Future) | ⏳ Not yet implemented |
+| Kidnapping | (Future) | ⏳ Not yet implemented |
+| Vandalism | (Future) | ⏳ Not yet implemented |
 
 **Testing Notes:**
 - Test in-game with raiders to verify all crime types are detected
