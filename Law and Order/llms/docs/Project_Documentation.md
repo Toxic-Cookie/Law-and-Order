@@ -2490,4 +2490,501 @@ Player has 100 beer in storage for trading
 
 ---
 
+## Section 12: Crime Penalty Management System
+
+**Added:** November 9, 2025
+**Status:** ✅ Phase 1 Complete (Data Model & Structure)
+
+### Crime Penalty System Overview
+
+The crime penalty management system provides a comprehensive UI for configuring penalties for different crime types and applying multipliers based on context. This system gives players fine-grained control over justice enforcement in their colony.
+
+**Key Features:**
+- 70+ predefined crime types across 11 categories
+- Customizable penalty ranges (min/max silver amounts)
+- 10 penalty multiplier types for context-based adjustments
+- Pending changes system with 15-day lockout (similar to contraband)
+- DLC-aware (Anomaly and Biotech crimes only shown if DLC active)
+- Save/load compatible with automatic defaults initialization
+
+**Core Philosophy:**
+- Player control over justice system harshness
+- Balanced default penalties based on crime severity
+- Prevent exploit through lockout mechanism
+- Support diverse playstyles (harsh vs lenient colonies)
+
+### Core Components
+
+#### 1. CrimeDefinition Class
+
+**File:** `Source/CrimePenalties/CrimeDefinition.cs`
+
+Represents a configurable crime type with penalty range:
+
+```csharp
+public class CrimeDefinition : IExposable
+{
+    public string defName;              // Unique identifier
+    public string label;                // Display name (localized)
+    public string description;          // Crime description
+    public CrimeSeverity severity;      // Low, Moderate, High, Critical
+    public int minPenalty;              // Minimum silver penalty
+    public int maxPenalty;              // Maximum silver penalty
+    public CrimeCategory category;      // Category for organization
+
+    // Pending changes system
+    public int pendingMinPenalty;       // Staged minimum (-1 = no change)
+    public int pendingMaxPenalty;       // Staged maximum (-1 = no change)
+    public bool hasPendingChanges;      // True if changes staged
+}
+```
+
+**Key Methods:**
+- `GetEffectiveMinPenalty()` - Returns pending value if staged, otherwise current
+- `GetEffectiveMaxPenalty()` - Returns pending value if staged, otherwise current
+- `StagePenaltyChange(min, max)` - Stage changes without applying
+- `CommitPendingChanges()` - Apply staged changes
+- `ClearPendingChanges()` - Cancel staged changes
+
+#### 2. CrimeSeverity Enum
+
+Four severity levels for crimes:
+- **Low** - Minor offenses (50-250 silver)
+- **Moderate** - Standard crimes (250-1000 silver)
+- **High** - Serious offenses (800-3000 silver)
+- **Critical** - Most severe crimes (2000-10000 silver)
+
+#### 3. CrimeCategory Enum
+
+Eleven categories for organizing crimes:
+1. **Lethal** - Murder, execution, vital organ destruction
+2. **SevereInjury** - Limb loss, organ damage, severe burns
+3. **ModerateInjury** - Gunshot, stab wounds, moderate burns
+4. **MinorInjury** - Scratches, bruises, minor burns
+5. **Environmental** - Arson, toxic gas, psychic attacks
+6. **Disease** - Plague infection, toxic buildup
+7. **PropertyDestruction** - Sapping, breaching, building destruction
+8. **Theft** - Grand theft, petty theft, weapon theft
+9. **Social** - Insults, terrorizing, witnessed execution
+10. **Anomaly** - DLC-specific (shambler infection, void corruption)
+11. **Biotech** - DLC-specific (bloodfeeder attacks, mech swarms)
+
+#### 4. CrimePenaltyMultiplier Class
+
+**File:** `Source/CrimePenalties/CrimePenaltyMultiplier.cs`
+
+Represents a contextual multiplier for penalties:
+
+```csharp
+public class CrimePenaltyMultiplier : IExposable
+{
+    public MultiplierType multiplierType;  // Type of multiplier
+    public float multiplierValue;          // Multiplier amount (1.0 = no change)
+    public string description;             // Explanation (localized)
+    public bool enabled;                   // Whether multiplier is active
+
+    // Pending changes
+    public float pendingMultiplierValue;   // Staged value (-1 = no change)
+    public bool pendingEnabled;            // Staged enabled state
+    public bool hasPendingEnabledChange;   // True if enabled state staged
+}
+```
+
+#### 5. MultiplierType Enum
+
+Ten multiplier types for contextual adjustments:
+1. **RepeatOffender** - Increases penalty for prior offenses (default: 1.5x)
+2. **VictimNobility** - Higher penalty if victim has royal title (default: 3.0x)
+3. **VictimAge** - Higher penalty if victim is child (default: 1.5x)
+4. **Wartime** - Reduces penalty during active war (default: 0.75x)
+5. **Premeditated** - Increases penalty if crime was planned (default: 1.5x)
+6. **VictimRelationship** - Higher penalty if victim is family (default: 1.25x)
+7. **RaiderWealth** - Scales with raider faction wealth (default: 1.0x, disabled)
+8. **ColonyWealth** - Scales with colony wealth (default: 1.0x, disabled)
+9. **DifficultySetting** - Scales with game difficulty (default: 1.0x, disabled)
+10. **FactionRelations** - Scales with faction relations (default: 1.0x, enabled)
+
+#### 6. WorldComponent_CrimePenaltyManager
+
+**File:** `Source/Components/WorldComponent_CrimePenaltyManager.cs`
+
+Global manager for crime penalties (similar to ContrabandManager):
+
+**Key Features:**
+- Stores all crime definitions and multipliers
+- Lockout system (15 days after commit, god mode bypass)
+- Pending changes management
+- Automatic initialization of default values
+- DLC detection for Anomaly/Biotech crimes
+
+**Important Methods:**
+```csharp
+// Accessing manager
+WorldComponent_CrimePenaltyManager.Instance
+
+// Crime definition management
+CrimeDefinition GetCrimeDefinition(string defName)
+void SetCrimeDefinition(CrimeDefinition crime)
+void RemoveCrimeDefinition(string defName)
+
+// Multiplier management
+CrimePenaltyMultiplier GetMultiplier(MultiplierType type)
+void SetMultiplier(CrimePenaltyMultiplier multiplier)
+
+// Pending changes
+void CommitAllPendingChanges()
+void CancelAllPendingChanges()
+bool HasPendingChanges()
+
+// Lockout system
+bool IsInLockout()
+float GetLockoutDaysRemaining()
+```
+
+**Penalty Caps:**
+- Minimum penalty: 1 silver
+- Maximum penalty: 100,000 silver
+
+#### 7. CrimeCategoryNode Class
+
+**File:** `Source/CrimePenalties/CrimeCategoryNode.cs`
+
+Tree node for UI organization (similar to ContrabandCategoryNode):
+
+```csharp
+public class CrimeCategoryNode
+{
+    public CrimeCategory? category;          // Category if this is category node
+    public CrimeDefinition crimeDefinition;  // Crime if this is crime node
+    public List<CrimeCategoryNode> children; // Child nodes
+    public bool isExpanded;                  // UI expansion state
+    public int depth;                        // Tree depth for indentation
+}
+```
+
+**Key Methods:**
+- `GetLabel()` - Returns localized label for node
+- `GetAllCrimes()` - Recursively gets all crimes under node
+- `GetPendingChangesCount()` - Counts crimes with pending changes
+- `GetTotalCrimeCount()` - Total crimes in subtree
+
+#### 8. CrimeCategoryTreeBuilder Class
+
+**File:** `Source/CrimePenalties/CrimeCategoryTreeBuilder.cs`
+
+Builds hierarchical tree for UI display:
+
+```csharp
+// Build tree from crime definitions
+List<CrimeCategoryNode> BuildCategoryTree(List<CrimeDefinition> crimeDefinitions)
+
+// Flatten tree based on expansion state
+List<CrimeCategoryNode> FlattenTree(List<CrimeCategoryNode> rootNodes)
+
+// Search tree for matching crimes
+List<CrimeCategoryNode> SearchTree(List<CrimeCategoryNode> rootNodes, string query)
+```
+
+### Default Crime Definitions
+
+The system initializes with 70+ crime definitions organized by category:
+
+#### Lethal Crimes (5 crimes)
+- **Execution** - 5000-10000 silver (Critical)
+- **VitalOrganDestruction** - 4000-8000 silver (Critical)
+- **Murder** - 3000-6000 silver (Critical)
+- **Kidnapping** - 2500-5000 silver (Critical)
+- **Vaporization** - 2000-4000 silver (Critical)
+
+#### Severe Injury Crimes (6 crimes)
+- **LimbDestruction** - 1500-3000 silver (High)
+- **EyeDestruction** - 1200-2500 silver (High)
+- **MajorOrganDamage** - 1000-2000 silver (High)
+- **SevereBurns** - 800-1500 silver (High)
+- **MajorBloodLoss** - 800-1200 silver (High)
+- **SpineInjury** - 1500-3000 silver (High)
+
+#### Moderate Injury Crimes (9 crimes)
+- **GunshotWound** - 400-800 silver (Moderate)
+- **StabWound** - 350-700 silver (Moderate)
+- **SlashWound** - 300-600 silver (Moderate)
+- **BluntTrauma** - 300-600 silver (Moderate)
+- **BiteWound** - 250-500 silver (Moderate)
+- **ExplosiveInjury** - 500-1000 silver (Moderate)
+- **ArrowWound** - 300-600 silver (Moderate)
+- **ModerateBurns** - 400-800 silver (Moderate)
+- **Frostbite** - 300-600 silver (Moderate)
+
+#### Minor Injury Crimes (4 crimes)
+- **Scratch** - 100-200 silver (Low)
+- **Bruise** - 50-150 silver (Low)
+- **MinorBurns** - 150-300 silver (Low)
+- **SuperficialWound** - 100-250 silver (Low)
+
+#### Environmental Crimes (7 crimes)
+- **Arson** - 1000-2000 silver (High)
+- **ToxicGasDeployment** - 800-1500 silver (High)
+- **PsychicAttack** - 600-1200 silver (High)
+- **PsychicShock** - 400-800 silver (Moderate)
+- **EMPAttack** - 300-600 silver (Moderate)
+- **AcidBurns** - 500-1000 silver (Moderate)
+- **ElectricalBurns** - 400-800 silver (Moderate)
+
+#### Disease Crimes (3 crimes)
+- **IntentionalPlagueInfection** - 1200-2500 silver (High)
+- **WoundInfection** - 300-600 silver (Moderate)
+- **ToxicBuildup** - 400-800 silver (Moderate)
+
+#### Property Destruction Crimes (7 crimes)
+- **Sapping** - 500-1500 silver (High)
+- **Breaching** - 600-1800 silver (High)
+- **DoorDestruction** - 200-500 silver (Moderate)
+- **PowerGeneratorDestruction** - 800-2000 silver (High)
+- **DefensiveStructureDestruction** - 400-1000 silver (Moderate)
+- **BuildingDestruction** - 300-800 silver (Moderate)
+- **CropDestruction** - 200-600 silver (Moderate)
+
+#### Theft Crimes (6 crimes)
+- **GrandTheft** - 1000-5000 silver (High)
+- **Theft** - 320-1000 silver (Moderate)
+- **PettyTheft** - 100-320 silver (Low)
+- **WeaponTheft** - 500-2500 silver (High)
+- **MedicineTheft** - 400-2000 silver (High)
+- **RelicTheft** - 3000-10000 silver (Critical)
+
+#### Social Crimes (3 crimes)
+- **Insult** - 25-100 silver (Low)
+- **WitnessedExecution** - 300-600 silver (Moderate)
+- **Terrorizing** - 200-500 silver (Moderate)
+
+#### Anomaly DLC Crimes (7 crimes, if DLC active)
+- **ShamblerInfection** - 1500-3000 silver (High)
+- **VoidCorruption** - 1200-2500 silver (High)
+- **RevenantHypnosis** - 1000-2000 silver (High)
+- **Inhumanization** - 2000-4000 silver (Critical)
+- **MetalhorrorImplant** - 1500-3000 silver (High)
+- **BloodRageInduction** - 600-1200 silver (Moderate)
+- **FleshDevouring** - 2500-5000 silver (Critical)
+
+#### Biotech DLC Crimes (3 crimes, if DLC active)
+- **BloodfeederAttack** - 400-800 silver (Moderate)
+- **MechSwarmAttack** - 1000-2000 silver (High)
+- **WastpackMortar** - 800-1600 silver (High)
+
+### Localization Keys
+
+All crime labels, descriptions, category labels, and multiplier descriptions require translation keys in `LawAndOrder_Keys.xml`:
+
+**Crime Labels:** (70+ keys)
+```xml
+<LawAndOrder_Crime_Execution>Execution</LawAndOrder_Crime_Execution>
+<LawAndOrder_Crime_Murder>Murder</LawAndOrder_Crime_Murder>
+<!-- ... etc -->
+```
+
+**Crime Descriptions:** (70+ keys)
+```xml
+<LawAndOrder_Crime_Execution_Desc>Instant death, 999 AP, targets vital organs</LawAndOrder_Crime_Execution_Desc>
+<LawAndOrder_Crime_Murder_Desc>Any attack resulting in death</LawAndOrder_Crime_Murder_Desc>
+<!-- ... etc -->
+```
+
+**Category Labels:** (11 keys)
+```xml
+<LawAndOrder_CrimeCategory_Lethal>Lethal</LawAndOrder_CrimeCategory_Lethal>
+<LawAndOrder_CrimeCategory_SevereInjury>Severe Injury</LawAndOrder_CrimeCategory_SevereInjury>
+<!-- ... etc -->
+```
+
+**Multiplier Descriptions:** (10 keys)
+```xml
+<LawAndOrder_Multiplier_RepeatOffender_Desc>+50% per prior offense</LawAndOrder_Multiplier_RepeatOffender_Desc>
+<LawAndOrder_Multiplier_VictimNobility_Desc>+100-300% if victim has royal title</LawAndOrder_Multiplier_VictimNobility_Desc>
+<!-- ... etc -->
+```
+
+### Usage Examples
+
+#### Example 1: Getting Crime Penalty for Calculation
+
+```csharp
+// Get manager instance
+var manager = WorldComponent_CrimePenaltyManager.Instance;
+
+// Get crime definition
+var murderDef = manager.GetCrimeDefinition("Murder");
+if (murderDef != null)
+{
+    // Random penalty within range
+    int penalty = UnityEngine.Random.Range(murderDef.minPenalty, murderDef.maxPenalty + 1);
+
+    // Apply multipliers
+    var repeatOffenderMult = manager.GetMultiplier(MultiplierType.RepeatOffender);
+    if (repeatOffenderMult != null && repeatOffenderMult.enabled)
+    {
+        if (HasPriorOffenses(criminal))
+        {
+            penalty = (int)(penalty * repeatOffenderMult.multiplierValue);
+        }
+    }
+
+    // Apply penalty
+    DebtUtils.AddDebt(criminal, penalty, $"Murder ({penalty} silver)");
+}
+```
+
+#### Example 2: Staging Penalty Changes
+
+```csharp
+var manager = WorldComponent_CrimePenaltyManager.Instance;
+
+// Get crime definition
+var murderDef = manager.GetCrimeDefinition("Murder");
+
+// Stage changes (don't apply yet)
+murderDef.StagePenaltyChange(5000, 10000); // Increase penalties
+
+// Stage multiplier changes
+var victimNobilityMult = manager.GetMultiplier(MultiplierType.VictimNobility);
+victimNobilityMult.StageMultiplierChange(5.0f); // Increase from 3x to 5x
+
+// Player sees yellow highlights in UI indicating pending changes
+
+// Later: Player clicks "Commit Changes"
+if (!manager.IsInLockout())
+{
+    manager.CommitAllPendingChanges();
+    manager.RecordCommit();
+
+    Messages.Message(
+        "Crime penalty changes committed. Next changes possible in 15 days.",
+        MessageTypeDefOf.NeutralEvent
+    );
+}
+```
+
+#### Example 3: Checking for Pending Changes
+
+```csharp
+var manager = WorldComponent_CrimePenaltyManager.Instance;
+
+// Check if any changes are pending
+if (manager.HasPendingChanges())
+{
+    // Show commit/cancel buttons
+    DrawCommitButton();
+    DrawCancelButton();
+}
+else
+{
+    // Hide buttons, no changes to commit
+}
+
+// Check specific crime for pending changes
+var murderDef = manager.GetCrimeDefinition("Murder");
+if (murderDef.hasPendingChanges)
+{
+    // Draw with yellow highlight
+    Widgets.DrawHighlight(rect);
+}
+```
+
+#### Example 4: Building Category Tree for UI
+
+```csharp
+var manager = WorldComponent_CrimePenaltyManager.Instance;
+
+// Build tree
+var rootNodes = CrimeCategoryTreeBuilder.BuildCategoryTree(manager.CrimeDefinitions);
+
+// Flatten based on expansion states
+var flatList = CrimeCategoryTreeBuilder.FlattenTree(rootNodes);
+
+// Render in UI
+float y = 0f;
+foreach (var node in flatList)
+{
+    Rect nodeRect = new Rect(0, y, width, rowHeight);
+
+    if (node.IsCategory)
+    {
+        // Draw category header with expand/collapse button
+        DrawCategoryHeader(nodeRect, node);
+    }
+    else if (node.IsCrime)
+    {
+        // Draw crime item with penalty range
+        DrawCrimeItem(nodeRect, node.crimeDefinition);
+    }
+
+    y += rowHeight;
+}
+```
+
+### Next Steps (Phase 2-4)
+
+**Phase 2: UI Implementation** (Not Yet Started)
+- Add "Crimes" tab to MainTabWindow_Justice
+- Implement DrawCrimesUI() method
+- Create crime list with search/filter
+- Create configuration panel for selected crime
+- Add multipliers section
+- Implement commit/cancel buttons
+
+**Phase 3: Integration** (Not Yet Started)
+- Update DebtUtils.CalculateDebtForCrime() to use manager
+- Apply multipliers based on crime context
+- Add translation keys to LawAndOrder_Keys.xml
+- Test save/load functionality
+- Test lockout system
+
+**Phase 4: Testing & Polish** (Not Yet Started)
+- Test lockout mechanism
+- Test commit/cancel functionality
+- Test save/load persistence
+- Test multiplier application
+- Verify UI responsiveness and layout
+- Test DLC detection
+
+### Files Created (Phase 1)
+
+**Created (6 files):**
+1. `Source/CrimePenalties/CrimeDefinition.cs` - Crime definition with penalty range
+2. `Source/CrimePenalties/CrimePenaltyMultiplier.cs` - Contextual multipliers
+3. `Source/CrimePenalties/CrimeCategoryNode.cs` - Tree node for UI
+4. `Source/CrimePenalties/CrimeCategoryTreeBuilder.cs` - Tree building logic
+5. `Source/Components/WorldComponent_CrimePenaltyManager.cs` - Global manager
+6. `Source/CrimePenalties/` - New directory created
+
+**Note:** PendingCrimePenaltyChange class was skipped as pending changes are tracked directly in the definition and multiplier classes.
+
+### Design Patterns Followed
+
+**1. Contraband System Pattern**
+- Similar WorldComponent structure
+- Pending changes system
+- Lockout mechanism (15 days)
+- Instance property for easy access
+- ExposeData for save/load
+
+**2. Category Tree Pattern**
+- Node-based tree structure
+- Expandable/collapsible categories
+- Flatten for rendering
+- Search functionality
+
+**3. Def-like System**
+- defName as unique identifier
+- label for display
+- description for details
+- Severity and category for organization
+
+**4. Pending Changes Pattern**
+- Stage changes without applying
+- Commit applies all changes atomically
+- Cancel discards all changes
+- Visual indication (yellow highlights)
+
+---
+
 **End of Documentation**
