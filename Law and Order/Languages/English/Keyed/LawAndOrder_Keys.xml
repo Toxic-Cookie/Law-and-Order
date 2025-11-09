@@ -263,6 +263,37 @@
   <LawAndOrder_Crime_Frostbite>Frostbite</LawAndOrder_Crime_Frostbite>
   <LawAndOrder_Crime_Frostbite_Desc>Causing cold damage and frostbite</LawAndOrder_Crime_Frostbite_Desc>
 
+  <!-- Crime Display Labels (specific damage types) -->
+  <LawAndOrder_Crime_Assault>Assault</LawAndOrder_Crime_Assault>
+  <LawAndOrder_Crime_Assault_Downed>Assault (Downed Victim)</LawAndOrder_Crime_Assault_Downed>
+  <LawAndOrder_Crime_Murder_Via>Murder via {0}</LawAndOrder_Crime_Murder_Via>
+  <LawAndOrder_Crime_PropertyDestruction_Target>Property Destruction: {0}</LawAndOrder_Crime_PropertyDestruction_Target>
+  <LawAndOrder_Crime_Vandalism_Target>Vandalism: {0}</LawAndOrder_Crime_Vandalism_Target>
+  <LawAndOrder_Crime_Arson_Target>Arson: {0}</LawAndOrder_Crime_Arson_Target>
+  <LawAndOrder_Crime_Theft_Target>Theft: {0}</LawAndOrder_Crime_Theft_Target>
+  <LawAndOrder_Crime_AnimalAbuse_Target>Animal Abuse: {0}</LawAndOrder_Crime_AnimalAbuse_Target>
+  <LawAndOrder_Crime_Trespassing>Trespassing</LawAndOrder_Crime_Trespassing>
+  <LawAndOrder_Crime_ContrabandPossession>Contraband Possession</LawAndOrder_Crime_ContrabandPossession>
+  <LawAndOrder_Crime_Unknown>Unknown Crime</LawAndOrder_Crime_Unknown>
+
+  <!-- Common damage type labels (used for assault) -->
+  <LawAndOrder_Crime_bullet>Gunshot Wound</LawAndOrder_Crime_bullet>
+  <LawAndOrder_Crime_cut>Laceration</LawAndOrder_Crime_cut>
+  <LawAndOrder_Crime_stab>Stab Wound</LawAndOrder_Crime_stab>
+  <LawAndOrder_Crime_blunt>Blunt Trauma</LawAndOrder_Crime_blunt>
+  <LawAndOrder_Crime_bite>Bite Wound</LawAndOrder_Crime_bite>
+  <LawAndOrder_Crime_scratch>Scratch</LawAndOrder_Crime_scratch>
+  <LawAndOrder_Crime_crush>Crush Injury</LawAndOrder_Crime_crush>
+  <LawAndOrder_Crime_flame>Burns</LawAndOrder_Crime_flame>
+  <LawAndOrder_Crime_burn>Burns</LawAndOrder_Crime_burn>
+  <LawAndOrder_Crime_bomb>Explosive Injury</LawAndOrder_Crime_bomb>
+  <LawAndOrder_Crime_frostbite>Frostbite</LawAndOrder_Crime_frostbite>
+  <LawAndOrder_Crime_arrow>Arrow Wound</LawAndOrder_Crime_arrow>
+  <LawAndOrder_Crime_electric>Electrical Burns</LawAndOrder_Crime_electric>
+  <LawAndOrder_Crime_toxic>Toxic Exposure</LawAndOrder_Crime_toxic>
+  <LawAndOrder_Crime_surgicalcut>Surgical Attack</LawAndOrder_Crime_surgicalcut>
+  <LawAndOrder_Crime_executioncut>Execution</LawAndOrder_Crime_executioncut>
+
   <!-- Crime Definitions - Minor Injury -->
   <LawAndOrder_Crime_Scratch>Scratch</LawAndOrder_Crime_Scratch>
   <LawAndOrder_Crime_Scratch_Desc>Inflicting minor scratch injuries</LawAndOrder_Crime_Scratch_Desc>
@@ -362,5 +393,18 @@
   <LawAndOrder_Crime_MechSwarmAttack_Desc>Deploying mechanoid swarms against the colony</LawAndOrder_Crime_MechSwarmAttack_Desc>
   <LawAndOrder_Crime_WastpackMortar>Wastpack Mortar</LawAndOrder_Crime_WastpackMortar>
   <LawAndOrder_Crime_WastpackMortar_Desc>Using wastpack mortars to contaminate the colony</LawAndOrder_Crime_WastpackMortar_Desc>
+
+  <!-- Crime Categories (for collapsible UI groups) -->
+  <LawAndOrder_CrimeCategory_Murder>Murder</LawAndOrder_CrimeCategory_Murder>
+  <LawAndOrder_CrimeCategory_Assault>Assault</LawAndOrder_CrimeCategory_Assault>
+  <LawAndOrder_CrimeCategory_Kidnapping>Kidnapping</LawAndOrder_CrimeCategory_Kidnapping>
+  <LawAndOrder_CrimeCategory_Arson>Arson</LawAndOrder_CrimeCategory_Arson>
+  <LawAndOrder_CrimeCategory_PropertyDestruction>Property Destruction</LawAndOrder_CrimeCategory_PropertyDestruction>
+  <LawAndOrder_CrimeCategory_Vandalism>Vandalism</LawAndOrder_CrimeCategory_Vandalism>
+  <LawAndOrder_CrimeCategory_Theft>Theft</LawAndOrder_CrimeCategory_Theft>
+  <LawAndOrder_CrimeCategory_AnimalAbuse>Animal Abuse</LawAndOrder_CrimeCategory_AnimalAbuse>
+  <LawAndOrder_CrimeCategory_Trespassing>Trespassing</LawAndOrder_CrimeCategory_Trespassing>
+  <LawAndOrder_CrimeCategory_ContrabandPossession>Contraband Possession</LawAndOrder_CrimeCategory_ContrabandPossession>
+  <LawAndOrder_CrimeCategory_Unknown>Unknown Crime</LawAndOrder_CrimeCategory_Unknown>
 
 </LanguageData>

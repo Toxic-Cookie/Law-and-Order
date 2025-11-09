@@ -50,7 +50,7 @@ namespace Law_and_Order.Source.Utils
         /// <summary>
         /// Record a crime for a pawn
         /// </summary>
-        public static void RecordCrime(Pawn criminal, CrimeType crimeType, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, DamageInfo? damageInfo = null)
+        public static void RecordCrime(Pawn criminal, CrimeType crimeType, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, DamageInfo? damageInfo = null, string damageType = null)
         {
             if (criminal == null)
             {
@@ -80,8 +80,14 @@ namespace Law_and_Order.Source.Utils
                     debtAmount = 100f; // Minimal penalty as fallback
                 }
 
+                // Extract damage type from DamageInfo if available
+                if (damageType == null && damageInfo.HasValue)
+                {
+                    damageType = damageInfo.Value.Def?.label;
+                }
+
                 // Create the crime with the calculated debt amount stored
-                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount);
+                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount, damageType);
 
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
                 criminalRecord?.AddCrime(crime);

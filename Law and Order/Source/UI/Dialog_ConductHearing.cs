@@ -141,7 +141,7 @@ namespace Law_and_Order.Source.UI
 
                 Rect crimeContentRect = crimeRect.ContractedBy(5f);
 
-                string crimeText = $"• {crime.crimeType}";
+                string crimeText = $"• {crime.GetCrimeLabel()}";
                 if (crime.victim != null)
                 {
                     crimeText += $" against {crime.victim.LabelShort}";

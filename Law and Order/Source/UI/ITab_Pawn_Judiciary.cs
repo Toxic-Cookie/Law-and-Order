@@ -16,6 +16,7 @@ namespace Law_and_Order.Source.UI
     {
         private Vector2 scrollPosition;
         private const float LeftColumnWidth = 0.5f;
+        private CrimeCategoryUIHelper categoryHelper = new CrimeCategoryUIHelper();
 
         public ITab_Pawn_Judiciary()
         {
@@ -81,19 +82,42 @@ namespace Law_and_Order.Source.UI
 
             rect.yMin += 35f;
 
-            // Crimes list
+            // Crimes list - grouped by category
             var crimes = criminalRecord.Crimes.ToList();
             crimes.Reverse(); // Most recent first
 
-            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, crimes.Count * 70f);
+            // Group crimes by category
+            var groupedCrimes = categoryHelper.GroupCrimesByCategory(crimes);
+
+            // Calculate total height needed
+            const float crimeEntryHeight = 70f;
+            float totalHeight = categoryHelper.CalculateTotalHeight(groupedCrimes, crimeEntryHeight);
+
+            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, totalHeight);
             Widgets.BeginScrollView(rect, ref scrollPosition, viewRect);
 
             float yPos = 0f;
-            foreach (var crime in crimes)
+
+            foreach (var categoryGroup in groupedCrimes)
             {
-                Rect crimeRect = new Rect(0f, yPos, viewRect.width, 65f);
-                DrawCrimeEntry(crimeRect, crime);
-                yPos += 70f;
+                CrimeType category = categoryGroup.Key;
+                List<Crime> categoryCrimes = categoryGroup.Value;
+
+                // Draw category header
+                Rect categoryHeaderRect = new Rect(0f, yPos, viewRect.width, categoryHelper.GetCategoryHeaderHeight());
+                bool isExpanded = categoryHelper.DrawCategoryHeader(categoryHeaderRect, category, categoryCrimes.Count);
+                yPos += categoryHelper.GetCategoryHeaderHeight() + 5f;
+
+                // Draw crimes if category is expanded
+                if (isExpanded)
+                {
+                    foreach (var crime in categoryCrimes)
+                    {
+                        Rect crimeRect = new Rect(10f, yPos, viewRect.width - 10f, 65f);
+                        DrawCrimeEntry(crimeRect, crime);
+                        yPos += crimeEntryHeight;
+                    }
+                }
             }
 
             Widgets.EndScrollView();
@@ -126,7 +150,7 @@ namespace Law_and_Order.Source.UI
                     break;
             }
 
-            Widgets.Label(titleRect, crime.crimeType.ToString());
+            Widgets.Label(titleRect, crime.GetCrimeLabel());
             GUI.color = Color.white;
 
             // Use pre-calculated debt amount

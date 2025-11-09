@@ -20,12 +20,13 @@ namespace Law_and_Order.Source.Hediffs
         public bool wasVictimDowned; // Was the victim downed by this crime?
         public bool wasVictimKilled; // Was the victim killed by this crime?
         public float debtAmount; // Actual debt incurred by this crime (stored at time of crime)
+        public string damageType; // Type of damage dealt (e.g., "Gunshot", "Stab", "Burn")
 
         public Crime()
         {
         }
 
-        public Crime(CrimeType type, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, float debtAmount = 0f)
+        public Crime(CrimeType type, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, float debtAmount = 0f, string damageType = null)
         {
             this.crimeType = type;
             this.tickCommitted = Find.TickManager.TicksGame;
@@ -36,6 +37,7 @@ namespace Law_and_Order.Source.Hediffs
             this.wasVictimDowned = wasVictimDowned;
             this.wasVictimKilled = wasVictimKilled;
             this.debtAmount = debtAmount;
+            this.damageType = damageType;
         }
 
         public void ExposeData()
@@ -49,9 +51,93 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_Values.Look(ref wasVictimDowned, "wasVictimDowned", false);
             Scribe_Values.Look(ref wasVictimKilled, "wasVictimKilled", false);
             Scribe_Values.Look(ref debtAmount, "debtAmount", 0f);
+            Scribe_Values.Look(ref damageType, "damageType");
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCommitted) / GenDate.TicksPerDay;
+
+        /// <summary>
+        /// Get a descriptive label for this crime based on all available information
+        /// </summary>
+        public string GetCrimeLabel()
+        {
+            // For assault crimes, show the specific damage type if available
+            if (crimeType == CrimeType.Assault)
+            {
+                if (wasVictimKilled)
+                {
+                    return "LawAndOrder_Crime_Murder".Translate();
+                }
+                if (!string.IsNullOrEmpty(damageType))
+                {
+                    // Try to find a translation key for the damage type
+                    string translationKey = $"LawAndOrder_Crime_{damageType.Replace(" ", "")}";
+                    if (translationKey.CanTranslate())
+                    {
+                        return translationKey.Translate();
+                    }
+                    // Fall back to the damage type directly
+                    return damageType;
+                }
+                if (wasVictimDowned)
+                {
+                    return "LawAndOrder_Crime_Assault_Downed".Translate();
+                }
+                return "LawAndOrder_Crime_Assault".Translate();
+            }
+
+            // For murder, add context
+            if (crimeType == CrimeType.Murder)
+            {
+                if (!string.IsNullOrEmpty(damageType))
+                {
+                    return "LawAndOrder_Crime_Murder_Via".Translate(damageType);
+                }
+                return "LawAndOrder_Crime_Murder".Translate();
+            }
+
+            // For property crimes, show what was damaged
+            if (crimeType == CrimeType.PropertyDestruction && targetThing != null)
+            {
+                return "LawAndOrder_Crime_PropertyDestruction_Target".Translate(targetThing.Label);
+            }
+
+            if (crimeType == CrimeType.Vandalism && targetThing != null)
+            {
+                return "LawAndOrder_Crime_Vandalism_Target".Translate(targetThing.Label);
+            }
+
+            if (crimeType == CrimeType.Arson)
+            {
+                if (targetThing != null)
+                {
+                    return "LawAndOrder_Crime_Arson_Target".Translate(targetThing.Label);
+                }
+                return "LawAndOrder_Crime_Arson".Translate();
+            }
+
+            // For theft, show what was stolen
+            if (crimeType == CrimeType.Theft && targetThing != null)
+            {
+                return "LawAndOrder_Crime_Theft_Target".Translate(targetThing.Label);
+            }
+
+            // For animal abuse, show the animal
+            if (crimeType == CrimeType.AnimalAbuse && victim != null)
+            {
+                return "LawAndOrder_Crime_AnimalAbuse_Target".Translate(victim.Label);
+            }
+
+            // Default: try to translate the crime type
+            string defaultKey = $"LawAndOrder_Crime_{crimeType}";
+            if (defaultKey.CanTranslate())
+            {
+                return defaultKey.Translate();
+            }
+
+            // Last resort: return the enum name
+            return crimeType.ToString();
+        }
 
         public override string ToString()
         {

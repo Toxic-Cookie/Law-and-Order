@@ -49,6 +49,7 @@ namespace Law_and_Order.Source.UI
         private Vector2 criminalListScrollPos;
         private Vector2 selectedCriminalScrollPos;
         private string searchQuery = "";
+        private CrimeCategoryUIHelper categoryHelper = new CrimeCategoryUIHelper();
 
         // Contraband tab fields
         private ThingDef selectedContrabandItem;
@@ -389,15 +390,38 @@ namespace Law_and_Order.Source.UI
             var crimes = record.Crimes.ToList();
             crimes.Reverse(); // Show most recent first
 
-            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, crimes.Count * 100f);
+            // Group crimes by category
+            var groupedCrimes = categoryHelper.GroupCrimesByCategory(crimes);
+
+            // Calculate total height needed
+            const float crimeEntryHeight = 100f;
+            float totalHeight = categoryHelper.CalculateTotalHeight(groupedCrimes, crimeEntryHeight);
+
+            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, totalHeight);
             Widgets.BeginScrollView(rect, ref selectedCriminalScrollPos, viewRect);
 
             float yPos = 0f;
-            foreach (var crime in crimes)
+
+            foreach (var categoryGroup in groupedCrimes)
             {
-                Rect crimeRect = new Rect(0f, yPos, viewRect.width, 95f);
-                DrawCrimeEntry(crimeRect, crime);
-                yPos += 100f;
+                CrimeType category = categoryGroup.Key;
+                List<Crime> categoryCrimes = categoryGroup.Value;
+
+                // Draw category header
+                Rect categoryHeaderRect = new Rect(0f, yPos, viewRect.width, categoryHelper.GetCategoryHeaderHeight());
+                bool isExpanded = categoryHelper.DrawCategoryHeader(categoryHeaderRect, category, categoryCrimes.Count);
+                yPos += categoryHelper.GetCategoryHeaderHeight() + 5f;
+
+                // Draw crimes if category is expanded
+                if (isExpanded)
+                {
+                    foreach (var crime in categoryCrimes)
+                    {
+                        Rect crimeRect = new Rect(10f, yPos, viewRect.width - 10f, 95f);
+                        DrawCrimeEntry(crimeRect, crime);
+                        yPos += crimeEntryHeight;
+                    }
+                }
             }
 
             Widgets.EndScrollView();
@@ -414,7 +438,7 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
             Rect titleRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.7f, 20f);
-            Widgets.Label(titleRect, crime.crimeType.ToString());
+            Widgets.Label(titleRect, crime.GetCrimeLabel());
 
             // Use pre-calculated debt amount
             float crimeDebt = crime.debtAmount;
