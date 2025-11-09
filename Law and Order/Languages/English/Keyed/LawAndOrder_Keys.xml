@@ -159,4 +159,26 @@
   <LawAndOrder_Alert_CourtroomNeeded>Courtroom needed</LawAndOrder_Alert_CourtroomNeeded>
   <LawAndOrder_Alert_CourtroomNeededDesc>You have prisoners awaiting hearings, but no courtroom has been set up.\n\nTo create a courtroom, you need:\n  - An enclosed room (indoors)\n  - At least one chair designated as Judge seat\n  - At least one chair designated as Defendant seat\n\nSelect chairs in a room and use the 'Designate Chair Role' button to set up courtroom seating.</LawAndOrder_Alert_CourtroomNeededDesc>
 
+  <!-- Crimes Tab -->
+  <LawAndOrder_Crimes>Crimes</LawAndOrder_Crimes>
+  <LawAndOrder_CrimesCount>Crimes</LawAndOrder_CrimesCount>
+  <LawAndOrder_SelectCrimeOrCategory>Select a crime or category to configure</LawAndOrder_SelectCrimeOrCategory>
+  <LawAndOrder_ViewMultipliers>View Penalty Multipliers</LawAndOrder_ViewMultipliers>
+  <LawAndOrder_Severity>Severity</LawAndOrder_Severity>
+  <LawAndOrder_MinPenalty>Minimum Penalty (silver)</LawAndOrder_MinPenalty>
+  <LawAndOrder_MaxPenalty>Maximum Penalty (silver)</LawAndOrder_MaxPenalty>
+  <LawAndOrder_UpdateCrime>Update Crime</LawAndOrder_UpdateCrime>
+  <LawAndOrder_ResetCrime>Reset to Current</LawAndOrder_ResetCrime>
+  <LawAndOrder_InvalidPenaltyRange>Invalid penalty range. Minimum must be positive and maximum must be >= minimum.</LawAndOrder_InvalidPenaltyRange>
+  <LawAndOrder_TotalCrimes>Total Crimes</LawAndOrder_TotalCrimes>
+  <LawAndOrder_UpdateAllCrimes>Update All Crimes in Category</LawAndOrder_UpdateAllCrimes>
+  <LawAndOrder_PenaltyMultipliers>Penalty Multipliers</LawAndOrder_PenaltyMultipliers>
+  <LawAndOrder_Back>Back</LawAndOrder_Back>
+  <LawAndOrder_Edit>Edit</LawAndOrder_Edit>
+  <LawAndOrder_Enabled>Enabled</LawAndOrder_Enabled>
+  <LawAndOrder_MultiplierValue>Multiplier Value</LawAndOrder_MultiplierValue>
+  <LawAndOrder_UpdateMultiplier>Update Multiplier</LawAndOrder_UpdateMultiplier>
+  <LawAndOrder_ResetMultiplier>Reset to Current</LawAndOrder_ResetMultiplier>
+  <LawAndOrder_InvalidMultiplierValue>Invalid multiplier value. Must be a non-negative number.</LawAndOrder_InvalidMultiplierValue>
+
 </LanguageData>
