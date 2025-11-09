@@ -105,7 +105,7 @@ namespace Law_and_Order.Source.UI
                 () => curTab == JusticeTab.Contraband
             ));
             tabs.Add(new TabRecord(
-                "LawAndOrder_Crimes".Translate(),
+                "LawAndOrder_CrimesTab".Translate(),
                 () => { curTab = JusticeTab.Crimes; selectedCriminal = null; },
                 () => curTab == JusticeTab.Crimes
             ));

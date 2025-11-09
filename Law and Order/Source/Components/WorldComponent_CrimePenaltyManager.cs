@@ -26,6 +26,8 @@ namespace LawAndOrder
 
         public WorldComponent_CrimePenaltyManager(World world) : base(world)
         {
+            // Initialize defaults for new worlds
+            InitializeDefaults();
         }
 
         /// <summary>

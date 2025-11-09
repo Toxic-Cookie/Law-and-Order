@@ -160,6 +160,7 @@
   <LawAndOrder_Alert_CourtroomNeededDesc>You have prisoners awaiting hearings, but no courtroom has been set up.\n\nTo create a courtroom, you need:\n  - An enclosed room (indoors)\n  - At least one chair designated as Judge seat\n  - At least one chair designated as Defendant seat\n\nSelect chairs in a room and use the 'Designate Chair Role' button to set up courtroom seating.</LawAndOrder_Alert_CourtroomNeededDesc>
 
   <!-- Crimes Tab -->
+  <LawAndOrder_CrimesTab>Crimes</LawAndOrder_CrimesTab>
   <LawAndOrder_Crimes>Crimes</LawAndOrder_Crimes>
   <LawAndOrder_CrimesCount>Crimes</LawAndOrder_CrimesCount>
   <LawAndOrder_SelectCrimeOrCategory>Select a crime or category to configure</LawAndOrder_SelectCrimeOrCategory>
@@ -196,14 +197,166 @@
 
   <!-- Penalty Multipliers -->
   <LawAndOrder_Multiplier_RepeatOffender>Repeat Offender</LawAndOrder_Multiplier_RepeatOffender>
+  <LawAndOrder_Multiplier_RepeatOffender_Desc>Applied when raider has been captured before</LawAndOrder_Multiplier_RepeatOffender_Desc>
   <LawAndOrder_Multiplier_VictimNobility>Victim Nobility</LawAndOrder_Multiplier_VictimNobility>
+  <LawAndOrder_Multiplier_VictimNobility_Desc>Applied when victim is a noble or royal</LawAndOrder_Multiplier_VictimNobility_Desc>
   <LawAndOrder_Multiplier_VictimAge>Victim Age (Child)</LawAndOrder_Multiplier_VictimAge>
+  <LawAndOrder_Multiplier_VictimAge_Desc>Applied when victim is a child</LawAndOrder_Multiplier_VictimAge_Desc>
   <LawAndOrder_Multiplier_Wartime>Wartime</LawAndOrder_Multiplier_Wartime>
+  <LawAndOrder_Multiplier_Wartime_Desc>Applied during declared war (reduces penalties)</LawAndOrder_Multiplier_Wartime_Desc>
   <LawAndOrder_Multiplier_Premeditated>Premeditated</LawAndOrder_Multiplier_Premeditated>
+  <LawAndOrder_Multiplier_Premeditated_Desc>Applied for planned attacks (vs opportunistic)</LawAndOrder_Multiplier_Premeditated_Desc>
   <LawAndOrder_Multiplier_VictimRelationship>Victim Relationship</LawAndOrder_Multiplier_VictimRelationship>
+  <LawAndOrder_Multiplier_VictimRelationship_Desc>Applied based on raider's relationship to victim</LawAndOrder_Multiplier_VictimRelationship_Desc>
   <LawAndOrder_Multiplier_RaiderWealth>Raider Wealth</LawAndOrder_Multiplier_RaiderWealth>
+  <LawAndOrder_Multiplier_RaiderWealth_Desc>Applied based on raider's faction wealth</LawAndOrder_Multiplier_RaiderWealth_Desc>
   <LawAndOrder_Multiplier_ColonyWealth>Colony Wealth</LawAndOrder_Multiplier_ColonyWealth>
+  <LawAndOrder_Multiplier_ColonyWealth_Desc>Applied based on colony wealth</LawAndOrder_Multiplier_ColonyWealth_Desc>
   <LawAndOrder_Multiplier_DifficultySetting>Difficulty Setting</LawAndOrder_Multiplier_DifficultySetting>
+  <LawAndOrder_Multiplier_DifficultySetting_Desc>Applied based on game difficulty</LawAndOrder_Multiplier_DifficultySetting_Desc>
   <LawAndOrder_Multiplier_FactionRelations>Faction Relations</LawAndOrder_Multiplier_FactionRelations>
+  <LawAndOrder_Multiplier_FactionRelations_Desc>Applied based on relations with raider's faction</LawAndOrder_Multiplier_FactionRelations_Desc>
+
+  <!-- Crime Definitions - Lethal -->
+  <LawAndOrder_Crime_Execution>Execution</LawAndOrder_Crime_Execution>
+  <LawAndOrder_Crime_Execution_Desc>Killing a colonist or prisoner by execution</LawAndOrder_Crime_Execution_Desc>
+  <LawAndOrder_Crime_VitalOrganDestruction>Vital Organ Destruction</LawAndOrder_Crime_VitalOrganDestruction>
+  <LawAndOrder_Crime_VitalOrganDestruction_Desc>Destroying heart, brain, liver, or other vital organ</LawAndOrder_Crime_VitalOrganDestruction_Desc>
+  <LawAndOrder_Crime_Murder>Murder</LawAndOrder_Crime_Murder>
+  <LawAndOrder_Crime_Murder_Desc>Killing a colonist in combat or otherwise</LawAndOrder_Crime_Murder_Desc>
+  <LawAndOrder_Crime_Kidnapping>Kidnapping</LawAndOrder_Crime_Kidnapping>
+  <LawAndOrder_Crime_Kidnapping_Desc>Abducting colonists or prisoners</LawAndOrder_Crime_Kidnapping_Desc>
+  <LawAndOrder_Crime_Vaporization>Vaporization</LawAndOrder_Crime_Vaporization>
+  <LawAndOrder_Crime_Vaporization_Desc>Completely destroying a colonist's body</LawAndOrder_Crime_Vaporization_Desc>
+
+  <!-- Crime Definitions - Severe Injury -->
+  <LawAndOrder_Crime_LimbDestruction>Limb Destruction</LawAndOrder_Crime_LimbDestruction>
+  <LawAndOrder_Crime_LimbDestruction_Desc>Destroying arms, legs, or other limbs</LawAndOrder_Crime_LimbDestruction_Desc>
+  <LawAndOrder_Crime_EyeDestruction>Eye Destruction</LawAndOrder_Crime_EyeDestruction>
+  <LawAndOrder_Crime_EyeDestruction_Desc>Permanently blinding by destroying eyes</LawAndOrder_Crime_EyeDestruction_Desc>
+  <LawAndOrder_Crime_MajorOrganDamage>Major Organ Damage</LawAndOrder_Crime_MajorOrganDamage>
+  <LawAndOrder_Crime_MajorOrganDamage_Desc>Severely damaging kidneys, lungs, stomach, etc.</LawAndOrder_Crime_MajorOrganDamage_Desc>
+  <LawAndOrder_Crime_SevereBurns>Severe Burns</LawAndOrder_Crime_SevereBurns>
+  <LawAndOrder_Crime_SevereBurns_Desc>Causing life-threatening burn injuries</LawAndOrder_Crime_SevereBurns_Desc>
+  <LawAndOrder_Crime_MajorBloodLoss>Major Blood Loss</LawAndOrder_Crime_MajorBloodLoss>
+  <LawAndOrder_Crime_MajorBloodLoss_Desc>Causing severe bleeding that threatens life</LawAndOrder_Crime_MajorBloodLoss_Desc>
+  <LawAndOrder_Crime_SpineInjury>Spine Injury</LawAndOrder_Crime_SpineInjury>
+  <LawAndOrder_Crime_SpineInjury_Desc>Damaging the spine, causing paralysis</LawAndOrder_Crime_SpineInjury_Desc>
+
+  <!-- Crime Definitions - Moderate Injury -->
+  <LawAndOrder_Crime_GunshotWound>Gunshot Wound</LawAndOrder_Crime_GunshotWound>
+  <LawAndOrder_Crime_GunshotWound_Desc>Inflicting gunshot injuries</LawAndOrder_Crime_GunshotWound_Desc>
+  <LawAndOrder_Crime_StabWound>Stab Wound</LawAndOrder_Crime_StabWound>
+  <LawAndOrder_Crime_StabWound_Desc>Inflicting stab injuries with bladed weapons</LawAndOrder_Crime_StabWound_Desc>
+  <LawAndOrder_Crime_SlashWound>Slash Wound</LawAndOrder_Crime_SlashWound>
+  <LawAndOrder_Crime_SlashWound_Desc>Inflicting slash injuries with bladed weapons</LawAndOrder_Crime_SlashWound_Desc>
+  <LawAndOrder_Crime_BluntTrauma>Blunt Trauma</LawAndOrder_Crime_BluntTrauma>
+  <LawAndOrder_Crime_BluntTrauma_Desc>Inflicting blunt force injuries</LawAndOrder_Crime_BluntTrauma_Desc>
+  <LawAndOrder_Crime_BiteWound>Bite Wound</LawAndOrder_Crime_BiteWound>
+  <LawAndOrder_Crime_BiteWound_Desc>Inflicting bite injuries (animal or humanoid)</LawAndOrder_Crime_BiteWound_Desc>
+  <LawAndOrder_Crime_ExplosiveInjury>Explosive Injury</LawAndOrder_Crime_ExplosiveInjury>
+  <LawAndOrder_Crime_ExplosiveInjury_Desc>Inflicting injuries via explosives or grenades</LawAndOrder_Crime_ExplosiveInjury_Desc>
+  <LawAndOrder_Crime_ArrowWound>Arrow Wound</LawAndOrder_Crime_ArrowWound>
+  <LawAndOrder_Crime_ArrowWound_Desc>Inflicting arrow or bolt injuries</LawAndOrder_Crime_ArrowWound_Desc>
+  <LawAndOrder_Crime_ModerateBurns>Moderate Burns</LawAndOrder_Crime_ModerateBurns>
+  <LawAndOrder_Crime_ModerateBurns_Desc>Causing moderate burn injuries</LawAndOrder_Crime_ModerateBurns_Desc>
+  <LawAndOrder_Crime_Frostbite>Frostbite</LawAndOrder_Crime_Frostbite>
+  <LawAndOrder_Crime_Frostbite_Desc>Causing cold damage and frostbite</LawAndOrder_Crime_Frostbite_Desc>
+
+  <!-- Crime Definitions - Minor Injury -->
+  <LawAndOrder_Crime_Scratch>Scratch</LawAndOrder_Crime_Scratch>
+  <LawAndOrder_Crime_Scratch_Desc>Inflicting minor scratch injuries</LawAndOrder_Crime_Scratch_Desc>
+  <LawAndOrder_Crime_Bruise>Bruise</LawAndOrder_Crime_Bruise>
+  <LawAndOrder_Crime_Bruise_Desc>Inflicting minor bruise injuries</LawAndOrder_Crime_Bruise_Desc>
+  <LawAndOrder_Crime_MinorBurns>Minor Burns</LawAndOrder_Crime_MinorBurns>
+  <LawAndOrder_Crime_MinorBurns_Desc>Causing minor burn injuries</LawAndOrder_Crime_MinorBurns_Desc>
+  <LawAndOrder_Crime_SuperficialWound>Superficial Wound</LawAndOrder_Crime_SuperficialWound>
+  <LawAndOrder_Crime_SuperficialWound_Desc>Inflicting superficial injuries</LawAndOrder_Crime_SuperficialWound_Desc>
+
+  <!-- Crime Definitions - Environmental -->
+  <LawAndOrder_Crime_Arson>Arson</LawAndOrder_Crime_Arson>
+  <LawAndOrder_Crime_Arson_Desc>Using fire as a weapon to burn structures or colonists</LawAndOrder_Crime_Arson_Desc>
+  <LawAndOrder_Crime_ToxicGasDeployment>Toxic Gas Deployment</LawAndOrder_Crime_ToxicGasDeployment>
+  <LawAndOrder_Crime_ToxicGasDeployment_Desc>Deploying toxic gas weapons</LawAndOrder_Crime_ToxicGasDeployment_Desc>
+  <LawAndOrder_Crime_PsychicAttack>Psychic Attack</LawAndOrder_Crime_PsychicAttack>
+  <LawAndOrder_Crime_PsychicAttack_Desc>Using psychic powers to harm colonists</LawAndOrder_Crime_PsychicAttack_Desc>
+  <LawAndOrder_Crime_PsychicShock>Psychic Shock</LawAndOrder_Crime_PsychicShock>
+  <LawAndOrder_Crime_PsychicShock_Desc>Using psychic shock lances or similar weapons</LawAndOrder_Crime_PsychicShock_Desc>
+  <LawAndOrder_Crime_EMPAttack>EMP Attack</LawAndOrder_Crime_EMPAttack>
+  <LawAndOrder_Crime_EMPAttack_Desc>Using EMP weapons to disable colonists or equipment</LawAndOrder_Crime_EMPAttack_Desc>
+  <LawAndOrder_Crime_AcidBurns>Acid Burns</LawAndOrder_Crime_AcidBurns>
+  <LawAndOrder_Crime_AcidBurns_Desc>Inflicting acid burns via chemical weapons</LawAndOrder_Crime_AcidBurns_Desc>
+  <LawAndOrder_Crime_ElectricalBurns>Electrical Burns</LawAndOrder_Crime_ElectricalBurns>
+  <LawAndOrder_Crime_ElectricalBurns_Desc>Inflicting electrical burns</LawAndOrder_Crime_ElectricalBurns_Desc>
+
+  <!-- Crime Definitions - Disease -->
+  <LawAndOrder_Crime_IntentionalPlagueInfection>Intentional Plague Infection</LawAndOrder_Crime_IntentionalPlagueInfection>
+  <LawAndOrder_Crime_IntentionalPlagueInfection_Desc>Deliberately infecting colonists with plague or disease</LawAndOrder_Crime_IntentionalPlagueInfection_Desc>
+  <LawAndOrder_Crime_WoundInfection>Wound Infection</LawAndOrder_Crime_WoundInfection>
+  <LawAndOrder_Crime_WoundInfection_Desc>Causing wounds to become infected</LawAndOrder_Crime_WoundInfection_Desc>
+  <LawAndOrder_Crime_ToxicBuildup>Toxic Buildup</LawAndOrder_Crime_ToxicBuildup>
+  <LawAndOrder_Crime_ToxicBuildup_Desc>Causing toxic buildup in colonists</LawAndOrder_Crime_ToxicBuildup_Desc>
+
+  <!-- Crime Definitions - Property Destruction -->
+  <LawAndOrder_Crime_Sapping>Sapping</LawAndOrder_Crime_Sapping>
+  <LawAndOrder_Crime_Sapping_Desc>Tunneling to breach colony walls</LawAndOrder_Crime_Sapping_Desc>
+  <LawAndOrder_Crime_Breaching>Breaching</LawAndOrder_Crime_Breaching>
+  <LawAndOrder_Crime_Breaching_Desc>Using breaching tools to destroy walls</LawAndOrder_Crime_Breaching_Desc>
+  <LawAndOrder_Crime_DoorDestruction>Door Destruction</LawAndOrder_Crime_DoorDestruction>
+  <LawAndOrder_Crime_DoorDestruction_Desc>Destroying doors to gain entry</LawAndOrder_Crime_DoorDestruction_Desc>
+  <LawAndOrder_Crime_PowerGeneratorDestruction>Power Generator Destruction</LawAndOrder_Crime_PowerGeneratorDestruction>
+  <LawAndOrder_Crime_PowerGeneratorDestruction_Desc>Destroying power generators</LawAndOrder_Crime_PowerGeneratorDestruction_Desc>
+  <LawAndOrder_Crime_DefensiveStructureDestruction>Defensive Structure Destruction</LawAndOrder_Crime_DefensiveStructureDestruction>
+  <LawAndOrder_Crime_DefensiveStructureDestruction_Desc>Destroying turrets, sandbags, or other defenses</LawAndOrder_Crime_DefensiveStructureDestruction_Desc>
+  <LawAndOrder_Crime_BuildingDestruction>Building Destruction</LawAndOrder_Crime_BuildingDestruction>
+  <LawAndOrder_Crime_BuildingDestruction_Desc>Destroying buildings and structures</LawAndOrder_Crime_BuildingDestruction_Desc>
+  <LawAndOrder_Crime_CropDestruction>Crop Destruction</LawAndOrder_Crime_CropDestruction>
+  <LawAndOrder_Crime_CropDestruction_Desc>Destroying crops and plants</LawAndOrder_Crime_CropDestruction_Desc>
+
+  <!-- Crime Definitions - Theft -->
+  <LawAndOrder_Crime_GrandTheft>Grand Theft</LawAndOrder_Crime_GrandTheft>
+  <LawAndOrder_Crime_GrandTheft_Desc>Stealing high-value items (1000+ silver)</LawAndOrder_Crime_GrandTheft_Desc>
+  <LawAndOrder_Crime_Theft>Theft</LawAndOrder_Crime_Theft>
+  <LawAndOrder_Crime_Theft_Desc>Stealing moderate-value items (320-1000 silver)</LawAndOrder_Crime_Theft_Desc>
+  <LawAndOrder_Crime_PettyTheft>Petty Theft</LawAndOrder_Crime_PettyTheft>
+  <LawAndOrder_Crime_PettyTheft_Desc>Stealing low-value items (under 320 silver)</LawAndOrder_Crime_PettyTheft_Desc>
+  <LawAndOrder_Crime_WeaponTheft>Weapon Theft</LawAndOrder_Crime_WeaponTheft>
+  <LawAndOrder_Crime_WeaponTheft_Desc>Stealing weapons and ammunition</LawAndOrder_Crime_WeaponTheft_Desc>
+  <LawAndOrder_Crime_MedicineTheft>Medicine Theft</LawAndOrder_Crime_MedicineTheft>
+  <LawAndOrder_Crime_MedicineTheft_Desc>Stealing medicine and medical supplies</LawAndOrder_Crime_MedicineTheft_Desc>
+  <LawAndOrder_Crime_RelicTheft>Relic Theft</LawAndOrder_Crime_RelicTheft>
+  <LawAndOrder_Crime_RelicTheft_Desc>Stealing relics and artifacts</LawAndOrder_Crime_RelicTheft_Desc>
+
+  <!-- Crime Definitions - Social -->
+  <LawAndOrder_Crime_Insult>Insult</LawAndOrder_Crime_Insult>
+  <LawAndOrder_Crime_Insult_Desc>Verbally insulting colonists</LawAndOrder_Crime_Insult_Desc>
+  <LawAndOrder_Crime_WitnessedExecution>Witnessed Execution</LawAndOrder_Crime_WitnessedExecution>
+  <LawAndOrder_Crime_WitnessedExecution_Desc>Forcing colonists to witness executions</LawAndOrder_Crime_WitnessedExecution_Desc>
+  <LawAndOrder_Crime_Terrorizing>Terrorizing</LawAndOrder_Crime_Terrorizing>
+  <LawAndOrder_Crime_Terrorizing_Desc>Terrorizing colonists through threats or intimidation</LawAndOrder_Crime_Terrorizing_Desc>
+
+  <!-- Crime Definitions - Anomaly (DLC) -->
+  <LawAndOrder_Crime_ShamblerInfection>Shambler Infection</LawAndOrder_Crime_ShamblerInfection>
+  <LawAndOrder_Crime_ShamblerInfection_Desc>Infecting colonists with shambler corruption</LawAndOrder_Crime_ShamblerInfection_Desc>
+  <LawAndOrder_Crime_VoidCorruption>Void Corruption</LawAndOrder_Crime_VoidCorruption>
+  <LawAndOrder_Crime_VoidCorruption_Desc>Causing void corruption in colonists</LawAndOrder_Crime_VoidCorruption_Desc>
+  <LawAndOrder_Crime_RevenantHypnosis>Revenant Hypnosis</LawAndOrder_Crime_RevenantHypnosis>
+  <LawAndOrder_Crime_RevenantHypnosis_Desc>Using revenant hypnosis abilities on colonists</LawAndOrder_Crime_RevenantHypnosis_Desc>
+  <LawAndOrder_Crime_Inhumanization>Inhumanization</LawAndOrder_Crime_Inhumanization>
+  <LawAndOrder_Crime_Inhumanization_Desc>Transforming colonists into inhuman entities</LawAndOrder_Crime_Inhumanization_Desc>
+  <LawAndOrder_Crime_MetalhorrorImplant>Metalhorror Implant</LawAndOrder_Crime_MetalhorrorImplant>
+  <LawAndOrder_Crime_MetalhorrorImplant_Desc>Implanting metalhorror entities in colonists</LawAndOrder_Crime_MetalhorrorImplant_Desc>
+  <LawAndOrder_Crime_BloodRageInduction>Blood Rage Induction</LawAndOrder_Crime_BloodRageInduction>
+  <LawAndOrder_Crime_BloodRageInduction_Desc>Inducing blood rage in colonists</LawAndOrder_Crime_BloodRageInduction_Desc>
+  <LawAndOrder_Crime_FleshDevouring>Flesh Devouring</LawAndOrder_Crime_FleshDevouring>
+  <LawAndOrder_Crime_FleshDevouring_Desc>Devouring colonists' flesh</LawAndOrder_Crime_FleshDevouring_Desc>
+
+  <!-- Crime Definitions - Biotech (DLC) -->
+  <LawAndOrder_Crime_BloodfeederAttack>Bloodfeeder Attack</LawAndOrder_Crime_BloodfeederAttack>
+  <LawAndOrder_Crime_BloodfeederAttack_Desc>Attacking colonists to feed on blood</LawAndOrder_Crime_BloodfeederAttack_Desc>
+  <LawAndOrder_Crime_MechSwarmAttack>Mech Swarm Attack</LawAndOrder_Crime_MechSwarmAttack>
+  <LawAndOrder_Crime_MechSwarmAttack_Desc>Deploying mechanoid swarms against the colony</LawAndOrder_Crime_MechSwarmAttack_Desc>
+  <LawAndOrder_Crime_WastpackMortar>Wastpack Mortar</LawAndOrder_Crime_WastpackMortar>
+  <LawAndOrder_Crime_WastpackMortar_Desc>Using wastpack mortars to contaminate the colony</LawAndOrder_Crime_WastpackMortar_Desc>
 
 </LanguageData>

@@ -319,5 +319,17 @@ Based on analysis of RimWorld 1.6 source code at `C:\Users\Giovanni\source\repos
 - God mode bypass for lockout
 - Tooltips and validation messages
 
+### Bug Fixes Applied (Phase 2 Complete)
+- ✅ Fixed tab label capitalization ("crimes" → "Crimes")
+- ✅ Fixed WorldComponent initialization (crimes now populate on new worlds)
+- ✅ Added all 70+ crime translation keys (labels + descriptions)
+- ✅ Added all 10 multiplier translation keys (labels + descriptions)
+- ✅ Total translation keys added: ~160 keys
+
+**Files Updated:**
+- `MainTabWindow_Justice.cs` - Fixed tab label
+- `WorldComponent_CrimePenaltyManager.cs` - Added constructor initialization
+- `LawAndOrder_Keys.xml` - Added 160+ translation keys
+
 **Next Step:** Begin Phase 3 (Integration) when ready.
 
