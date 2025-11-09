@@ -151,9 +151,6 @@
 
     <!-- Quality factors -->
     <comps>
-      <li Class="RitualOutcomeComp_RitualSeatPresent">
-        <qualityOffset>0.15</qualityOffset>
-      </li>
       <li Class="RitualOutcomeComp_ParticipantCount">
         <label>participant count</label>
         <curve>
@@ -161,7 +158,7 @@
             <li>(1, 0.0)</li>
             <li>(3, 0.15)</li>
             <li>(5, 0.25)</li>
-            <li>(10, 0.35)</li>
+            <li>(8, 0.35)</li>
           </points>
         </curve>
       </li>
