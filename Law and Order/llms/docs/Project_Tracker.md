@@ -14,6 +14,7 @@
 - ✅ **Crimes Tab Documentation - Phase 3 Plan (Nov 9, 2025):** Comprehensive integration plan documented
 - ✅ **Crimes Tab Integration - Phase 3 Core (Nov 9, 2025):** Penalty calculation system fully implemented in DebtUtils.cs
 - ✅ **Crimes Tab Integration - Phase 3 Continuation Complete (Nov 9, 2025):** Legacy settings removed, integration complete
+- ✅ **Crime Detection Expansion (Nov 9, 2025):** Added detection for Property Damage, Arson, and Theft
 
 ---
 
@@ -343,6 +344,59 @@ All Phase 3 integration and legacy cleanup tasks have been successfully complete
 **Documentation Status:**
 - ✅ Project_Tracker.md updated with completion details
 - ✅ Project_Notepad.md Phase 3 section marked complete
+
+---
+
+**2025-11-09: Crime Detection Expansion** ✅ **COMPLETE**
+
+Previously only Assault/Murder crimes were automatically detected. Now all major crime types are tracked:
+
+**New Crime Detection Patches Added:**
+- ✅ Property Damage Detection - `Thing.TakeDamage` patch tracks damage to player buildings/items
+- ✅ Arson Detection - Flame/burn damage detected and recorded as separate crime type
+- ✅ Theft Detection - `Pawn_CarryTracker.TryStartCarry` patch tracks when hostiles steal items
+
+**Implementation Details:**
+
+**Property Damage Patch:**
+- Tracks damage to player-owned buildings and valuable items (>50 silver)
+- Filters out non-valuable things (plants, filth, etc.)
+- Records attacker, target, and damage amount
+- Distinguishes arson (flame damage) from general property destruction
+
+**Arson Detection:**
+- Detects when damage type is `Flame` or `Burn`
+- Automatically categorizes as Arson instead of PropertyDestruction
+- Integrated with property damage patch for efficiency
+
+**Theft Detection:**
+- Detects when hostile pawns pick up player items
+- Checks if item belongs to player or is in player stockpile zone
+- Only tracks valuable items (>10 silver market value)
+- Records item and value in crime info
+
+**Files Modified:**
+- `Source/CrimeDetection/CrimeDetectionPatches.cs` - Added 2 new patches, fixed 1 incomplete patch
+
+**Build Status:**
+- ✅ Build successful (0 errors, 2 pre-existing warnings)
+- ✅ Mod deployed to RimWorld Mods folder
+
+**Crime Detection Summary:**
+| Crime Type | Detection Method | Status |
+|------------|------------------|--------|
+| Assault | Pawn damage tracking | ✅ Working |
+| Murder | Pawn death tracking | ✅ Working |
+| Property Damage | Building/item damage | ✅ NEW |
+| Arson | Flame damage detection | ✅ NEW |
+| Theft | Item pickup tracking | ✅ NEW |
+| Trespassing | (Future) | ⏳ Not yet implemented |
+| Animal Abuse | (Future) | ⏳ Not yet implemented |
+
+**Testing Notes:**
+- Test in-game with raiders to verify all crime types are detected
+- Check dev mode logs to see crime recording messages
+- Verify penalties are calculated correctly using new system
 
 ---
 
