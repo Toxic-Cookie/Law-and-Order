@@ -1722,6 +1722,7 @@ namespace Law_and_Order.Source.UI
                 selectedCrime = null;
                 selectedCrimeCategory = null;
                 SoundDefOf.Click.PlayOneShotOnCamera(null);
+                return; // Don't continue drawing this panel
             }
 
             innerRect.yMin += 40f;
@@ -1853,6 +1854,7 @@ namespace Law_and_Order.Source.UI
                 selectedCrime = null;
                 selectedCrimeCategory = null;
                 SoundDefOf.Click.PlayOneShotOnCamera(null);
+                return; // Don't continue drawing this panel
             }
 
             innerRect.yMin += 40f;
@@ -2065,6 +2067,7 @@ namespace Law_and_Order.Source.UI
                 selectedMultiplier = null;
                 showMultipliers = true;
                 SoundDefOf.Click.PlayOneShotOnCamera(null);
+                return; // Don't continue drawing this panel
             }
 
             innerRect.yMin += 40f;
