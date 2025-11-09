@@ -63,41 +63,109 @@ namespace Law_and_Order.Source.CrimeDetection
         }
 
         /// <summary>
-        /// Tracks property destruction when things are destroyed
+        /// Tracks property damage when buildings/things take damage
         /// </summary>
-        [HarmonyPatch(typeof(Thing), "Destroy")]
-        public static class TrackPropertyDestruction_Patch
+        [HarmonyPatch(typeof(Thing), nameof(Thing.TakeDamage))]
+        public static class TrackPropertyDamage_Patch
         {
-            static void Prefix(Thing __instance, DestroyMode mode = DestroyMode.Vanish)
+            static void Postfix(Thing __instance, DamageInfo dinfo, DamageWorker.DamageResult __result)
             {
                 try
                 {
-                    // Only track if it's being destroyed (not deconstructed/killed normally)
-                    if (mode != DestroyMode.KillFinalize)
-                        return;
-
-                    // Only track colony buildings/items
+                    // Only track if the thing is owned by the player
                     if (__instance.Faction != Faction.OfPlayer)
                         return;
 
-                    // Try to find who caused the destruction
-                    // This is tricky - you might need to track recent attackers separately
-                    // For now, this is just a placeholder showing the structure
+                    // Only track buildings and valuable items (not plants, filth, etc.)
+                    if (!(__instance is Building || __instance is MinifiedThing ||
+                          (__instance.def.category == ThingCategory.Item && __instance.MarketValue > 50)))
+                        return;
 
-                    // Example: if there's a recent attacker map (you'd need to implement this)
-                    // Pawn attacker = SomeSystemToTrackRecentAttacker(__instance);
-                    // if (attacker != null)
-                    // {
-                    //     CrimeUtils.RecordCrime(
-                    //         criminal: attacker,
-                    //         crimeType: CrimeType.PropertyDestruction,
-                    //         targetThing: __instance
-                    //     );
-                    // }
+                    // Get the attacker
+                    Pawn attacker = dinfo.Instigator as Pawn;
+                    if (attacker == null)
+                        return;
+
+                    // Only track if attacker is hostile to player
+                    if (!attacker.HostileTo(Faction.OfPlayer))
+                        return;
+
+                    // Determine crime type based on damage type
+                    CrimeType crimeType = CrimeType.PropertyDestruction;
+
+                    // Check if it's arson (flame damage)
+                    if (dinfo.Def == DamageDefOf.Flame || dinfo.Def == DamageDefOf.Burn)
+                    {
+                        crimeType = CrimeType.Arson;
+                    }
+
+                    // Record the crime
+                    CrimeUtils.RecordCrime(
+                        criminal: attacker,
+                        crimeType: crimeType,
+                        targetThing: __instance,
+                        damageDealt: __result.totalDamageDealt,
+                        additionalInfo: $"Damaged {__instance.Label} with {dinfo.Def.label}"
+                    );
                 }
                 catch (System.Exception e)
                 {
-                    Law_and_Order.Source.Mod.Log?.Error($"Error in property destruction tracking patch: {e.Message}\n{e.StackTrace}");
+                    Law_and_Order.Source.Mod.Log?.Error($"Error in property damage tracking patch: {e.Message}\n{e.StackTrace}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tracks theft when hostile pawns pick up player items
+        /// </summary>
+        [HarmonyPatch(typeof(Pawn_CarryTracker), "TryStartCarry", new System.Type[] { typeof(Thing) })]
+        public static class TrackTheft_Patch
+        {
+            static void Postfix(Pawn_CarryTracker __instance, Thing item, bool __result)
+            {
+                try
+                {
+                    // Only track if the carry action succeeded
+                    if (!__result)
+                        return;
+
+                    // Get the pawn who owns this carry tracker
+                    Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+                    if (pawn == null)
+                        return;
+
+                    // Only track if the pawn is hostile to player
+                    if (!pawn.HostileTo(Faction.OfPlayer))
+                        return;
+
+                    // Only track if the item belongs to player or is in a player storage zone
+                    bool isPlayerItem = item.Faction == Faction.OfPlayer;
+                    bool isInPlayerZone = false;
+
+                    if (item.Spawned && item.Map != null)
+                    {
+                        var zone = item.Map.zoneManager.ZoneAt(item.Position);
+                        isInPlayerZone = zone is Zone_Stockpile;
+                    }
+
+                    if (!isPlayerItem && !isInPlayerZone)
+                        return;
+
+                    // Only track valuable items
+                    if (item.MarketValue < 10)
+                        return;
+
+                    // Record the theft
+                    CrimeUtils.RecordCrime(
+                        criminal: pawn,
+                        crimeType: CrimeType.Theft,
+                        targetThing: item,
+                        additionalInfo: $"Stole {item.Label} (worth {item.MarketValue:F0} silver)"
+                    );
+                }
+                catch (System.Exception e)
+                {
+                    Law_and_Order.Source.Mod.Log?.Error($"Error in theft tracking patch: {e.Message}\n{e.StackTrace}");
                 }
             }
         }
