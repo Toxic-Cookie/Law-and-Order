@@ -1,7 +1,7 @@
 # Law and Order - Project Tracker
 
 **Last Updated:** November 9, 2025
-**Current Status:** ✅ Production Ready - Crimes Tab Phase 2 Complete
+**Current Status:** ✅ Production Ready - Crimes Tab Phase 2 Complete, Phase 3 Documented
 
 **Recent Updates:**
 - ✅ **Phase 1 Complete (Nov 2, 2025):** Ritual Quality Reframe - Eliminated hearing sabotage exploit
@@ -10,7 +10,8 @@
 - ✅ **Phase 4 Complete (Nov 2, 2025):** Debt Stress System - Mood debuffs scale with debt (-1 per 250 silver)
 - ✅ **Phase 5 Complete (Nov 2, 2025):** Ideology-Aligned Contraband - Rewards beliefs, punishes hypocrisy
 - ✅ **Overdue Hearing Penalties (Nov 3, 2025):** Penalties for holding prisoners without hearings (7-day grace period)
-- ✅ **Crimes Tab UI (Nov 9, 2025):** Phase 2 complete - Full UI for configuring crime penalties and multipliers
+- ✅ **Crimes Tab UI - Phase 2 (Nov 9, 2025):** Full UI for configuring crime penalties and multipliers
+- ✅ **Crimes Tab Documentation - Phase 3 Plan (Nov 9, 2025):** Comprehensive integration plan documented
 
 ---
 
@@ -244,7 +245,29 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - Tooltips and validation messages for all user inputs
 - Visual feedback: yellow highlights for pending changes, colored labels for crimes/multipliers
 
-**Next Step:** Phase 3 (Integration) - Update DebtUtils to use CrimePenaltyManager values
+**2025-11-09: Crimes Tab - Phase 3 Integration Planning & Documentation**
+- ✅ Documented comprehensive Phase 3 integration plan in Project_Documentation.md Section 12
+- ✅ Added "Penalty Range System (Phase 3 Integration)" section with detailed implementation guide
+- ✅ Documented penalty calculation algorithm (body part importance, damage ratio, permanent effects)
+- ✅ Documented multiplier stacking rules (multiplicative, not additive)
+- ✅ Created detailed DebtUtils.cs integration plan with code examples:
+  - CalculatePenaltyInRange() method for contextual penalty calculation
+  - ApplyMultipliers() method for multiplier application
+  - 10+ helper methods (GetBodyPartImportance, HasPriorOffenses, etc.)
+  - DetermineCrimeType() method for damage-to-crime mapping
+- ✅ Updated Project_Notepad.md Phase 3 section with detailed task breakdown
+- ✅ Documented Phase 2 completion status in Project_Documentation.md
+- ✅ Updated Project_Tracker.md with documentation completion
+
+**Documentation Highlights:**
+- Penalty range philosophy: Min/max ranges provide contextual variation, not randomness
+- Example: GunshotWound (400-800 silver) - toe graze = 400, heart shot = 800
+- Multiplier stacking example: Murder with all modifiers enabled = 5,250 base → 44,297 final
+- Integration steps: 5 main tasks, 20+ methods to implement in DebtUtils
+- Full backward compatibility with legacy calculation fallback
+- Performance optimization considerations documented
+
+**Next Step:** Phase 3 (Integration) - Implement penalty system in DebtUtils.cs
 
 ---
 

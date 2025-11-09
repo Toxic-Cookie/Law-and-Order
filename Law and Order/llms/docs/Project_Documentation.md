@@ -2493,7 +2493,7 @@ Player has 100 beer in storage for trading
 ## Section 12: Crime Penalty Management System
 
 **Added:** November 9, 2025
-**Status:** ✅ Phase 1 Complete (Data Model & Structure)
+**Status:** ✅ Phase 1 Complete (Data Model & Structure) | ✅ Phase 2 Complete (UI Implementation)
 
 ### Crime Penalty System Overview
 
@@ -2921,30 +2921,466 @@ foreach (var node in flatList)
 }
 ```
 
-### Next Steps (Phase 2-4)
+### Phase Progress Summary
 
-**Phase 2: UI Implementation** (Not Yet Started)
-- Add "Crimes" tab to MainTabWindow_Justice
-- Implement DrawCrimesUI() method
-- Create crime list with search/filter
-- Create configuration panel for selected crime
-- Add multipliers section
-- Implement commit/cancel buttons
+**Phase 1: Data Model & Structure** ✅ COMPLETE
+- Created all core classes (CrimeDefinition, CrimePenaltyMultiplier, CrimeCategoryNode, etc.)
+- Implemented WorldComponent_CrimePenaltyManager with 70+ default crimes
+- Added 10 penalty multipliers with default values
+- Implemented lockout system and pending changes
+- Added DLC detection for Anomaly/Biotech crimes
 
-**Phase 3: Integration** (Not Yet Started)
-- Update DebtUtils.CalculateDebtForCrime() to use manager
-- Apply multipliers based on crime context
-- Add translation keys to LawAndOrder_Keys.xml
-- Test save/load functionality
-- Test lockout system
+**Phase 2: UI Implementation** ✅ COMPLETE
+- Added "Crimes" tab to MainTabWindow_Justice (~1000 lines of UI code)
+- Implemented searchable crime category tree (left panel)
+- Created individual crime configuration panel (min/max penalty ranges)
+- Created category bulk operations panel
+- Implemented multipliers section with edit functionality
+- Added commit/cancel buttons with lockout display
+- Added 160+ translation keys to LawAndOrder_Keys.xml
+- Fixed all compilation errors and null reference exceptions
 
-**Phase 4: Testing & Polish** (Not Yet Started)
-- Test lockout mechanism
-- Test commit/cancel functionality
-- Test save/load persistence
-- Test multiplier application
-- Verify UI responsiveness and layout
-- Test DLC detection
+**Phase 3: Integration** 🔄 NEXT (See detailed plan below)
+- Integrate penalty system with DebtUtils.CalculateDebtForCrime()
+- Implement smart penalty calculation within min-max range based on damage/severity
+- Apply configured multipliers during actual crime debt calculation
+- Test integration with existing crime tracking system
+
+**Phase 4: Testing & Polish** ⏳ PENDING
+- End-to-end testing of full crime penalty pipeline
+- Verify all multiplier types apply correctly
+- Test edge cases (extreme penalties, all multipliers enabled, etc.)
+- Performance testing for large crime lists
+- Verify DLC detection works correctly
+
+### Penalty Range System (Phase 3 Integration)
+
+#### Understanding Min/Max Penalty Ranges
+
+Each crime has a **minimum** and **maximum** penalty value (in silver). These ranges are NOT intended for random selection, but rather to provide **contextual variation** based on the actual severity of the crime instance.
+
+**Design Philosophy:**
+- **Minimum penalty**: Applied when the crime is at its least severe within that crime type
+- **Maximum penalty**: Applied when the crime is at its most severe within that crime type
+- **Calculated penalty**: Determined by analyzing damage, body parts affected, and other context
+
+**Examples:**
+1. **GunshotWound** (400-800 silver):
+   - Minor graze to toe = 400 silver (minimum)
+   - Shot through heart = 800 silver (maximum)
+   - Shot to arm with moderate bleeding = ~600 silver (mid-range)
+
+2. **Murder** (3000-6000 silver):
+   - Quick death from single shot = 3000 silver (minimum)
+   - Prolonged torture resulting in death = 6000 silver (maximum)
+   - Death from multiple injuries in battle = ~4500 silver (mid-range)
+
+3. **Theft** (320-1000 silver):
+   - Stole 320 silver worth of items = 320 silver penalty (minimum)
+   - Stole 1000+ silver worth = 1000 silver penalty (maximum)
+   - Stole 640 silver worth = 640 silver penalty (proportional)
+
+#### Penalty Calculation Algorithm
+
+The penalty calculation should consider:
+
+**For Injury Crimes:**
+1. **Body part importance**: Head/torso injuries = higher penalty, extremities = lower
+2. **Damage amount**: Total damage dealt in the attack
+3. **Permanent effects**: Lost limbs, destroyed organs = maximum penalty
+4. **Blood loss severity**: Life-threatening bleeding = higher penalty
+
+**For Property Crimes:**
+1. **Market value**: Direct correlation to item/building value
+2. **Strategic importance**: Critical infrastructure (power, defense) = higher penalty
+
+**For Special Crimes:**
+1. **Victim count**: Multiple victims = multiple penalties (additive)
+2. **Intent**: Deliberate targeting vs collateral damage
+
+**Calculation Formula (Suggested):**
+```csharp
+float CalculatePenaltyInRange(CrimeDefinition crime, DamageInfo damageInfo, Pawn victim)
+{
+    float severity = 0.5f; // Default to middle of range (0.0 = min, 1.0 = max)
+
+    // Analyze damage severity
+    if (damageInfo != null)
+    {
+        // Factor 1: Body part importance (0.0 to 1.0)
+        float bodyPartImportance = GetBodyPartImportance(damageInfo.HitPart);
+
+        // Factor 2: Damage amount relative to victim health (0.0 to 1.0)
+        float damageRatio = damageInfo.Amount / victim.health.summaryHealth.SummaryHealthPercent;
+        damageRatio = Mathf.Clamp01(damageRatio);
+
+        // Factor 3: Permanent effects (0.0 or 1.0)
+        float permanentEffect = IsPermanentInjury(damageInfo) ? 1.0f : 0.0f;
+
+        // Combine factors (weighted average)
+        severity = (bodyPartImportance * 0.4f) + (damageRatio * 0.4f) + (permanentEffect * 0.2f);
+    }
+
+    // Interpolate between min and max
+    int basePenalty = Mathf.RoundToInt(
+        Mathf.Lerp(crime.minPenalty, crime.maxPenalty, severity)
+    );
+
+    return basePenalty;
+}
+
+// Helper method: Body part importance scoring
+float GetBodyPartImportance(BodyPartRecord part)
+{
+    if (part == null) return 0.5f;
+
+    // Critical organs
+    if (part.def == BodyPartDefOf.Brain || part.def == BodyPartDefOf.Heart)
+        return 1.0f;
+
+    // Important organs
+    if (part.def == BodyPartDefOf.Liver || part.def == BodyPartDefOf.Kidney ||
+        part.def == BodyPartDefOf.Lung || part.def == BodyPartDefOf.Stomach)
+        return 0.8f;
+
+    // Eyes, spine
+    if (part.def == BodyPartDefOf.Eye || part.def == BodyPartDefOf.Spine)
+        return 0.75f;
+
+    // Limbs
+    if (part.def == BodyPartDefOf.Arm || part.def == BodyPartDefOf.Leg)
+        return 0.6f;
+
+    // Hands, feet
+    if (part.def == BodyPartDefOf.Hand || part.def == BodyPartDefOf.Foot)
+        return 0.5f;
+
+    // Fingers, toes, ears, nose
+    return 0.3f;
+}
+```
+
+#### Multiplier Stacking Rules
+
+Multipliers are applied **multiplicatively** in sequence after the base penalty is calculated:
+
+**Application Order:**
+1. Calculate base penalty using range algorithm (above)
+2. Apply enabled multipliers one by one (multiply, don't add)
+3. Round final result to nearest integer
+
+**Example Calculation:**
+```
+Crime: Murder
+Victim: Noble child who is family member
+Context: Repeat offender, peacetime
+
+Base Penalty Calculation:
+- Murder range: 3000-6000 silver
+- Attack severity: 0.75 (severe beating resulting in death)
+- Base penalty: Lerp(3000, 6000, 0.75) = 5250 silver
+
+Multiplier Application (all enabled):
+1. RepeatOffender (1.5x): 5250 * 1.5 = 7875
+2. VictimNobility (3.0x): 7875 * 3.0 = 23625
+3. VictimAge [child] (1.5x): 23625 * 1.5 = 35437.5
+4. VictimRelationship (1.25x): 35437.5 * 1.25 = 44296.875
+5. Wartime (0.75x) - NOT APPLIED (peacetime)
+
+Final Penalty: 44,297 silver (rounded)
+```
+
+**Stacking Behavior:**
+- Multipliers stack **multiplicatively** (not additively)
+- Only **enabled** multipliers are applied
+- Multipliers can be < 1.0 (reduction) or > 1.0 (increase)
+- Order doesn't matter for multiplication
+- Final result is always rounded to integer
+
+**Validation:**
+- If final penalty < 1 silver, clamp to 1 silver (minimum)
+- If final penalty > 100,000 silver, clamp to 100,000 (max cap from manager)
+- If no crime definition found, fall back to legacy penalty calculation
+
+#### Phase 3 Integration Plan
+
+**Primary File to Modify:** `Source/Utils/DebtUtils.cs`
+
+**Current State Analysis:**
+The existing DebtUtils class likely has methods like:
+- `CalculateDebtForCrime(Pawn criminal, Pawn victim, DamageInfo damageInfo)`
+- `AddDebt(Pawn criminal, int amount, string reason)`
+
+**Integration Steps:**
+
+**Step 1: Update CalculateDebtForCrime Method**
+
+```csharp
+public static int CalculateDebtForCrime(Pawn criminal, Pawn victim, DamageInfo damageInfo, string crimeDefName)
+{
+    // Get the crime penalty manager
+    var manager = WorldComponent_CrimePenaltyManager.Instance;
+    if (manager == null)
+    {
+        Log.Warning("[Law & Order] CrimePenaltyManager not found, using legacy calculation");
+        return CalculateLegacyDebt(damageInfo); // Fallback
+    }
+
+    // Get crime definition
+    CrimeDefinition crimeDef = manager.GetCrimeDefinition(crimeDefName);
+    if (crimeDef == null)
+    {
+        Log.Warning($"[Law & Order] Crime definition '{crimeDefName}' not found, using legacy calculation");
+        return CalculateLegacyDebt(damageInfo);
+    }
+
+    // Calculate base penalty within range
+    float basePenalty = CalculatePenaltyInRange(crimeDef, damageInfo, victim);
+
+    // Apply multipliers
+    float finalPenalty = ApplyMultipliers(basePenalty, manager, criminal, victim, damageInfo);
+
+    // Clamp to valid range
+    int penalty = Mathf.Clamp(Mathf.RoundToInt(finalPenalty), 1, 100000);
+
+    return penalty;
+}
+```
+
+**Step 2: Implement ApplyMultipliers Method**
+
+```csharp
+private static float ApplyMultipliers(
+    float basePenalty,
+    WorldComponent_CrimePenaltyManager manager,
+    Pawn criminal,
+    Pawn victim,
+    DamageInfo damageInfo)
+{
+    float penalty = basePenalty;
+
+    // Apply each enabled multiplier
+    foreach (var multiplier in manager.Multipliers)
+    {
+        if (!multiplier.enabled) continue;
+
+        bool shouldApply = false;
+
+        switch (multiplier.multiplierType)
+        {
+            case MultiplierType.RepeatOffender:
+                shouldApply = HasPriorOffenses(criminal);
+                break;
+
+            case MultiplierType.VictimNobility:
+                shouldApply = victim?.royalty?.HasAnyTitleIn(Faction.OfEmpire) ?? false;
+                break;
+
+            case MultiplierType.VictimAge:
+                shouldApply = victim?.DevelopmentalStage == DevelopmentalStage.Child;
+                break;
+
+            case MultiplierType.Wartime:
+                shouldApply = IsWartime(criminal?.Faction);
+                break;
+
+            case MultiplierType.Premeditated:
+                shouldApply = WasPremeditated(damageInfo);
+                break;
+
+            case MultiplierType.VictimRelationship:
+                shouldApply = IsFamily(criminal, victim);
+                break;
+
+            case MultiplierType.RaiderWealth:
+                // Scale based on faction wealth
+                float wealthFactor = GetFactionWealthFactor(criminal?.Faction);
+                penalty *= wealthFactor;
+                continue; // Skip the standard multiplier application
+
+            case MultiplierType.ColonyWealth:
+                // Scale based on colony wealth
+                float colonyWealthFactor = GetColonyWealthFactor();
+                penalty *= colonyWealthFactor;
+                continue;
+
+            case MultiplierType.DifficultySetting:
+                // Scale based on difficulty
+                float difficultyFactor = GetDifficultyFactor();
+                penalty *= difficultyFactor;
+                continue;
+
+            case MultiplierType.FactionRelations:
+                shouldApply = true; // Always apply if enabled
+                float relationFactor = GetFactionRelationFactor(criminal?.Faction);
+                penalty *= relationFactor;
+                continue;
+        }
+
+        if (shouldApply)
+        {
+            penalty *= multiplier.multiplierValue;
+        }
+    }
+
+    return penalty;
+}
+```
+
+**Step 3: Implement Helper Methods**
+
+```csharp
+private static bool HasPriorOffenses(Pawn criminal)
+{
+    // Check if criminal has been captured before
+    // This would integrate with existing crime tracking system
+    var crimeTracker = WorldComponent_CrimeTracker.Instance;
+    return crimeTracker?.HasPriorConvictions(criminal) ?? false;
+}
+
+private static bool IsWartime(Faction faction)
+{
+    if (faction == null) return false;
+    // Check if faction is at war with player
+    return faction.HostileTo(Faction.OfPlayer);
+}
+
+private static bool WasPremeditated(DamageInfo damageInfo)
+{
+    // Difficult to detect - could be based on:
+    // - Execution damage type
+    // - Certain weapon types
+    // - Attack patterns
+    return damageInfo?.Def == DamageDefOf.ExecutionCut;
+}
+
+private static bool IsFamily(Pawn criminal, Pawn victim)
+{
+    if (criminal == null || victim == null) return false;
+
+    // Check direct relations
+    return criminal.relations?.DirectRelationExists(
+        PawnRelationDefOf.Spouse, victim) ?? false ||
+        criminal.relations?.DirectRelationExists(
+        PawnRelationDefOf.Parent, victim) ?? false ||
+        criminal.relations?.DirectRelationExists(
+        PawnRelationDefOf.Child, victim) ?? false;
+}
+
+private static float GetFactionWealthFactor(Faction faction)
+{
+    // Scale 0.5x to 2.0x based on faction wealth
+    // This is a placeholder - needs actual faction wealth calculation
+    return 1.0f;
+}
+
+private static float GetColonyWealthFactor()
+{
+    // Scale based on colony wealth
+    float wealth = WealthUtility.PlayerWealthForStoryteller;
+
+    // Example scaling:
+    // <10k wealth = 0.5x
+    // 10k-50k = 1.0x
+    // 50k-100k = 1.5x
+    // >100k = 2.0x
+
+    if (wealth < 10000) return 0.5f;
+    if (wealth < 50000) return 1.0f;
+    if (wealth < 100000) return 1.5f;
+    return 2.0f;
+}
+
+private static float GetDifficultyFactor()
+{
+    // Scale based on storyteller difficulty
+    // Higher difficulty = higher penalties?
+    return 1.0f; // Placeholder
+}
+
+private static float GetFactionRelationFactor(Faction faction)
+{
+    if (faction == null) return 1.0f;
+
+    int goodwill = faction.GoodwillWith(Faction.OfPlayer);
+
+    // Hostile factions (-100 to -50) = 2.0x penalty
+    // Neutral factions (-50 to 50) = 1.0x penalty
+    // Allied factions (50 to 100) = 0.5x penalty
+
+    if (goodwill < -50) return 2.0f;
+    if (goodwill > 50) return 0.5f;
+    return 1.0f;
+}
+```
+
+**Step 4: Update Crime Detection Code**
+
+Wherever crimes are currently detected and debt is added, update to use the new system:
+
+```csharp
+// OLD CODE (example):
+DebtUtils.AddDebt(attacker, 500, "Shot colonist");
+
+// NEW CODE:
+int penalty = DebtUtils.CalculateDebtForCrime(
+    criminal: attacker,
+    victim: victim,
+    damageInfo: dinfo,
+    crimeDefName: "GunshotWound"
+);
+DebtUtils.AddDebt(attacker, penalty, $"GunshotWound ({penalty} silver)");
+```
+
+**Step 5: Crime Type Mapping**
+
+Create a mapping system to identify which crime definition to use based on context:
+
+```csharp
+public static string DetermineCrimeType(DamageInfo dinfo, Pawn victim)
+{
+    // Death crimes
+    if (victim.Dead)
+    {
+        if (dinfo.Def == DamageDefOf.ExecutionCut)
+            return "Execution";
+
+        if (IsVitalOrganDestroyed(dinfo))
+            return "VitalOrganDestruction";
+
+        return "Murder";
+    }
+
+    // Severe injury crimes
+    if (IsLimbDestroyed(dinfo))
+        return "LimbDestruction";
+
+    if (IsEyeDestroyed(dinfo))
+        return "EyeDestruction";
+
+    // Moderate injury crimes
+    if (dinfo.Def == DamageDefOf.Bullet)
+        return "GunshotWound";
+
+    if (dinfo.Def == DamageDefOf.Stab)
+        return "StabWound";
+
+    if (dinfo.Def == DamageDefOf.Cut)
+        return "SlashWound";
+
+    if (dinfo.Def == DamageDefOf.Blunt)
+        return "BluntTrauma";
+
+    if (dinfo.Def == DamageDefOf.Bite)
+        return "BiteWound";
+
+    if (dinfo.Def == DamageDefOf.Bomb || dinfo.Def == DamageDefOf.Flame)
+        return "ExplosiveInjury";
+
+    // Default to superficial wound
+    return "SuperficialWound";
+}
+```
 
 ### Files Created (Phase 1)
 

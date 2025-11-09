@@ -183,17 +183,69 @@ Based on analysis of RimWorld 1.6 source code at `C:\Users\Giovanni\source\repos
    - List all multipliers with input fields
    - Apply button (included in commit system)
 
-### Phase 3: Integration
-1. Update crime tracking system to use new penalty values
-   - Modify `DebtUtils.CalculateDebtForCrime()` to pull from manager
-   - Apply multipliers based on crime context
-2. Add translation keys to `LawAndOrder_Keys.xml`
-   - All crime labels and descriptions
-   - All multiplier labels
-   - UI strings for the Crimes tab
-3. Initialize default values on first load
-   - Create defaults method in WorldComponent
-   - Populate with the values from this document
+### Phase 3: Integration (NEXT PHASE)
+**Goal:** Integrate the crime penalty management system with the existing crime detection and debt calculation system.
+
+**Detailed Tasks:**
+
+1. **Update DebtUtils.cs** - Main integration point
+   - Add `CalculatePenaltyInRange(CrimeDefinition, DamageInfo, Pawn)` method
+     - Implement body part importance scoring (0.0-1.0 scale)
+     - Calculate damage ratio relative to victim health
+     - Detect permanent injuries (limb loss, organ destruction)
+     - Interpolate penalty within min-max range using Mathf.Lerp()
+   - Add `ApplyMultipliers(basePenalty, manager, criminal, victim, damageInfo)` method
+     - Loop through all enabled multipliers
+     - Check context for each multiplier type (repeat offender, nobility, etc.)
+     - Apply multipliers multiplicatively (not additively)
+   - Add helper methods:
+     - `GetBodyPartImportance(BodyPartRecord)` - Score 0.0-1.0 based on part type
+     - `HasPriorOffenses(Pawn)` - Check crime tracker for prior convictions
+     - `IsWartime(Faction)` - Check if faction is hostile to player
+     - `WasPremeditated(DamageInfo)` - Detect execution or planned attacks
+     - `IsFamily(Pawn, Pawn)` - Check for family relationships
+     - `GetFactionWealthFactor(Faction)` - Scale based on faction wealth
+     - `GetColonyWealthFactor()` - Scale based on colony wealth (use WealthUtility)
+     - `GetDifficultyFactor()` - Scale based on storyteller difficulty
+     - `GetFactionRelationFactor(Faction)` - Scale based on goodwill (-100 to 100)
+   - Add `DetermineCrimeType(DamageInfo, Pawn)` method
+     - Map damage type to crime defName (e.g., Bullet → "GunshotWound")
+     - Detect death crimes (Execution, Murder, VitalOrganDestruction)
+     - Detect severe injuries (LimbDestruction, EyeDestruction)
+     - Fall back to SuperficialWound for unknown damage types
+   - Update existing `CalculateDebtForCrime()` to use new system
+     - Get WorldComponent_CrimePenaltyManager.Instance
+     - Call DetermineCrimeType() to identify crime
+     - Get CrimeDefinition from manager
+     - Calculate base penalty in range
+     - Apply multipliers
+     - Clamp result (1 to 100,000 silver)
+     - Add fallback to legacy calculation if manager not available
+
+2. **Update Crime Detection Points** - Where crimes are currently detected
+   - Find all locations where `DebtUtils.AddDebt()` is called
+   - Update to call new `CalculateDebtForCrime()` with crime type
+   - Pass DamageInfo for context-aware penalty calculation
+   - Update debt reason string to include crime type and penalty amount
+
+3. **Add Missing Helper Methods to DebtUtils**
+   - `IsPermanentInjury(DamageInfo)` - Detect if injury causes permanent damage
+   - `IsLimbDestroyed(DamageInfo)` - Check if limb was destroyed
+   - `IsEyeDestroyed(DamageInfo)` - Check if eye was destroyed
+   - `IsVitalOrganDestroyed(DamageInfo)` - Check if brain/heart destroyed
+
+4. **Testing & Validation**
+   - Test penalty calculation for each crime category
+   - Verify multipliers apply correctly (enable/disable each one)
+   - Test extreme cases (max multipliers, minimum damage, etc.)
+   - Verify backward compatibility (legacy calculation fallback)
+   - Test save/load with new penalty values
+   - Test DLC detection (Anomaly/Biotech crimes)
+
+5. **Performance Optimization** (if needed)
+   - Cache penalty calculations to avoid recalculating every frame
+   - Consider caching manager instance access
+   - Profile performance with large crime lists
 
 ### Phase 4: Testing & Polish
 1. Test lockout system
