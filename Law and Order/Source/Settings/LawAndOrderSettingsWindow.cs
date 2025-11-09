@@ -45,43 +45,52 @@ namespace Law_and_Order.Source.Settings
             Widgets.BeginScrollView(scrollRect, ref scrollPosition, scrollViewRect);
             listing.Begin(scrollViewRect);
 
-            // Crimes Against Colony Section
-            DrawSectionHeader(listing, "Crimes Against Colony");
-            DrawSetting(listing, "Armed Trespassing", LawAndOrderSettings.ArmedTrespassing, "silver");
-            DrawSetting(listing, "Arson (base)", LawAndOrderSettings.ArsonBase, "silver");
-            DrawSetting(listing, "Theft Multiplier", LawAndOrderSettings.TheftMultiplier, "x item value");
+            // Crime Penalties Section - Now configured in Crimes Tab
+            DrawSectionHeader(listing, "Crime Penalties");
+
+            Text.Font = GameFont.Small;
+            GUI.color = new Color(1f, 1f, 0.7f); // Light yellow for info
+            listing.Label("Crime penalties are now configured in the Justice Menu → Crimes Tab.");
+            listing.Label("Press 'J' or click Justice on the main toolbar to access the Crimes Tab.");
+            GUI.color = Color.white;
+            listing.Gap(12f);
+
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(0.7f, 0.7f, 0.7f);
+            listing.Label("The Crimes Tab provides fine-grained control over individual crime penalties,");
+            listing.Label("penalty ranges for contextual variation, and configurable multipliers.");
+            GUI.color = Color.white;
+            Text.Font = GameFont.Small;
+
+            listing.Gap(20f);
+
+            // Contraband Settings Section
+            DrawSectionHeader(listing, "Contraband Settings");
             DrawSetting(listing, "Contraband per Drug", LawAndOrderSettings.ContrabandPerDrug, "silver");
-
-            listing.Gap(20f);
-
-            // Crimes Against Persons Section
-            DrawSectionHeader(listing, "Crimes Against Persons");
-            DrawSetting(listing, "Assault on Colonist", LawAndOrderSettings.Assault, "silver");
-            DrawSetting(listing, "Downed Colonist", LawAndOrderSettings.DownedColonist, "silver");
-            DrawSetting(listing, "Assault on Animal", LawAndOrderSettings.AssaultAnimal, "silver");
-            DrawSetting(listing, "Kill Animal Multiplier", LawAndOrderSettings.KillAnimalMultiplier, "x animal value");
-            DrawSetting(listing, "Kill Bonded Animal Multiplier", LawAndOrderSettings.KillBondedAnimalMultiplier, "x animal value");
-            DrawSetting(listing, "Kill Bonded Animal Bonus", LawAndOrderSettings.KillBondedAnimalBonus, "silver");
-            DrawSetting(listing, "Murder of Colonist", LawAndOrderSettings.Murder, "silver");
-
-            listing.Gap(20f);
-
-            // Crimes Against Property Section
-            DrawSectionHeader(listing, "Crimes Against Property");
-            DrawSetting(listing, "Property Destruction Multiplier", LawAndOrderSettings.PropertyDestructionMultiplier, "x item value");
-
-            listing.Gap(20f);
-
-            // Sentencing Modifiers Section
-            DrawSectionHeader(listing, "Sentencing Modifiers");
-            DrawSetting(listing, "Banned Weapon Modifier", LawAndOrderSettings.BannedWeaponModifier, "x total debt");
-            DrawSetting(listing, "Repeat Offender Modifier", LawAndOrderSettings.RepeatOffenderModifier, "x total debt");
 
             listing.Gap(20f);
 
             // Labor Settings Section
             DrawSectionHeader(listing, "Labor Settings");
             DrawSetting(listing, "Default Silver per Day (labor)", LawAndOrderSettings.DefaultSilverPerDay, "silver/day");
+
+            listing.Gap(20f);
+
+            // Debug Settings Section
+            DrawSectionHeader(listing, "Debug Settings");
+            if (listing.ButtonTextLabeled("Log Level", LawAndOrderSettings.LogLevel.Value.ToString()))
+            {
+                // Cycle through log levels
+                var values = System.Enum.GetValues(typeof(Law_and_Order.Source.Utils.LogLevel));
+                int currentIndex = System.Array.IndexOf(values, LawAndOrderSettings.LogLevel.Value);
+                int nextIndex = (currentIndex + 1) % values.Length;
+                LawAndOrderSettings.LogLevel.Value = (Law_and_Order.Source.Utils.LogLevel)values.GetValue(nextIndex);
+            }
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(0.7f, 0.7f, 0.7f);
+            listing.Label("Controls verbosity of mod logging. Use 'Debug' or 'Trace' for troubleshooting.");
+            GUI.color = Color.white;
+            Text.Font = GameFont.Small;
 
             listing.End();
             Widgets.EndScrollView();
@@ -208,12 +217,6 @@ namespace Law_and_Order.Source.Settings
                 {
                     totalCriminals++;
 
-                    // Update the stored debt amount for each crime
-                    foreach (var crime in criminalRecord.Crimes)
-                    {
-                        crime.debtAmount = DebtUtils.CalculateDebtForCrime(crime);
-                    }
-
                     // Remove existing debt hediff
                     var existingDebt = DebtUtils.TryGetDebtRecord(pawn);
                     if (existingDebt != null)
@@ -221,18 +224,18 @@ namespace Law_and_Order.Source.Settings
                         pawn.health.RemoveHediff(existingDebt);
                     }
 
-                    // Recalculate and apply debt based on current settings
+                    // Reapply debt using pre-calculated amounts
                     DebtUtils.ApplyDebtForAllCrimes(pawn);
                     count++;
                 }
             }
 
             Messages.Message(
-                $"Recalculated debt for {count} criminals (out of {totalCriminals} total criminals)",
+                $"Reapplied debt for {count} criminals (out of {totalCriminals} total criminals)",
                 MessageTypeDefOf.TaskCompletion
             );
 
-            Mod.Log?.Message($"Debt recalculated for {count} pawns based on current settings");
+            Mod.Log?.Message($"Debt reapplied for {count} pawns");
         }
     }
 }

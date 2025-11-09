@@ -50,7 +50,7 @@ namespace Law_and_Order.Source.Utils
         /// <summary>
         /// Record a crime for a pawn
         /// </summary>
-        public static void RecordCrime(Pawn criminal, CrimeType crimeType, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false)
+        public static void RecordCrime(Pawn criminal, CrimeType crimeType, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, DamageInfo? damageInfo = null)
         {
             if (criminal == null)
             {
@@ -60,9 +60,25 @@ namespace Law_and_Order.Source.Utils
 
             try
             {
-                // Calculate the debt amount for this crime using current settings
-                var tempCrime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled);
-                float debtAmount = DebtUtils.CalculateDebtForCrime(tempCrime);
+                float debtAmount = 0f;
+
+                // Use new penalty management system if DamageInfo is provided
+                if (damageInfo.HasValue && victim != null)
+                {
+                    debtAmount = DebtUtils.CalculateDebtForCrimeNew(
+                        criminal: criminal,
+                        victim: victim,
+                        damageInfo: damageInfo,
+                        crimeDefName: null  // Auto-detect based on damage
+                    );
+                }
+                else
+                {
+                    // No DamageInfo provided - cannot calculate penalty accurately
+                    // Log warning and use minimal penalty
+                    Mod.Log?.Warning($"Crime recorded without DamageInfo for {criminal.NameShortColored}. Cannot calculate accurate penalty.");
+                    debtAmount = 100f; // Minimal penalty as fallback
+                }
 
                 // Create the crime with the calculated debt amount stored
                 var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount);
@@ -77,10 +93,11 @@ namespace Law_and_Order.Source.Utils
                 if (Prefs.DevMode)
                 {
                     string victimInfo = victim != null ? $" against {victim.NameShortColored}" : "";
-                    string damageInfo = damageDealt > 0 ? $" ({damageDealt:F1} damage)" : "";
+                    string damageInfoStr = damageDealt > 0 ? $" ({damageDealt:F1} damage)" : "";
                     string downedInfo = wasVictimDowned ? " [DOWNED]" : "";
                     string killedInfo = wasVictimKilled ? " [KILLED]" : "";
-                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfo}{downedInfo}{killedInfo} - Debt: {debtAmount:F0} silver");
+                    string systemUsed = damageInfo.HasValue ? "[NEW]" : "[LEGACY]";
+                    Mod.Log?.Message($"{systemUsed} Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo} - Debt: {debtAmount:F0} silver");
                 }
             }
             catch (System.Exception e)

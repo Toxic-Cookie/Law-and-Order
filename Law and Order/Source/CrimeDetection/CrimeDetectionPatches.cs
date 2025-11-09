@@ -43,13 +43,16 @@ namespace Law_and_Order.Source.CrimeDetection
                     // Determine crime type based on damage
                     CrimeType crimeType = victim.Dead ? CrimeType.Murder : CrimeType.Assault;
 
-                    // Record the crime
+                    // Record the crime with DamageInfo for new penalty calculation system
                     CrimeUtils.RecordCrime(
                         criminal: attacker,
                         crimeType: crimeType,
                         victim: victim,
                         damageDealt: totalDamageDealt,
-                        additionalInfo: $"Weapon: {dinfo.Weapon?.label ?? "Unknown"}"
+                        additionalInfo: $"Weapon: {dinfo.Weapon?.label ?? "Unknown"}",
+                        wasVictimDowned: victim.Downed,
+                        wasVictimKilled: victim.Dead,
+                        damageInfo: dinfo  // Pass DamageInfo to use new penalty system
                     );
                 }
                 catch (System.Exception e)

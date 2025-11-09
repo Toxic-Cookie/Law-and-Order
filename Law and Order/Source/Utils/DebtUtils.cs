@@ -55,148 +55,23 @@ namespace Law_and_Order.Source.Utils
         }
 
         /// <summary>
-        /// Calculate the debt amount for a specific crime
+        /// Add debt for a crime using the pre-calculated debt amount stored in the Crime object.
+        /// The debt is calculated by CrimeUtils.RecordCrime() using the new penalty management system.
         /// </summary>
-        public static float CalculateDebtForCrime(Crime crime)
-        {
-            if (crime == null) return 0f;
-
-            float debt = 0f;
-            string reason = crime.crimeType.ToString();
-
-            switch (crime.crimeType)
-            {
-                case CrimeType.Trespassing:
-                    debt = LawAndOrderSettings.ArmedTrespassing.Value;
-                    reason = "Armed Trespassing";
-                    break;
-
-                case CrimeType.Arson:
-                    debt = LawAndOrderSettings.ArsonBase.Value;
-                    // Additional cost for destroyed items could be added here if tracked
-                    if (crime.targetThing != null && crime.targetThing.Destroyed)
-                    {
-                        debt += crime.targetThing.MarketValue;
-                        reason = $"Arson (destroyed {crime.targetThing.Label})";
-                    }
-                    else
-                    {
-                        reason = "Arson";
-                    }
-                    break;
-
-                case CrimeType.Theft:
-                    if (crime.targetThing != null)
-                    {
-                        debt = crime.targetThing.MarketValue * LawAndOrderSettings.TheftMultiplier.Value;
-                        reason = $"Theft of {crime.targetThing.Label}";
-                    }
-                    break;
-
-                case CrimeType.Assault:
-                    // Check if target was downed (use stored flag, not current state)
-                    if (crime.wasVictimDowned)
-                    {
-                        debt = LawAndOrderSettings.DownedColonist.Value;
-                        reason = $"Downed {crime.victim?.LabelShort ?? "colonist"}";
-                    }
-                    else if (crime.victim?.RaceProps?.Animal ?? false)
-                    {
-                        debt = LawAndOrderSettings.AssaultAnimal.Value;
-                        reason = $"Assault on {crime.victim.LabelShort}";
-                    }
-                    else
-                    {
-                        debt = LawAndOrderSettings.Assault.Value;
-                        reason = crime.victim != null ? $"Assault on {crime.victim.LabelShort}" : "Assault";
-                    }
-                    break;
-
-                case CrimeType.Murder:
-                    debt = LawAndOrderSettings.Murder.Value;
-                    reason = crime.victim != null ? $"Murder of {crime.victim.LabelShort}" : "Murder";
-                    break;
-
-                case CrimeType.AnimalAbuse:
-                    // Check if animal was killed (use stored flag, not current state)
-                    if (crime.wasVictimKilled)
-                    {
-                        // Killed animal
-                        float baseValue = crime.victim?.MarketValue ?? 0f;
-
-                        // Check if bonded
-                        bool isBonded = crime.victim?.relations?.GetFirstDirectRelationPawn(PawnRelationDefOf.Bond, x => x.IsColonist) != null;
-
-                        if (isBonded)
-                        {
-                            debt = (baseValue * LawAndOrderSettings.KillBondedAnimalMultiplier.Value) + LawAndOrderSettings.KillBondedAnimalBonus.Value;
-                            reason = $"Killed bonded animal ({crime.victim?.LabelShort ?? "animal"})";
-                        }
-                        else
-                        {
-                            debt = baseValue * LawAndOrderSettings.KillAnimalMultiplier.Value;
-                            reason = $"Killed {crime.victim?.LabelShort ?? "animal"}";
-                        }
-                    }
-                    else
-                    {
-                        debt = LawAndOrderSettings.AssaultAnimal.Value;
-                        reason = crime.victim != null ? $"Harmed {crime.victim.LabelShort}" : "Animal Abuse";
-                    }
-                    break;
-
-                case CrimeType.PropertyDestruction:
-                case CrimeType.Vandalism:
-                    if (crime.targetThing != null)
-                    {
-                        debt = crime.targetThing.MarketValue * LawAndOrderSettings.PropertyDestructionMultiplier.Value;
-                        reason = $"Destroyed {crime.targetThing.Label}";
-                    }
-                    break;
-
-                case CrimeType.Kidnapping:
-                    // This is a serious crime, treated similarly to assault/downed
-                    debt = LawAndOrderSettings.DownedColonist.Value * KIDNAPPING_DEBT_MULTIPLIER;
-                    reason = crime.victim != null ? $"Kidnapped {crime.victim.LabelShort}" : "Kidnapping";
-                    break;
-            }
-
-            return debt;
-        }
-
-        /// <summary>
-        /// Add debt for a crime and automatically add it to the pawn's debt record
-        /// </summary>
-        public static void AddDebtForCrime(Pawn criminal, Crime crime, bool isRepeatOffender = false, bool usedBannedWeapon = false)
+        public static void AddDebtForCrime(Pawn criminal, Crime crime)
         {
             if (criminal == null || crime == null)
             {
                 return;
             }
 
-            float baseDebt = CalculateDebtForCrime(crime);
+            // Use the pre-calculated debt amount from the Crime object
+            // This was calculated by CrimeUtils.RecordCrime() using CalculateDebtForCrimeNew()
+            float totalDebt = crime.debtAmount;
 
-            if (baseDebt <= 0)
+            if (totalDebt <= 0)
             {
                 return;
-            }
-
-            // Apply modifiers
-            float totalDebt = baseDebt;
-            string modifiers = "";
-
-            if (usedBannedWeapon)
-            {
-                totalDebt *= LawAndOrderSettings.BannedWeaponModifier.Value;
-                int percent = (int)((LawAndOrderSettings.BannedWeaponModifier.Value - 1f) * 100f);
-                modifiers += $" [Banned Weapon +{percent}%]";
-            }
-
-            if (isRepeatOffender)
-            {
-                totalDebt *= LawAndOrderSettings.RepeatOffenderModifier.Value;
-                int percent = (int)((LawAndOrderSettings.RepeatOffenderModifier.Value - 1f) * 100f);
-                modifiers += $" [Repeat Offender +{percent}%]";
             }
 
             var debtRecord = GetOrCreateDebtRecord(criminal);
@@ -207,7 +82,6 @@ namespace Law_and_Order.Source.Utils
                 {
                     reason += $" vs {crime.victim.LabelShort}";
                 }
-                reason += modifiers;
 
                 debtRecord.AddDebt(totalDebt, reason);
             }
@@ -246,10 +120,10 @@ namespace Law_and_Order.Source.Utils
         }
 
         /// <summary>
-        /// Calculate debt for all crimes in a criminal record
-        /// Useful for applying debt retroactively or on first capture
+        /// Calculate total debt for all crimes in a criminal record.
+        /// Uses the pre-calculated debt amounts stored in each Crime object.
         /// </summary>
-        public static float CalculateTotalDebtForCrimes(Hediff_Crimes criminalRecord, bool isRepeatOffender = false, bool usedBannedWeapon = false)
+        public static float CalculateTotalDebtForCrimes(Hediff_Crimes criminalRecord)
         {
             if (criminalRecord == null || criminalRecord.Crimes == null)
             {
@@ -260,19 +134,8 @@ namespace Law_and_Order.Source.Utils
 
             foreach (var crime in criminalRecord.Crimes)
             {
-                float crimeDebt = CalculateDebtForCrime(crime);
-                totalDebt += crimeDebt;
-            }
-
-            // Apply modifiers to total
-            if (usedBannedWeapon)
-            {
-                totalDebt *= LawAndOrderSettings.BannedWeaponModifier.Value;
-            }
-
-            if (isRepeatOffender)
-            {
-                totalDebt *= LawAndOrderSettings.RepeatOffenderModifier.Value;
+                // Use the pre-calculated debt amount from the Crime object
+                totalDebt += crime.debtAmount;
             }
 
             return totalDebt;
@@ -301,10 +164,10 @@ namespace Law_and_Order.Source.Utils
                 return;
             }
 
-            // Process each crime
+            // Process each crime using pre-calculated debt amounts
             foreach (var crime in criminalRecord.Crimes)
             {
-                float crimeDebt = CalculateDebtForCrime(crime);
+                float crimeDebt = crime.debtAmount;
                 if (crimeDebt > 0)
                 {
                     string reason = crime.crimeType.ToString();

@@ -129,8 +129,8 @@ namespace Law_and_Order.Source.UI
             Widgets.Label(titleRect, crime.crimeType.ToString());
             GUI.color = Color.white;
 
-            // Debt amount
-            float crimeDebt = crime.debtAmount > 0 ? crime.debtAmount : DebtUtils.CalculateDebtForCrime(crime);
+            // Use pre-calculated debt amount
+            float crimeDebt = crime.debtAmount;
             if (crimeDebt > 0)
             {
                 Rect debtRect = new Rect(innerRect.x + innerRect.width * 0.7f, innerRect.y, innerRect.width * 0.3f, 18f);

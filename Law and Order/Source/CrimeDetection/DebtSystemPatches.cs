@@ -52,12 +52,8 @@ namespace Law_and_Order.Source.CrimeDetection
             criminalRecord.AddCrime(crime);
 
             // Add debt for that specific crime
-            DebtUtils.AddDebtForCrime(
-                criminal,
-                crime,
-                isRepeatOffender: false,  // +50% if true
-                usedBannedWeapon: false   // +25% if true
-            );
+            // Debt amount is calculated using the new penalty management system
+            DebtUtils.AddDebtForCrime(criminal, crime);
         }
 
         /// <summary>
@@ -124,29 +120,20 @@ namespace Law_and_Order.Source.CrimeDetection
         }
 
         /// <summary>
-        /// Example: Calculate debt for a specific crime type
-        /// This shows the debt values for each crime
+        /// Example: View crime debt values
+        /// Crime penalties are now configured in the Justice Menu → Crimes Tab
         /// </summary>
         public static void Example_ViewDebtValues()
         {
-            // These are the base values (before modifiers)
-            // See DebtUtils.cs for the actual calculation logic
-
             Log.Message("=== Crime Debt Values ===");
-            Log.Message("Armed Trespassing: 150 silver");
-            Log.Message("Arson (base): 250 silver + value of items destroyed");
-            Log.Message("Theft: Item value × 1.5");
-            Log.Message("Assault: 350 silver");
-            Log.Message("Downed Colonist: 750 silver");
-            Log.Message("Assault on Animal: 100 silver");
-            Log.Message("Killed Animal: Market value × 2");
-            Log.Message("Killed Bonded Animal: (Market value × 3) + 500 silver");
-            Log.Message("Murder: 5,000 silver");
-            Log.Message("Property Destruction: Item value × 1.2");
+            Log.Message("Crime penalties are now configured in the Justice Menu → Crimes Tab.");
+            Log.Message("Press 'J' or click Justice on the toolbar to access the Crimes Tab.");
             Log.Message("");
-            Log.Message("Modifiers:");
-            Log.Message("  Banned Weapon: +25% to total");
-            Log.Message("  Repeat Offender: +50% to total");
+            Log.Message("Each crime has a min-max penalty range for contextual variation:");
+            Log.Message("  - Min penalty: Applied for minor damage/injury");
+            Log.Message("  - Max penalty: Applied for severe damage/permanent injury");
+            Log.Message("");
+            Log.Message("Multipliers can also be configured (e.g., Repeat Offender, Victim Nobility).");
         }
 
         /// <summary>

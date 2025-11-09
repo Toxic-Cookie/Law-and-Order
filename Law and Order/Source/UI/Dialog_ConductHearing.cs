@@ -152,7 +152,7 @@ namespace Law_and_Order.Source.UI
                 }
                 crimeText += $"\n  {crime.DaysAgo} days ago";
 
-                float crimeDebt = crime.debtAmount > 0 ? crime.debtAmount : DebtUtils.CalculateDebtForCrime(crime);
+                float crimeDebt = crime.debtAmount;
                 crimeText += $"\n  Debt: {crimeDebt:F0} silver";
 
                 Widgets.Label(crimeContentRect, crimeText);
@@ -181,7 +181,7 @@ namespace Law_and_Order.Source.UI
                 float categoryDebt = 0f;
                 foreach (var crime in group)
                 {
-                    float crimeDebt = crime.debtAmount > 0 ? crime.debtAmount : DebtUtils.CalculateDebtForCrime(crime);
+                    float crimeDebt = crime.debtAmount;
                     categoryDebt += crimeDebt;
                 }
 
