@@ -38,7 +38,8 @@
       "Bash(nul)",
       "Bash(copy:*)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Select-String -Pattern \"error\" -Context 0,2)"
+      "Bash(Select-String -Pattern \"error\" -Context 0,2)",
+      "Bash(Select-String -Pattern \"error|warning|succeeded|failed\" -Context 0,1)"
     ],
     "deny": [],
     "ask": []

@@ -1,7 +1,7 @@
 # Law and Order - Project Tracker
 
 **Last Updated:** November 9, 2025
-**Current Status:** ✅ Production Ready - Crimes Tab Phase 2 Complete, Phase 3 Documented
+**Current Status:** ✅ Production Ready - Crimes Tab Phase 3 Core Implementation Complete
 
 **Recent Updates:**
 - ✅ **Phase 1 Complete (Nov 2, 2025):** Ritual Quality Reframe - Eliminated hearing sabotage exploit
@@ -12,6 +12,7 @@
 - ✅ **Overdue Hearing Penalties (Nov 3, 2025):** Penalties for holding prisoners without hearings (7-day grace period)
 - ✅ **Crimes Tab UI - Phase 2 (Nov 9, 2025):** Full UI for configuring crime penalties and multipliers
 - ✅ **Crimes Tab Documentation - Phase 3 Plan (Nov 9, 2025):** Comprehensive integration plan documented
+- ✅ **Crimes Tab Integration - Phase 3 Core (Nov 9, 2025):** Penalty calculation system fully implemented in DebtUtils.cs
 
 ---
 
@@ -267,7 +268,31 @@ The Law and Order mod is a comprehensive RimWorld 1.6 mod implementing a crimina
 - Full backward compatibility with legacy calculation fallback
 - Performance optimization considerations documented
 
-**Next Step:** Phase 3 (Integration) - Implement penalty system in DebtUtils.cs
+**2025-11-09: Crimes Tab - Phase 3 Core Implementation**
+- ✅ Implemented complete penalty calculation system in DebtUtils.cs (~700 lines)
+- ✅ Added CalculatePenaltyInRange() method with contextual severity calculation
+- ✅ Implemented body part importance scoring (0.0-1.0 scale)
+- ✅ Added permanent injury detection
+- ✅ Implemented ApplyMultipliers() with all 10 multiplier types
+- ✅ Added all context detection helpers (12+ helper methods)
+- ✅ Implemented DetermineCrimeType() for damage-to-crime mapping
+- ✅ Created CalculateDebtForCrimeNew() public API
+- ✅ Build succeeds with 0 compilation errors
+- ✅ Fixed all RimWorld API compatibility issues
+
+**Implementation Highlights:**
+- Body part importance: Brain/Heart = 1.0, Liver/Kidney/Lung/Stomach = 0.8, Eyes/Spine = 0.75
+- Damage severity factors: Body part (40%), Health ratio (40%), Permanent damage (20%)
+- Multipliers apply multiplicatively: RepeatOffender, VictimNobility, VictimAge, Wartime, etc.
+- Colony wealth scaling: <10k = 0.5x, 10k-50k = 1.0x, 50k-100k = 1.5x, >100k = 2.0x
+- Faction relations scaling: Hostile = 2.0x, Neutral = 1.0x, Allied = 0.5x
+- Crime type detection: 25+ damage types mapped to specific crimes
+- Fallback logic for missing body part constants (uses defName comparison)
+
+**Files Modified:**
+- `Source/Utils/DebtUtils.cs` - Added Phase 3 integration region with 17 new methods
+
+**Next Step (Optional):** Integrate CalculateDebtForCrimeNew() with existing crime detection points
 
 ---
 

@@ -324,6 +324,43 @@ Based on analysis of RimWorld 1.6 source code at `C:\Users\Giovanni\source\repos
 
 ---
 
+## Current Status: Phase 3 In Progress 🔄
+
+### Phase 3 Core Implementation Complete ✅
+**Completed (Nov 9, 2025):**
+- ✅ Added all penalty calculation methods to DebtUtils.cs
+- ✅ Implemented CalculatePenaltyInRange() with body part importance scoring
+- ✅ Implemented ApplyMultipliers() with all 10 multiplier types
+- ✅ Added DetermineCrimeType() for damage-to-crime mapping
+- ✅ Created CalculateDebtForCrimeNew() public API method
+- ✅ All helper methods implemented (12+ methods)
+- ✅ Build succeeds with 0 errors
+- ✅ ~700 lines of integration code added
+
+**Methods Added:**
+1. `CalculatePenaltyInRange()` - Interpolates penalty within min-max range
+2. `GetBodyPartImportance()` - Scores body parts 0.0-1.0
+3. `IsPermanentInjury()` - Detects permanent damage
+4. `IsLimbDestroyed()` - Checks for limb loss
+5. `IsEyeDestroyed()` - Checks for eye loss
+6. `IsVitalOrganDestroyed()` - Checks for brain/heart destruction
+7. `ApplyMultipliers()` - Applies all enabled multipliers
+8. `HasPriorOffenses()` - Checks for repeat offenders
+9. `IsNoble()` - Checks for Royalty DLC titles
+10. `IsChild()` - Checks victim age
+11. `IsWartime()` - Checks faction hostility
+12. `WasPremeditated()` - Detects executions
+13. `IsFamily()` - Checks family relationships
+14. `GetColonyWealthFactor()` - Scales by colony wealth
+15. `GetFactionRelationFactor()` - Scales by goodwill
+16. `DetermineCrimeType()` - Maps DamageInfo to crime defName
+17. `CalculateDebtForCrimeNew()` - Public API for new penalty system
+
+**Next Steps:**
+- Integration with crime detection points (optional - new system ready but not required)
+- Testing with actual gameplay scenarios
+- Verifying multipliers work correctly
+
 ## Current Status: Phase 2 Complete ✅
 
 ### Phase 1 Complete ✅
