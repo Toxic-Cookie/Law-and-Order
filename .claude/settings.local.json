@@ -37,7 +37,8 @@
       "Bash(copy \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")",
       "Bash(nul)",
       "Bash(copy:*)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-String -Pattern \"error\" -Context 0,2)"
     ],
     "deny": [],
     "ask": []

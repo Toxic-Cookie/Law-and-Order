@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
@@ -8,7 +8,6 @@ using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Utils;
 using Law_and_Order.Source.Hearings;
 using Law_and_Order.Source.Components;
-using Law_and_Order.Source.CrimePenalties;
 using LawAndOrder;
 
 namespace Law_and_Order.Source.UI
@@ -231,7 +230,7 @@ namespace Law_and_Order.Source.UI
 
             if (criminal.IsPrisonerOfColony)
             {
-                crimeText += " • " + "LawAndOrder_Imprisoned".Translate();
+                crimeText += " â€¢ " + "LawAndOrder_Imprisoned".Translate();
             }
 
             Widgets.Label(crimeCountRect, crimeText);
@@ -1402,6 +1401,38 @@ namespace Law_and_Order.Source.UI
             SoundDefOf.CancelMode.PlayOneShotOnCamera(null);
         }
 
+        /// <summary>
+        /// Gets a user-friendly label for a multiplier type.
+        /// </summary>
+        private string GetMultiplierLabel(MultiplierType type)
+        {
+            switch (type)
+            {
+                case MultiplierType.RepeatOffender:
+                    return "LawAndOrder_Multiplier_RepeatOffender".Translate();
+                case MultiplierType.VictimNobility:
+                    return "LawAndOrder_Multiplier_VictimNobility".Translate();
+                case MultiplierType.VictimAge:
+                    return "LawAndOrder_Multiplier_VictimAge".Translate();
+                case MultiplierType.Wartime:
+                    return "LawAndOrder_Multiplier_Wartime".Translate();
+                case MultiplierType.Premeditated:
+                    return "LawAndOrder_Multiplier_Premeditated".Translate();
+                case MultiplierType.VictimRelationship:
+                    return "LawAndOrder_Multiplier_VictimRelationship".Translate();
+                case MultiplierType.RaiderWealth:
+                    return "LawAndOrder_Multiplier_RaiderWealth".Translate();
+                case MultiplierType.ColonyWealth:
+                    return "LawAndOrder_Multiplier_ColonyWealth".Translate();
+                case MultiplierType.DifficultySetting:
+                    return "LawAndOrder_Multiplier_DifficultySetting".Translate();
+                case MultiplierType.FactionRelations:
+                    return "LawAndOrder_Multiplier_FactionRelations".Translate();
+                default:
+                    return type.ToString();
+            }
+        }
+
         private void DrawCrimesUI(Rect inRect)
         {
             // Reserve space for commit/cancel buttons at the bottom
@@ -1428,6 +1459,7 @@ namespace Law_and_Order.Source.UI
 
         private void DrawCrimeList(Rect rect)
         {
+            var crimeManager = WorldComponent_CrimePenaltyManager.Instance;
             Widgets.DrawMenuSection(rect);
 
             Rect innerRect = rect.ContractedBy(10f);
@@ -1448,7 +1480,7 @@ namespace Law_and_Order.Source.UI
             // Build or rebuild tree if needed
             if (crimeTreeNeedsRebuild || crimeCategoryTree == null)
             {
-                crimeCategoryTree = CrimeCategoryTreeBuilder.BuildCategoryTree();
+                crimeCategoryTree = CrimeCategoryTreeBuilder.BuildCategoryTree(crimeManager.CrimeDefinitions);
                 crimeTreeNeedsRebuild = false;
             }
 
@@ -1482,8 +1514,7 @@ namespace Law_and_Order.Source.UI
             Text.Anchor = TextAnchor.UpperLeft;
             Rect countRect = new Rect(rect.x + 10f, rect.yMax - 25f, rect.width - 20f, 20f);
 
-            var crimeManager = WorldComponent_CrimePenaltyManager.Instance;
-            int totalCrimes = crimeManager.GetAllCrimes().Count();
+            int totalCrimes = crimeManager.CrimeDefinitions.Count();
             Widgets.Label(countRect, $"{"LawAndOrder_CrimesCount".Translate()}: {totalCrimes}");
             Text.Font = GameFont.Small;
         }
@@ -1534,8 +1565,8 @@ namespace Law_and_Order.Source.UI
                 Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.MiddleLeft;
 
-                string categoryLabel = node.categoryLabel;
-                int crimeCount = node.GetCrimeCount();
+                string categoryLabel = node.GetLabel();
+                int crimeCount = node.GetTotalCrimeCount();
 
                 string label = $"{categoryLabel} ({crimeCount})";
 
@@ -1551,9 +1582,9 @@ namespace Law_and_Order.Source.UI
             else if (node.IsCrime)
             {
                 // Draw crime
-                CrimeDefinition crime = node.crime;
+                CrimeDefinition crime = node.crimeDefinition;
                 bool isSelected = selectedCrime == crime;
-                bool hasPendingChange = crime.HasPendingChanges();
+                bool hasPendingChange = crime.hasPendingChanges;
 
                 // Highlight pending changes with a special color
                 if (hasPendingChange)
@@ -1586,8 +1617,8 @@ namespace Law_and_Order.Source.UI
                     }
                     else
                     {
-                        crimeMinPenaltyInput = crime.defaultMinPenalty.ToString();
-                        crimeMaxPenaltyInput = crime.defaultMaxPenalty.ToString();
+                        crimeMinPenaltyInput = crime.minPenalty.ToString();
+                        crimeMaxPenaltyInput = crime.maxPenalty.ToString();
                     }
 
                     SoundDefOf.Click.PlayOneShotOnCamera(null);
@@ -1609,7 +1640,7 @@ namespace Law_and_Order.Source.UI
                 }
                 else
                 {
-                    labelText = $"{crime.label} ({crime.defaultMinPenalty}-{crime.defaultMaxPenalty} silver)";
+                    labelText = $"{crime.label} ({crime.minPenalty}-{crime.maxPenalty} silver)";
                 }
 
                 GUI.color = labelColor;
@@ -1705,7 +1736,7 @@ namespace Law_and_Order.Source.UI
 
             string stats = $"{"LawAndOrder_Category".Translate()}: {selectedCrime.category}\n";
             stats += $"{"LawAndOrder_Severity".Translate()}: {selectedCrime.severity}\n";
-            stats += $"Current Range: {selectedCrime.defaultMinPenalty}-{selectedCrime.defaultMaxPenalty} silver";
+            stats += $"Current Range: {selectedCrime.minPenalty}-{selectedCrime.maxPenalty} silver";
 
             Widgets.Label(statsTextRect, stats);
             Text.Anchor = TextAnchor.UpperLeft;
@@ -1713,7 +1744,7 @@ namespace Law_and_Order.Source.UI
             innerRect.yMin += 90f;
 
             // Show pending change indicator if there is one
-            if (selectedCrime.HasPendingChanges())
+            if (selectedCrime.hasPendingChanges)
             {
                 Rect pendingIndicatorRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 30f);
                 Widgets.DrawBoxSolid(pendingIndicatorRect, new Color(1f, 0.8f, 0.2f, 0.3f));
@@ -1758,7 +1789,7 @@ namespace Law_and_Order.Source.UI
                     minPenalty > 0 && maxPenalty >= minPenalty)
                 {
                     // Stage the change
-                    selectedCrime.StageChange(minPenalty, maxPenalty);
+                    selectedCrime.StagePenaltyChange(minPenalty, maxPenalty);
                     Messages.Message(
                         $"{selectedCrime.label} update staged (not yet committed)",
                         MessageTypeDefOf.NeutralEvent
@@ -1776,14 +1807,14 @@ namespace Law_and_Order.Source.UI
             innerRect.yMin += buttonHeight + 10f;
 
             // Reset button (cancel pending changes for this crime)
-            if (selectedCrime.HasPendingChanges())
+            if (selectedCrime.hasPendingChanges)
             {
                 Rect resetButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
                 if (Widgets.ButtonText(resetButtonRect, "LawAndOrder_ResetCrime".Translate()))
                 {
                     selectedCrime.ClearPendingChanges();
-                    crimeMinPenaltyInput = selectedCrime.defaultMinPenalty.ToString();
-                    crimeMaxPenaltyInput = selectedCrime.defaultMaxPenalty.ToString();
+                    crimeMinPenaltyInput = selectedCrime.minPenalty.ToString();
+                    crimeMaxPenaltyInput = selectedCrime.maxPenalty.ToString();
                     Messages.Message(
                         $"{selectedCrime.label} reset to current values",
                         MessageTypeDefOf.NeutralEvent
@@ -1801,7 +1832,7 @@ namespace Law_and_Order.Source.UI
             // Header with category name
             Text.Font = GameFont.Medium;
             Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 32f);
-            Widgets.Label(headerRect, selectedCrimeCategory.categoryLabel);
+            Widgets.Label(headerRect, selectedCrimeCategory.GetLabel());
             Text.Font = GameFont.Small;
 
             innerRect.yMin += 40f;
@@ -1814,7 +1845,7 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            int totalCrimes = selectedCrimeCategory.GetCrimeCount();
+            int totalCrimes = selectedCrimeCategory.GetTotalCrimeCount();
 
             string stats = $"{"LawAndOrder_TotalCrimes".Translate()}: {totalCrimes}";
 
@@ -1862,11 +1893,11 @@ namespace Law_and_Order.Source.UI
                     int count = 0;
                     foreach (var crime in crimes)
                     {
-                        crime.StageChange(minPenalty, maxPenalty);
+                        crime.StagePenaltyChange(minPenalty, maxPenalty);
                         count++;
                     }
                     Messages.Message(
-                        $"{count} crimes in {selectedCrimeCategory.categoryLabel} staged for update (not yet committed)",
+                        $"{count} crimes in {selectedCrimeCategory.GetLabel()} staged for update (not yet committed)",
                         MessageTypeDefOf.PositiveEvent
                     );
                 }
@@ -1905,7 +1936,7 @@ namespace Law_and_Order.Source.UI
 
             // Get all multipliers
             var crimeManager = WorldComponent_CrimePenaltyManager.Instance;
-            var multipliers = crimeManager.GetAllMultipliers().ToList();
+            var multipliers = crimeManager.PenaltyMultipliers.ToList();
 
             // Draw multipliers list
             float rowHeight = 50f;
@@ -1926,7 +1957,7 @@ namespace Law_and_Order.Source.UI
         private void DrawMultiplierRow(Rect rect, CrimePenaltyMultiplier multiplier)
         {
             bool isSelected = selectedMultiplier == multiplier;
-            bool hasPendingChange = multiplier.HasPendingChanges();
+            bool hasPendingChange = multiplier.hasPendingChanges;
 
             // Highlight pending changes with a special color
             if (hasPendingChange)
@@ -1953,7 +1984,7 @@ namespace Law_and_Order.Source.UI
             Text.Anchor = TextAnchor.UpperLeft;
             Rect nameRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 20f);
 
-            string labelText = multiplier.label;
+            string labelText = GetMultiplierLabel(multiplier.multiplierType);
             if (hasPendingChange)
             {
                 GUI.color = new Color(1f, 0.8f, 0.2f);
@@ -1968,9 +1999,9 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Tiny;
 
             float displayValue = hasPendingChange ? multiplier.pendingMultiplierValue : multiplier.multiplierValue;
-            string valueText = multiplier.isEnabled ? $"Value: {displayValue:F2}x" : "Disabled";
+            string valueText = multiplier.enabled ? $"Value: {displayValue:F2}x" : "Disabled";
 
-            GUI.color = multiplier.isEnabled ? Color.white : new Color(0.6f, 0.6f, 0.6f);
+            GUI.color = multiplier.enabled ? Color.white : new Color(0.6f, 0.6f, 0.6f);
             Widgets.Label(valueRect, valueText);
             GUI.color = Color.white;
 
@@ -2004,7 +2035,7 @@ namespace Law_and_Order.Source.UI
             // Header with multiplier name
             Text.Font = GameFont.Medium;
             Rect headerRect = new Rect(innerRect.x, innerRect.y, innerRect.width - 100f, 32f);
-            Widgets.Label(headerRect, selectedMultiplier.label);
+            Widgets.Label(headerRect, GetMultiplierLabel(selectedMultiplier.multiplierType));
             Text.Font = GameFont.Small;
 
             // Back button
@@ -2038,7 +2069,7 @@ namespace Law_and_Order.Source.UI
 
             string stats = $"Type: {selectedMultiplier.multiplierType}\n";
             stats += $"Current Value: {selectedMultiplier.multiplierValue:F2}x\n";
-            stats += $"Status: {(selectedMultiplier.isEnabled ? "Enabled" : "Disabled")}";
+            stats += $"Status: {(selectedMultiplier.enabled ? "Enabled" : "Disabled")}";
 
             Widgets.Label(statsTextRect, stats);
             Text.Anchor = TextAnchor.UpperLeft;
@@ -2046,7 +2077,7 @@ namespace Law_and_Order.Source.UI
             innerRect.yMin += 70f;
 
             // Show pending change indicator if there is one
-            if (selectedMultiplier.HasPendingChanges())
+            if (selectedMultiplier.hasPendingChanges)
             {
                 Rect pendingIndicatorRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 30f);
                 Widgets.DrawBoxSolid(pendingIndicatorRect, new Color(1f, 0.8f, 0.2f, 0.3f));
@@ -2055,7 +2086,7 @@ namespace Law_and_Order.Source.UI
                 GUI.color = new Color(1f, 0.8f, 0.2f);
 
                 string pendingText = $"Pending: {selectedMultiplier.pendingMultiplierValue:F2}x";
-                if (!selectedMultiplier.pendingIsEnabled)
+                if (!selectedMultiplier.GetEffectiveEnabled())
                 {
                     pendingText += " (Will be disabled)";
                 }
@@ -2068,7 +2099,7 @@ namespace Law_and_Order.Source.UI
 
             // Enabled checkbox
             Rect checkboxRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 24f);
-            bool currentEnabled = selectedMultiplier.HasPendingChanges() ? selectedMultiplier.pendingIsEnabled : selectedMultiplier.isEnabled;
+            bool currentEnabled = selectedMultiplier.hasPendingChanges ? selectedMultiplier.GetEffectiveEnabled() : selectedMultiplier.enabled;
             bool newEnabled = currentEnabled;
             Widgets.CheckboxLabeled(checkboxRect, "LawAndOrder_Enabled".Translate(), ref newEnabled);
 
@@ -2092,9 +2123,9 @@ namespace Law_and_Order.Source.UI
                 if (float.TryParse(multiplierValueInput, out float value) && value >= 0)
                 {
                     // Stage the change
-                    selectedMultiplier.StageChange(value, newEnabled);
+                    selectedMultiplier.StageMultiplierChange(value); selectedMultiplier.StageEnabledChange(newEnabled);
                     Messages.Message(
-                        $"{selectedMultiplier.label} update staged (not yet committed)",
+                        $"{GetMultiplierLabel(selectedMultiplier.multiplierType)} update staged (not yet committed)",
                         MessageTypeDefOf.NeutralEvent
                     );
                 }
@@ -2110,7 +2141,7 @@ namespace Law_and_Order.Source.UI
             innerRect.yMin += buttonHeight + 10f;
 
             // Reset button (cancel pending changes for this multiplier)
-            if (selectedMultiplier.HasPendingChanges())
+            if (selectedMultiplier.hasPendingChanges)
             {
                 Rect resetButtonRect = new Rect(innerRect.x, innerRect.y, innerRect.width, buttonHeight);
                 if (Widgets.ButtonText(resetButtonRect, "LawAndOrder_ResetMultiplier".Translate()))
@@ -2118,7 +2149,7 @@ namespace Law_and_Order.Source.UI
                     selectedMultiplier.ClearPendingChanges();
                     multiplierValueInput = selectedMultiplier.multiplierValue.ToString("F2");
                     Messages.Message(
-                        $"{selectedMultiplier.label} reset to current value",
+                        $"{GetMultiplierLabel(selectedMultiplier.multiplierType)} reset to current value",
                         MessageTypeDefOf.NeutralEvent
                     );
                 }
@@ -2190,8 +2221,8 @@ namespace Law_and_Order.Source.UI
             }
 
             // Count pending changes
-            int pendingCount = crimeManager.GetAllCrimes().Count(c => c.HasPendingChanges()) +
-                               crimeManager.GetAllMultipliers().Count(m => m.HasPendingChanges());
+            int pendingCount = crimeManager.CrimeDefinitions.Count(c => c.hasPendingChanges) +
+                               crimeManager.PenaltyMultipliers.Count(m => m.hasPendingChanges);
 
             // Only show buttons if there are pending changes or show status message
             if (pendingCount == 0 && !isInLockout && !isGodMode)
@@ -2287,27 +2318,27 @@ namespace Law_and_Order.Source.UI
             int multiplierCount = 0;
 
             // Commit all pending crime changes
-            foreach (var crime in crimeManager.GetAllCrimes())
+            foreach (var crime in crimeManager.CrimeDefinitions)
             {
-                if (crime.HasPendingChanges())
+                if (crime.hasPendingChanges)
                 {
-                    crime.CommitChanges();
+                    crime.CommitPendingChanges();
                     crimeCount++;
                 }
             }
 
             // Commit all pending multiplier changes
-            foreach (var multiplier in crimeManager.GetAllMultipliers())
+            foreach (var multiplier in crimeManager.PenaltyMultipliers)
             {
-                if (multiplier.HasPendingChanges())
+                if (multiplier.hasPendingChanges)
                 {
-                    multiplier.CommitChanges();
+                    multiplier.CommitPendingChanges();
                     multiplierCount++;
                 }
             }
 
             // Record the commit to start lockout period
-            crimeManager.RecordCommit();
+            crimeManager.CommitAllPendingChanges();
 
             // Rebuild tree to show updated values
             crimeTreeNeedsRebuild = true;
@@ -2340,9 +2371,9 @@ namespace Law_and_Order.Source.UI
             int count = 0;
 
             // Cancel all pending crime changes
-            foreach (var crime in crimeManager.GetAllCrimes())
+            foreach (var crime in crimeManager.CrimeDefinitions)
             {
-                if (crime.HasPendingChanges())
+                if (crime.hasPendingChanges)
                 {
                     crime.ClearPendingChanges();
                     count++;
@@ -2350,9 +2381,9 @@ namespace Law_and_Order.Source.UI
             }
 
             // Cancel all pending multiplier changes
-            foreach (var multiplier in crimeManager.GetAllMultipliers())
+            foreach (var multiplier in crimeManager.PenaltyMultipliers)
             {
-                if (multiplier.HasPendingChanges())
+                if (multiplier.hasPendingChanges)
                 {
                     multiplier.ClearPendingChanges();
                     count++;
@@ -2364,3 +2395,6 @@ namespace Law_and_Order.Source.UI
         }
     }
 }
+
+
+

@@ -181,4 +181,29 @@
   <LawAndOrder_ResetMultiplier>Reset to Current</LawAndOrder_ResetMultiplier>
   <LawAndOrder_InvalidMultiplierValue>Invalid multiplier value. Must be a non-negative number.</LawAndOrder_InvalidMultiplierValue>
 
+  <!-- Crime Categories -->
+  <LawAndOrder_CrimeCategory_Lethal>Lethal</LawAndOrder_CrimeCategory_Lethal>
+  <LawAndOrder_CrimeCategory_SevereInjury>Severe Injury</LawAndOrder_CrimeCategory_SevereInjury>
+  <LawAndOrder_CrimeCategory_ModerateInjury>Moderate Injury</LawAndOrder_CrimeCategory_ModerateInjury>
+  <LawAndOrder_CrimeCategory_MinorInjury>Minor Injury</LawAndOrder_CrimeCategory_MinorInjury>
+  <LawAndOrder_CrimeCategory_Environmental>Environmental</LawAndOrder_CrimeCategory_Environmental>
+  <LawAndOrder_CrimeCategory_Disease>Disease</LawAndOrder_CrimeCategory_Disease>
+  <LawAndOrder_CrimeCategory_PropertyDestruction>Property Destruction</LawAndOrder_CrimeCategory_PropertyDestruction>
+  <LawAndOrder_CrimeCategory_Theft>Theft</LawAndOrder_CrimeCategory_Theft>
+  <LawAndOrder_CrimeCategory_Social>Social</LawAndOrder_CrimeCategory_Social>
+  <LawAndOrder_CrimeCategory_Anomaly>Anomaly</LawAndOrder_CrimeCategory_Anomaly>
+  <LawAndOrder_CrimeCategory_Biotech>Biotech</LawAndOrder_CrimeCategory_Biotech>
+
+  <!-- Penalty Multipliers -->
+  <LawAndOrder_Multiplier_RepeatOffender>Repeat Offender</LawAndOrder_Multiplier_RepeatOffender>
+  <LawAndOrder_Multiplier_VictimNobility>Victim Nobility</LawAndOrder_Multiplier_VictimNobility>
+  <LawAndOrder_Multiplier_VictimAge>Victim Age (Child)</LawAndOrder_Multiplier_VictimAge>
+  <LawAndOrder_Multiplier_Wartime>Wartime</LawAndOrder_Multiplier_Wartime>
+  <LawAndOrder_Multiplier_Premeditated>Premeditated</LawAndOrder_Multiplier_Premeditated>
+  <LawAndOrder_Multiplier_VictimRelationship>Victim Relationship</LawAndOrder_Multiplier_VictimRelationship>
+  <LawAndOrder_Multiplier_RaiderWealth>Raider Wealth</LawAndOrder_Multiplier_RaiderWealth>
+  <LawAndOrder_Multiplier_ColonyWealth>Colony Wealth</LawAndOrder_Multiplier_ColonyWealth>
+  <LawAndOrder_Multiplier_DifficultySetting>Difficulty Setting</LawAndOrder_Multiplier_DifficultySetting>
+  <LawAndOrder_Multiplier_FactionRelations>Faction Relations</LawAndOrder_Multiplier_FactionRelations>
+
 </LanguageData>
