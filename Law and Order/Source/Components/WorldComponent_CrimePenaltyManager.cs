@@ -239,29 +239,29 @@ namespace LawAndOrder
             crimeDefinitions.Add(new CrimeDefinition("Vaporization", "LawAndOrder_Crime_Vaporization".Translate(), "LawAndOrder_Crime_Vaporization_Desc".Translate(), CrimeSeverity.Critical, 2000, 4000, CrimeCategory.Lethal));
 
             // CRIMES AGAINST PERSONS - SEVERE INJURY
-            crimeDefinitions.Add(new CrimeDefinition("LimbDestruction", "LawAndOrder_Crime_LimbDestruction".Translate(), "LawAndOrder_Crime_LimbDestruction_Desc".Translate(), CrimeSeverity.High, 1500, 3000, CrimeCategory.SevereInjury));
-            crimeDefinitions.Add(new CrimeDefinition("EyeDestruction", "LawAndOrder_Crime_EyeDestruction".Translate(), "LawAndOrder_Crime_EyeDestruction_Desc".Translate(), CrimeSeverity.High, 1200, 2500, CrimeCategory.SevereInjury));
-            crimeDefinitions.Add(new CrimeDefinition("MajorOrganDamage", "LawAndOrder_Crime_MajorOrganDamage".Translate(), "LawAndOrder_Crime_MajorOrganDamage_Desc".Translate(), CrimeSeverity.High, 1000, 2000, CrimeCategory.SevereInjury));
-            crimeDefinitions.Add(new CrimeDefinition("SevereBurns", "LawAndOrder_Crime_SevereBurns".Translate(), "LawAndOrder_Crime_SevereBurns_Desc".Translate(), CrimeSeverity.High, 800, 1500, CrimeCategory.SevereInjury));
-            crimeDefinitions.Add(new CrimeDefinition("MajorBloodLoss", "LawAndOrder_Crime_MajorBloodLoss".Translate(), "LawAndOrder_Crime_MajorBloodLoss_Desc".Translate(), CrimeSeverity.High, 800, 1200, CrimeCategory.SevereInjury));
-            crimeDefinitions.Add(new CrimeDefinition("SpineInjury", "LawAndOrder_Crime_SpineInjury".Translate(), "LawAndOrder_Crime_SpineInjury_Desc".Translate(), CrimeSeverity.High, 1500, 3000, CrimeCategory.SevereInjury));
+            crimeDefinitions.Add(new CrimeDefinition("LimbDestruction", "LawAndOrder_Crime_LimbDestruction".Translate(), "LawAndOrder_Crime_LimbDestruction_Desc".Translate(), CrimeSeverity.High, 800, 1800, CrimeCategory.SevereInjury));
+            crimeDefinitions.Add(new CrimeDefinition("EyeDestruction", "LawAndOrder_Crime_EyeDestruction".Translate(), "LawAndOrder_Crime_EyeDestruction_Desc".Translate(), CrimeSeverity.High, 700, 1500, CrimeCategory.SevereInjury));
+            crimeDefinitions.Add(new CrimeDefinition("MajorOrganDamage", "LawAndOrder_Crime_MajorOrganDamage".Translate(), "LawAndOrder_Crime_MajorOrganDamage_Desc".Translate(), CrimeSeverity.High, 600, 1200, CrimeCategory.SevereInjury));
+            crimeDefinitions.Add(new CrimeDefinition("SevereBurns", "LawAndOrder_Crime_SevereBurns".Translate(), "LawAndOrder_Crime_SevereBurns_Desc".Translate(), CrimeSeverity.High, 400, 900, CrimeCategory.SevereInjury));
+            crimeDefinitions.Add(new CrimeDefinition("MajorBloodLoss", "LawAndOrder_Crime_MajorBloodLoss".Translate(), "LawAndOrder_Crime_MajorBloodLoss_Desc".Translate(), CrimeSeverity.High, 400, 800, CrimeCategory.SevereInjury));
+            crimeDefinitions.Add(new CrimeDefinition("SpineInjury", "LawAndOrder_Crime_SpineInjury".Translate(), "LawAndOrder_Crime_SpineInjury_Desc".Translate(), CrimeSeverity.High, 800, 1800, CrimeCategory.SevereInjury));
 
             // CRIMES AGAINST PERSONS - MODERATE INJURY
-            crimeDefinitions.Add(new CrimeDefinition("GunshotWound", "LawAndOrder_Crime_GunshotWound".Translate(), "LawAndOrder_Crime_GunshotWound_Desc".Translate(), CrimeSeverity.Moderate, 400, 800, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("StabWound", "LawAndOrder_Crime_StabWound".Translate(), "LawAndOrder_Crime_StabWound_Desc".Translate(), CrimeSeverity.Moderate, 350, 700, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("SlashWound", "LawAndOrder_Crime_SlashWound".Translate(), "LawAndOrder_Crime_SlashWound_Desc".Translate(), CrimeSeverity.Moderate, 300, 600, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("BluntTrauma", "LawAndOrder_Crime_BluntTrauma".Translate(), "LawAndOrder_Crime_BluntTrauma_Desc".Translate(), CrimeSeverity.Moderate, 300, 600, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("BiteWound", "LawAndOrder_Crime_BiteWound".Translate(), "LawAndOrder_Crime_BiteWound_Desc".Translate(), CrimeSeverity.Moderate, 250, 500, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("ExplosiveInjury", "LawAndOrder_Crime_ExplosiveInjury".Translate(), "LawAndOrder_Crime_ExplosiveInjury_Desc".Translate(), CrimeSeverity.Moderate, 500, 1000, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("ArrowWound", "LawAndOrder_Crime_ArrowWound".Translate(), "LawAndOrder_Crime_ArrowWound_Desc".Translate(), CrimeSeverity.Moderate, 300, 600, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("ModerateBurns", "LawAndOrder_Crime_ModerateBurns".Translate(), "LawAndOrder_Crime_ModerateBurns_Desc".Translate(), CrimeSeverity.Moderate, 400, 800, CrimeCategory.ModerateInjury));
-            crimeDefinitions.Add(new CrimeDefinition("Frostbite", "LawAndOrder_Crime_Frostbite".Translate(), "LawAndOrder_Crime_Frostbite_Desc".Translate(), CrimeSeverity.Moderate, 300, 600, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("GunshotWound", "LawAndOrder_Crime_GunshotWound".Translate(), "LawAndOrder_Crime_GunshotWound_Desc".Translate(), CrimeSeverity.Moderate, 150, 350, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("StabWound", "LawAndOrder_Crime_StabWound".Translate(), "LawAndOrder_Crime_StabWound_Desc".Translate(), CrimeSeverity.Moderate, 130, 300, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("SlashWound", "LawAndOrder_Crime_SlashWound".Translate(), "LawAndOrder_Crime_SlashWound_Desc".Translate(), CrimeSeverity.Moderate, 120, 280, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("BluntTrauma", "LawAndOrder_Crime_BluntTrauma".Translate(), "LawAndOrder_Crime_BluntTrauma_Desc".Translate(), CrimeSeverity.Moderate, 120, 280, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("BiteWound", "LawAndOrder_Crime_BiteWound".Translate(), "LawAndOrder_Crime_BiteWound_Desc".Translate(), CrimeSeverity.Moderate, 100, 220, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("ExplosiveInjury", "LawAndOrder_Crime_ExplosiveInjury".Translate(), "LawAndOrder_Crime_ExplosiveInjury_Desc".Translate(), CrimeSeverity.Moderate, 200, 450, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("ArrowWound", "LawAndOrder_Crime_ArrowWound".Translate(), "LawAndOrder_Crime_ArrowWound_Desc".Translate(), CrimeSeverity.Moderate, 120, 280, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("ModerateBurns", "LawAndOrder_Crime_ModerateBurns".Translate(), "LawAndOrder_Crime_ModerateBurns_Desc".Translate(), CrimeSeverity.Moderate, 150, 350, CrimeCategory.ModerateInjury));
+            crimeDefinitions.Add(new CrimeDefinition("Frostbite", "LawAndOrder_Crime_Frostbite".Translate(), "LawAndOrder_Crime_Frostbite_Desc".Translate(), CrimeSeverity.Moderate, 120, 280, CrimeCategory.ModerateInjury));
 
             // CRIMES AGAINST PERSONS - MINOR INJURY
-            crimeDefinitions.Add(new CrimeDefinition("Scratch", "LawAndOrder_Crime_Scratch".Translate(), "LawAndOrder_Crime_Scratch_Desc".Translate(), CrimeSeverity.Low, 100, 200, CrimeCategory.MinorInjury));
-            crimeDefinitions.Add(new CrimeDefinition("Bruise", "LawAndOrder_Crime_Bruise".Translate(), "LawAndOrder_Crime_Bruise_Desc".Translate(), CrimeSeverity.Low, 50, 150, CrimeCategory.MinorInjury));
-            crimeDefinitions.Add(new CrimeDefinition("MinorBurns", "LawAndOrder_Crime_MinorBurns".Translate(), "LawAndOrder_Crime_MinorBurns_Desc".Translate(), CrimeSeverity.Low, 150, 300, CrimeCategory.MinorInjury));
-            crimeDefinitions.Add(new CrimeDefinition("SuperficialWound", "LawAndOrder_Crime_SuperficialWound".Translate(), "LawAndOrder_Crime_SuperficialWound_Desc".Translate(), CrimeSeverity.Low, 100, 250, CrimeCategory.MinorInjury));
+            crimeDefinitions.Add(new CrimeDefinition("Scratch", "LawAndOrder_Crime_Scratch".Translate(), "LawAndOrder_Crime_Scratch_Desc".Translate(), CrimeSeverity.Low, 30, 80, CrimeCategory.MinorInjury));
+            crimeDefinitions.Add(new CrimeDefinition("Bruise", "LawAndOrder_Crime_Bruise".Translate(), "LawAndOrder_Crime_Bruise_Desc".Translate(), CrimeSeverity.Low, 20, 60, CrimeCategory.MinorInjury));
+            crimeDefinitions.Add(new CrimeDefinition("MinorBurns", "LawAndOrder_Crime_MinorBurns".Translate(), "LawAndOrder_Crime_MinorBurns_Desc".Translate(), CrimeSeverity.Low, 40, 100, CrimeCategory.MinorInjury));
+            crimeDefinitions.Add(new CrimeDefinition("SuperficialWound", "LawAndOrder_Crime_SuperficialWound".Translate(), "LawAndOrder_Crime_SuperficialWound_Desc".Translate(), CrimeSeverity.Low, 30, 80, CrimeCategory.MinorInjury));
 
             // ENVIRONMENTAL/SPECIAL ATTACKS
             crimeDefinitions.Add(new CrimeDefinition("Arson", "LawAndOrder_Crime_Arson".Translate(), "LawAndOrder_Crime_Arson_Desc".Translate(), CrimeSeverity.High, 1000, 2000, CrimeCategory.Environmental));
@@ -327,7 +327,7 @@ namespace LawAndOrder
         private void InitializeDefaultMultipliers()
         {
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.RepeatOffender, 1.5f, "LawAndOrder_Multiplier_RepeatOffender_Desc".Translate(), true));
-            penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.VictimNobility, 3.0f, "LawAndOrder_Multiplier_VictimNobility_Desc".Translate(), true));
+            penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.VictimNobility, 2.0f, "LawAndOrder_Multiplier_VictimNobility_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.VictimAge, 1.5f, "LawAndOrder_Multiplier_VictimAge_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.Wartime, 0.75f, "LawAndOrder_Multiplier_Wartime_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.Premeditated, 1.5f, "LawAndOrder_Multiplier_Premeditated_Desc".Translate(), true));

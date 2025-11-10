@@ -527,6 +527,18 @@ namespace Law_and_Order.Source.Utils
                 }
             }
 
+            // Cap total multiplier at 4x base penalty to prevent extreme outliers
+            float totalMultiplier = penalty / basePenalty;
+            if (totalMultiplier > 4.0f)
+            {
+                penalty = basePenalty * 4.0f;
+
+                if (Prefs.DevMode)
+                {
+                    Mod.Log?.Message($"[Law & Order] Penalty capped: {totalMultiplier:F2}x reduced to 4.0x (from {penalty:F0} to {basePenalty * 4.0f:F0} silver)");
+                }
+            }
+
             return penalty;
         }
 
