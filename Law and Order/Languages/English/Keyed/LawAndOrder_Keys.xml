@@ -161,7 +161,6 @@
 
   <!-- Crimes Tab -->
   <LawAndOrder_CrimesTab>Crimes</LawAndOrder_CrimesTab>
-  <LawAndOrder_Crimes>Crimes</LawAndOrder_Crimes>
   <LawAndOrder_CrimesCount>Crimes</LawAndOrder_CrimesCount>
   <LawAndOrder_SelectCrimeOrCategory>Select a crime or category to configure</LawAndOrder_SelectCrimeOrCategory>
   <LawAndOrder_ViewMultipliers>View Penalty Multipliers</LawAndOrder_ViewMultipliers>
@@ -399,9 +398,7 @@
   <LawAndOrder_CrimeCategory_Assault>Assault</LawAndOrder_CrimeCategory_Assault>
   <LawAndOrder_CrimeCategory_Kidnapping>Kidnapping</LawAndOrder_CrimeCategory_Kidnapping>
   <LawAndOrder_CrimeCategory_Arson>Arson</LawAndOrder_CrimeCategory_Arson>
-  <LawAndOrder_CrimeCategory_PropertyDestruction>Property Destruction</LawAndOrder_CrimeCategory_PropertyDestruction>
   <LawAndOrder_CrimeCategory_Vandalism>Vandalism</LawAndOrder_CrimeCategory_Vandalism>
-  <LawAndOrder_CrimeCategory_Theft>Theft</LawAndOrder_CrimeCategory_Theft>
   <LawAndOrder_CrimeCategory_AnimalAbuse>Animal Abuse</LawAndOrder_CrimeCategory_AnimalAbuse>
   <LawAndOrder_CrimeCategory_Trespassing>Trespassing</LawAndOrder_CrimeCategory_Trespassing>
   <LawAndOrder_CrimeCategory_ContrabandPossession>Contraband Possession</LawAndOrder_CrimeCategory_ContrabandPossession>

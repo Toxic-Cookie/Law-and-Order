@@ -237,7 +237,7 @@ namespace Law_and_Order.Source.UI
             var hearing = criminalRecord.Hearing;
 
             Rect hearingInfoRect = new Rect(rect.x, rect.y + yPos, rect.width, 120f);
-            string hearingInfo = "LawAndOrder_ITab_Status".Translate(hearing.status) + "\n";
+            string hearingInfo = string.Format("LawAndOrder_ITab_Status".Translate().ToString(), hearing.status) + "\n";
 
             if (hearing.status == HearingStatus.Completed)
             {
@@ -249,8 +249,8 @@ namespace Law_and_Order.Source.UI
 
                 if (hearing.pleaBargainOutcome != PleaBargainOutcome.NotAttempted)
                 {
-                    hearingInfo += "\n" + "LawAndOrder_ITab_Plea".Translate(hearing.pleaBargainOutcome) + "\n";
-                    hearingInfo += "LawAndOrder_ITab_Roll".Translate(hearing.pleaBargainRoll);
+                    hearingInfo += "\n" + string.Format("LawAndOrder_ITab_Plea".Translate().ToString(), hearing.pleaBargainOutcome) + "\n";
+                    hearingInfo += string.Format("LawAndOrder_ITab_Roll".Translate().ToString(), hearing.pleaBargainRoll);
                 }
             }
             else if (hearing.status == HearingStatus.Scheduled)
