@@ -966,7 +966,7 @@ namespace Law_and_Order.Source.Utils
                     if (targetThing != null)
                     {
                         float itemValue = targetThing.MarketValue * targetThing.stackCount;
-                        return itemValue * 1.5f; // 150% of item value
+                        return itemValue * 1.25f; // 125% of item value
                     }
                     return 100f; // Minimum for unspecified theft
 
@@ -974,7 +974,7 @@ namespace Law_and_Order.Source.Utils
                     // Property destruction based on thing value
                     if (targetThing != null)
                     {
-                        return targetThing.MarketValue * 2.0f; // 200% of property value
+                        return targetThing.MarketValue * 1.5f; // 150% of property value
                     }
                     return 500f; // Default for severe property damage
 
@@ -982,7 +982,7 @@ namespace Law_and_Order.Source.Utils
                     // Vandalism is minor property damage
                     if (targetThing != null)
                     {
-                        return targetThing.MarketValue * 1.0f; // 100% of property value
+                        return targetThing.MarketValue * 0.75f; // 75% of property value
                     }
                     return 200f; // Default for minor damage
 
@@ -990,8 +990,8 @@ namespace Law_and_Order.Source.Utils
                     // Arson - scales with property value destroyed, like property destruction but more severe
                     if (targetThing != null)
                     {
-                        // Use 3x multiplier for arson (more severe than property destruction's 2x)
-                        return targetThing.MarketValue * 3.0f;
+                        // Use 2.5x multiplier for arson (more severe than property destruction's 1.5x)
+                        return targetThing.MarketValue * 2.5f;
                     }
 
                     // No target thing provided - use crime definition system for base penalty
