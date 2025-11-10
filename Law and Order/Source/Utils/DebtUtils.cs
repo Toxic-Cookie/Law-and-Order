@@ -975,8 +975,25 @@ namespace Law_and_Order.Source.Utils
                     return 200f; // Default for minor damage
 
                 case CrimeType.Arson:
-                    // Arson is a serious crime
-                    return 1000f; // Base penalty for arson
+                    // Arson - scales with property value destroyed, like property destruction but more severe
+                    if (targetThing != null)
+                    {
+                        // Use 3x multiplier for arson (more severe than property destruction's 2x)
+                        return targetThing.MarketValue * 3.0f;
+                    }
+
+                    // No target thing provided - use crime definition system for base penalty
+                    var arsonManager = WorldComponent_CrimePenaltyManager.Instance;
+                    if (arsonManager != null)
+                    {
+                        var arsonCrimeDef = arsonManager.GetCrimeDefinition("Arson");
+                        if (arsonCrimeDef != null)
+                        {
+                            // Use average of min and max penalty
+                            return (arsonCrimeDef.minPenalty + arsonCrimeDef.maxPenalty) / 2f;
+                        }
+                    }
+                    return 1500f; // Fallback if crime definition not found
 
                 case CrimeType.Trespassing:
                     // Trespassing - use crime definition system

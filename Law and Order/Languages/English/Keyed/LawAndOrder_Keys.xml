@@ -310,7 +310,7 @@
 
   <!-- Crime Definitions - Environmental -->
   <LawAndOrder_Crime_Arson>Arson</LawAndOrder_Crime_Arson>
-  <LawAndOrder_Crime_Arson_Desc>Using fire as a weapon to burn structures or colonists</LawAndOrder_Crime_Arson_Desc>
+  <LawAndOrder_Crime_Arson_Desc>Using fire as a weapon to burn structures or colonists. Penalty scales with property value (3x multiplier)</LawAndOrder_Crime_Arson_Desc>
   <LawAndOrder_Crime_ToxicGasDeployment>Toxic Gas Deployment</LawAndOrder_Crime_ToxicGasDeployment>
   <LawAndOrder_Crime_ToxicGasDeployment_Desc>Deploying toxic gas weapons</LawAndOrder_Crime_ToxicGasDeployment_Desc>
   <LawAndOrder_Crime_PsychicAttack>Psychic Attack</LawAndOrder_Crime_PsychicAttack>
