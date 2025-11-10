@@ -94,13 +94,35 @@ namespace Law_and_Order.Source.CrimeDetection
                     // Clear tracker periodically to prevent memory leaks
                     ClearDamagedItemsTracker();
 
-                    // Only track if the thing is owned by the player
-                    if (__instance.Faction != Faction.OfPlayer)
+                    // Only track buildings and valuable items (not plants, filth, etc.)
+                    bool isBuilding = __instance is Building || __instance is MinifiedThing;
+                    bool isValuableItem = __instance.def.category == ThingCategory.Item && __instance.MarketValue > 50;
+
+                    if (!(isBuilding || isValuableItem))
                         return;
 
-                    // Only track buildings and valuable items (not plants, filth, etc.)
-                    if (!(__instance is Building || __instance is MinifiedThing ||
-                          (__instance.def.category == ThingCategory.Item && __instance.MarketValue > 50)))
+                    // Check ownership differently for buildings vs items
+                    bool isPlayerOwned = false;
+
+                    if (isBuilding)
+                    {
+                        // Buildings have faction set
+                        isPlayerOwned = __instance.Faction == Faction.OfPlayer;
+                    }
+                    else if (isValuableItem)
+                    {
+                        // Items typically don't have faction, check if they're in player home area or storage
+                        Map map = __instance.Map;
+                        if (map != null)
+                        {
+                            // Check if item is in home area or in any zone
+                            IntVec3 pos = __instance.Position;
+                            isPlayerOwned = map.areaManager.Home[pos] ||
+                                          map.zoneManager.ZoneAt(pos) != null;
+                        }
+                    }
+
+                    if (!isPlayerOwned)
                         return;
 
                     // Get the attacker
