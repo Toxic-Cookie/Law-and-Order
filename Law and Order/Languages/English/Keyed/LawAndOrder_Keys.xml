@@ -410,4 +410,37 @@
   <LawAndOrder_CrimeCategory_ContrabandPossession>Contraband Possession</LawAndOrder_CrimeCategory_ContrabandPossession>
   <LawAndOrder_CrimeCategory_Unknown>Unknown Crime</LawAndOrder_CrimeCategory_Unknown>
 
+  <!-- Phase 5: Enhanced Settings -->
+  <LawAndOrder_Setting_GlobalPenaltyScale_Title>Global Penalty Scale</LawAndOrder_Setting_GlobalPenaltyScale_Title>
+  <LawAndOrder_Setting_GlobalPenaltyScale_Desc>Globally adjust all crime penalties by a percentage. 1.0 = 100% (default), 0.5 = 50% (easier), 2.0 = 200% (harder). Range: 0.25x to 3.0x</LawAndOrder_Setting_GlobalPenaltyScale_Desc>
+
+  <LawAndOrder_Setting_EnableDebtForgiveness_Title>Enable Debt Forgiveness</LawAndOrder_Setting_EnableDebtForgiveness_Title>
+  <LawAndOrder_Setting_EnableDebtForgiveness_Desc>Allow forgiving remaining debt once a prisoner has paid a certain percentage. This provides a way to release reformed prisoners who have shown good behavior.</LawAndOrder_Setting_EnableDebtForgiveness_Desc>
+
+  <LawAndOrder_Setting_DebtForgivenessThreshold_Title>Debt Forgiveness Threshold (%)</LawAndOrder_Setting_DebtForgivenessThreshold_Title>
+  <LawAndOrder_Setting_DebtForgivenessThreshold_Desc>Percentage of total debt that must be paid before debt forgiveness becomes available. Default: 90% (prisoner must pay 90% before remaining 10% can be forgiven)</LawAndOrder_Setting_DebtForgivenessThreshold_Desc>
+
+  <!-- Penalty Breakdown Tooltips -->
+  <LawAndOrder_PenaltyBreakdown_Header>Penalty Calculation Breakdown</LawAndOrder_PenaltyBreakdown_Header>
+  <LawAndOrder_PenaltyBreakdown_Crime>Crime Type: {0}</LawAndOrder_PenaltyBreakdown_Crime>
+  <LawAndOrder_PenaltyBreakdown_BaseRange>Base Range: {0}-{1} silver</LawAndOrder_PenaltyBreakdown_BaseRange>
+  <LawAndOrder_PenaltyBreakdown_Victim>Victim: {0}</LawAndOrder_PenaltyBreakdown_Victim>
+  <LawAndOrder_PenaltyBreakdown_Damage>Damage Dealt: {0}</LawAndOrder_PenaltyBreakdown_Damage>
+  <LawAndOrder_PenaltyBreakdown_Final>Final Penalty: {0} silver</LawAndOrder_PenaltyBreakdown_Final>
+  <LawAndOrder_PenaltyBreakdown_GlobalScale>Global Scale: {0}%</LawAndOrder_PenaltyBreakdown_GlobalScale>
+  <LawAndOrder_PenaltyBreakdown_NotAvailable>Penalty breakdown not available</LawAndOrder_PenaltyBreakdown_NotAvailable>
+  <LawAndOrder_PenaltyBreakdown_Simple>Penalty: {0} silver</LawAndOrder_PenaltyBreakdown_Simple>
+
+  <!-- Debt Forgiveness UI -->
+  <LawAndOrder_ITab_DebtPercentPaid>Paid: {0}%</LawAndOrder_ITab_DebtPercentPaid>
+  <LawAndOrder_ITab_ForgiveDebt>Forgive Remaining Debt</LawAndOrder_ITab_ForgiveDebt>
+  <LawAndOrder_ITab_ForgiveDebt_Tooltip>Requires {0}% debt paid (currently {1}%). Click to forgive all remaining debt and mark the prisoner as reformed.</LawAndOrder_ITab_ForgiveDebt_Tooltip>
+
+  <!-- Debt Forgiveness Messages -->
+  <LawAndOrder_DebtForgiveness_Disabled>Debt forgiveness is disabled in settings</LawAndOrder_DebtForgiveness_Disabled>
+  <LawAndOrder_DebtForgiveness_NoDebt>Prisoner has no outstanding debt</LawAndOrder_DebtForgiveness_NoDebt>
+  <LawAndOrder_DebtForgiveness_BelowThreshold>Only {0}% of debt paid. Must pay {1}% before forgiveness is available.</LawAndOrder_DebtForgiveness_BelowThreshold>
+  <LawAndOrder_DebtForgiveness_Reason>Debt Forgiven</LawAndOrder_DebtForgiveness_Reason>
+  <LawAndOrder_DebtForgiveness_Success>{0}'s remaining debt has been forgiven. They are now free to be released or recruited.</LawAndOrder_DebtForgiveness_Success>
+
 </LanguageData>

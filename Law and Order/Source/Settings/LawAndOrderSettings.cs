@@ -18,6 +18,13 @@ namespace Law_and_Order.Source.Settings
         // Labor settings
         public static SettingHandle<float> DefaultSilverPerDay;
 
+        // Penalty settings
+        public static SettingHandle<float> GlobalPenaltyScale;
+
+        // Debt forgiveness settings
+        public static SettingHandle<bool> EnableDebtForgiveness;
+        public static SettingHandle<int> DebtForgivenessThreshold;
+
         // Debug/Logging settings
         public static SettingHandle<LogLevel> LogLevel;
 
@@ -42,6 +49,31 @@ namespace Law_and_Order.Source.Settings
                 "LawAndOrder_Setting_DefaultSilverPerDay_Desc".Translate(),
                 35f,
                 Validators.FloatRangeValidator(1f, 500f)
+            );
+
+            // Penalty settings
+            GlobalPenaltyScale = settings.GetHandle(
+                "GlobalPenaltyScale",
+                "LawAndOrder_Setting_GlobalPenaltyScale_Title".Translate(),
+                "LawAndOrder_Setting_GlobalPenaltyScale_Desc".Translate(),
+                1.0f,
+                Validators.FloatRangeValidator(0.25f, 3.0f)
+            );
+
+            // Debt forgiveness settings
+            EnableDebtForgiveness = settings.GetHandle(
+                "EnableDebtForgiveness",
+                "LawAndOrder_Setting_EnableDebtForgiveness_Title".Translate(),
+                "LawAndOrder_Setting_EnableDebtForgiveness_Desc".Translate(),
+                true
+            );
+
+            DebtForgivenessThreshold = settings.GetHandle(
+                "DebtForgivenessThreshold",
+                "LawAndOrder_Setting_DebtForgivenessThreshold_Title".Translate(),
+                "LawAndOrder_Setting_DebtForgivenessThreshold_Desc".Translate(),
+                90, // 90% debt paid
+                Validators.IntRangeValidator(50, 100)
             );
 
             // Debug/Logging settings
@@ -87,6 +119,9 @@ namespace Law_and_Order.Source.Settings
         {
             ContrabandPerDrug.Value = 50f;
             DefaultSilverPerDay.Value = 35f;
+            GlobalPenaltyScale.Value = 1.0f;
+            EnableDebtForgiveness.Value = true;
+            DebtForgivenessThreshold.Value = 90;
         }
 
         /// <summary>
@@ -102,6 +137,12 @@ namespace Law_and_Order.Source.Settings
 
             // Labor settings
             hadInvalidValues |= ClampSetting(ref DefaultSilverPerDay, 1f, 500f, 35f, "DefaultSilverPerDay");
+
+            // Penalty settings
+            hadInvalidValues |= ClampSetting(ref GlobalPenaltyScale, 0.25f, 3.0f, 1.0f, "GlobalPenaltyScale");
+
+            // Debt forgiveness settings
+            hadInvalidValues |= ClampSettingInt(ref DebtForgivenessThreshold, 50, 100, 90, "DebtForgivenessThreshold");
 
             if (hadInvalidValues)
             {
@@ -130,6 +171,40 @@ namespace Law_and_Order.Source.Settings
                 setting.Value = defaultValue;
                 return true;
             }
+
+            // Clamp to valid range
+            if (originalValue < min)
+            {
+                clampedValue = min;
+            }
+            else if (originalValue > max)
+            {
+                clampedValue = max;
+            }
+
+            if (clampedValue != originalValue)
+            {
+                ModLog.Warning($"Setting '{settingName}' was out of range ({originalValue}), clamped to {clampedValue} (valid range: {min}-{max})");
+                setting.Value = clampedValue;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Clamp an integer setting value to the specified range. Returns true if the value was clamped.
+        /// </summary>
+        private static bool ClampSettingInt(ref SettingHandle<int> setting, int min, int max, int defaultValue, string settingName)
+        {
+            if (setting == null)
+            {
+                ModLog.Error($"Setting '{settingName}' is null during validation");
+                return false;
+            }
+
+            int originalValue = setting.Value;
+            int clampedValue = originalValue;
 
             // Clamp to valid range
             if (originalValue < min)

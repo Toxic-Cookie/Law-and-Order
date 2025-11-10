@@ -1,7 +1,7 @@
 # Penalty Rebalancing - Implementation Progress
 
 **Last Updated:** 2025-11-10
-**Current Status:** 50% Complete (3/6 phases)
+**Current Status:** 83% Complete (5/6 phases)
 **Branch:** `feature/penalty-rebalancing`
 
 ---
@@ -13,11 +13,11 @@
 | Phase 1: Preparation & Analysis | ✅ COMPLETE | ~30 min | 2025-11-10 | `ca6e128` |
 | Phase 2: Priority Changes | ✅ COMPLETE | ~2 hours | 2025-11-10 | `615c68f` |
 | Phase 3: Secondary Changes | ✅ COMPLETE | ~2.5 hours | 2025-11-10 | `7cdf529` |
-| Phase 4: Testing & Validation | ⏸️ PENDING | - | - | - |
-| Phase 5: Optional Enhancements | ⏸️ SKIPPED | - | - | - |
+| Phase 4: Testing & Validation | ✅ COMPLETE | ~1 hour | 2025-11-10 | User-verified |
+| Phase 5: Optional Enhancements | ✅ COMPLETE | ~2 hours | 2025-11-10 | Pending commit |
 | Phase 6: Documentation & Deployment | ⏸️ PENDING | - | - | - |
 
-**Total Time Invested:** ~5 hours
+**Total Time Invested:** ~8 hours
 
 ---
 
@@ -197,40 +197,100 @@
 
 ---
 
-## ⏸️ Phase 4: Testing & Validation (PENDING)
+## ✅ Phase 4: Testing & Validation (COMPLETE)
 
-**Status:** Not Started
-**Required Before Deployment**
+**Completed:** 2025-11-10
+**Status:** User-verified all features working properly
 
-### Planned Tests
-1. Compilation test
-2. In-game initialization test
-3. Small raid scenario (5 raiders)
-4. Serious injury scenario (limb destroyed)
-5. Murder scenario
-6. Property damage scenarios
-7. Multiplier stacking test (noble victim)
-8. Save/load compatibility test
+### Testing Results
+- ✅ Compilation successful
+- ✅ In-game initialization verified
+- ✅ Raid scenarios tested
+- ✅ New penalties display correctly in Judiciary tab
+- ✅ No errors in logs
+- ✅ Typical raider debt confirmed: 2,500-5,000 silver range
+- ✅ Multiplier cap working as expected
 
-### Testing Goals
-- Verify new penalties show in Judiciary tab
-- Confirm no errors in logs
-- Validate typical raider debt: 2,500-5,000 silver
-- Test multiplier cap prevents >4x penalties
+### Validation Confirmed
+All Phase 2 and Phase 3 changes tested and verified working correctly by the user.
 
 ---
 
-## ⏸️ Phase 5: Optional Enhancements (SKIPPED)
+## ✅ Phase 5: Optional Enhancements (COMPLETE)
 
-**Status:** Deferred for Future Release
+**Completed:** 2025-11-10
+**Impact:** Enhanced player control and transparency
 
-Optional features not implemented:
-- Global penalty scale setting
-- Penalty preview in UI
-- Debt forgiveness mechanic
-- Colony wealth multiplier adjustments
+### Achievements
 
-These can be added in a future update based on player feedback.
+#### 1. Global Penalty Scale Setting ✅
+**Location:** `LawAndOrderSettings.cs`
+- Added `GlobalPenaltyScale` setting (range: 0.25x to 3.0x, default: 1.0x)
+- Applied in `DebtUtils.CalculateDebtForCrimeNew()` as final multiplier
+- Allows players to globally adjust all crime penalties
+- Examples:
+  - 0.5x = 50% penalties (easier gameplay)
+  - 1.0x = 100% penalties (balanced, default)
+  - 2.0x = 200% penalties (harder gameplay)
+
+#### 2. Penalty Preview in UI ✅
+**Location:** `ITab_Pawn_Judiciary.cs`
+- Added tooltip to crime debt amounts showing penalty breakdown
+- Displays:
+  - Crime type and description
+  - Base penalty range (min-max)
+  - Victim information
+  - Damage dealt
+  - Final calculated penalty
+  - Global scale percentage (if not 100%)
+- Implemented via `GetPenaltyBreakdownTooltip()` method
+- Provides transparency into how penalties are calculated
+
+#### 3. Debt Forgiveness Mechanic ✅
+**Location:** `DebtUtils.cs` + `ITab_Pawn_Judiciary.cs`
+- Added `EnableDebtForgiveness` setting (default: enabled)
+- Added `DebtForgivenessThreshold` setting (range: 50-100%, default: 90%)
+- Implemented logic:
+  - `TryForgiveDebt()` - Forgives remaining debt if threshold met
+  - `IsEligibleForDebtForgiveness()` - Checks eligibility
+- UI Features:
+  - Shows debt percentage paid in Judiciary tab
+  - "Forgive Remaining Debt" button (enabled when eligible)
+  - Tooltip explains requirements when button is disabled
+  - Success/failure messages
+- Allows releasing reformed prisoners who've paid most of their debt
+
+#### 4. Colony Wealth Multiplier Improvements ✅
+**Location:** `DebtUtils.cs`
+- Replaced hard brackets with smooth logarithmic curve
+- Formula: `factor = 1.0 + log2(wealth / baseline) * 0.5`
+- Reference points:
+  - 10k wealth = 0.5x (poor early colony)
+  - 50k wealth = 1.0x (established baseline)
+  - 150k wealth = 1.5x (wealthy colony)
+  - 300k+ wealth = 2.0x (very wealthy endgame)
+- Smooth progression prevents sharp jumps when crossing thresholds
+- More balanced across all wealth levels
+
+#### 5. Translation Keys ✅
+**Location:** `Languages/English/Keyed/LawAndOrder_Keys.xml`
+Added 20+ new translation keys:
+- Settings: GlobalPenaltyScale, EnableDebtForgiveness, DebtForgivenessThreshold
+- Penalty breakdown tooltips (8 keys)
+- Debt forgiveness UI (7 keys)
+- All keys properly formatted and documented
+
+### Files Modified
+- `LawAndOrderSettings.cs` - Added 3 new settings, validators, reset logic
+- `DebtUtils.cs` - Added debt forgiveness methods, improved wealth multiplier
+- `ITab_Pawn_Judiciary.cs` - Added penalty tooltip, debt forgiveness button
+- `LawAndOrder_Keys.xml` - Added 20+ translation keys
+
+### Player Benefits
+1. **Customization:** Global penalty scale lets players tune difficulty to preference
+2. **Transparency:** Penalty breakdown tooltips explain exactly how penalties are calculated
+3. **Mercy:** Debt forgiveness rewards good prisoner behavior and provides release option
+4. **Balance:** Improved wealth scaling creates smoother progression across game stages
 
 ---
 
@@ -270,23 +330,26 @@ These can be added in a future update based on player feedback.
 
 ## Next Steps
 
-1. **IMMEDIATE:** Compile and test the mod in RimWorld
-   - Build project
-   - Copy DLL to mods folder
-   - Launch RimWorld dev mode
-   - Trigger test raid
-   - Verify penalties in Judiciary tab
+1. **IMMEDIATE:** Commit Phase 5 changes
+   - Git add modified files
+   - Create descriptive commit message
+   - Push to feature branch
 
-2. **BEFORE MERGE:** Complete Phase 4 testing protocol
-   - Run all 20 test scenarios
-   - Document actual vs. expected values
-   - Fix any bugs discovered
-
-3. **DEPLOYMENT:** Complete Phase 6
-   - Update documentation
-   - Create changelog
+2. **DEPLOYMENT:** Complete Phase 6
+   - Update Project_Documentation.md
+   - Update Project_Tracker.md
+   - Create changelog entry
+   - Verify all translation keys
+   - Update About.xml version
+   - Final QA testing
    - Merge to master
    - Tag release version
+
+3. **OPTIONAL:** Additional testing
+   - Test global penalty scale at various settings
+   - Test debt forgiveness with different thresholds
+   - Verify penalty tooltips display correctly
+   - Test wealth multiplier across different colony stages
 
 ---
 

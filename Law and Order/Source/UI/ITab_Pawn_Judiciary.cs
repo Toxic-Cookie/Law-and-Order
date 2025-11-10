@@ -162,6 +162,14 @@ namespace Law_and_Order.Source.UI
                 Text.Anchor = TextAnchor.UpperRight;
                 GUI.color = new Color(0.9f, 0.6f, 0.2f);
                 Widgets.Label(debtRect, $"{crimeDebt:F0}§");
+
+                // Add penalty breakdown tooltip
+                string penaltyTooltip = GetPenaltyBreakdownTooltip(crime);
+                if (!string.IsNullOrEmpty(penaltyTooltip))
+                {
+                    TooltipHandler.TipRegion(debtRect, penaltyTooltip);
+                }
+
                 GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
             }
@@ -206,10 +214,49 @@ namespace Law_and_Order.Source.UI
                 GUI.color = Color.white;
                 debtInfo += "LawAndOrder_ITab_DebtTotalOwed".Translate(debtRecord.TotalDebtOwed.ToString("F0")) + "\n";
                 debtInfo += "LawAndOrder_ITab_DebtTotalPaid".Translate(debtRecord.TotalDebtPaid.ToString("F0")) + "\n";
+
+                // Calculate percent paid
+                float totalDebt = debtRecord.TotalDebtOwed;
+                float paidDebt = debtRecord.TotalDebtPaid;
+                float percentPaid = totalDebt > 0 ? (paidDebt / totalDebt) * 100f : 0f;
+                debtInfo += string.Format("LawAndOrder_ITab_DebtPercentPaid".Translate(), percentPaid.ToString("F1")) + "\n";
                 debtInfo += "LawAndOrder_ITab_EstLabor".Translate(debtRecord.EstimatedDaysOfLabor());
 
                 Widgets.Label(debtInfoRect, debtInfo);
-                yPos += 90f;
+                yPos += 100f;
+
+                // Debt forgiveness button
+                bool isEligible = DebtUtils.IsEligibleForDebtForgiveness(this.SelPawn);
+                Rect forgivenessButtonRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
+
+                if (isEligible)
+                {
+                    if (Widgets.ButtonText(forgivenessButtonRect, "LawAndOrder_ITab_ForgiveDebt".Translate()))
+                    {
+                        string failReason;
+                        if (DebtUtils.TryForgiveDebt(this.SelPawn, out failReason))
+                        {
+                            Messages.Message("LawAndOrder_DebtForgiveness_Success".Translate(this.SelPawn.LabelShort), MessageTypeDefOf.PositiveEvent);
+                        }
+                        else
+                        {
+                            Messages.Message(failReason, MessageTypeDefOf.RejectInput);
+                        }
+                    }
+                }
+                else
+                {
+                    // Show disabled button with tooltip
+                    GUI.color = new Color(0.5f, 0.5f, 0.5f);
+                    Widgets.ButtonText(forgivenessButtonRect, "LawAndOrder_ITab_ForgiveDebt".Translate());
+                    GUI.color = Color.white;
+
+                    int requiredPercent = Law_and_Order.Source.Settings.LawAndOrderSettings.DebtForgivenessThreshold.Value;
+                    string tooltipText = string.Format("LawAndOrder_ITab_ForgiveDebt_Tooltip".Translate(), requiredPercent, percentPaid.ToString("F1"));
+                    TooltipHandler.TipRegion(forgivenessButtonRect, tooltipText);
+                }
+
+                yPos += 35f;
             }
             else if (debtRecord != null && debtRecord.TotalDebtOwed > 0)
             {
@@ -289,6 +336,66 @@ namespace Law_and_Order.Source.UI
         {
             base.UpdateSize();
             this.size = new Vector2(630f, 450f);
+        }
+
+        /// <summary>
+        /// Get a penalty breakdown tooltip showing how the penalty was calculated
+        /// </summary>
+        private string GetPenaltyBreakdownTooltip(Crime crime)
+        {
+            if (crime == null || crime.debtAmount <= 0)
+            {
+                return null;
+            }
+
+            // Get the crime penalty manager
+            var manager = LawAndOrder.WorldComponent_CrimePenaltyManager.Instance;
+            if (manager == null)
+            {
+                return "LawAndOrder_PenaltyBreakdown_NotAvailable".Translate();
+            }
+
+            // Try to find the crime definition to get base penalty range
+            string crimeDefName = DebtUtils.DetermineCrimeType(null, crime.victim);
+            var crimeDef = manager.GetCrimeDefinition(crimeDefName);
+
+            if (crimeDef == null)
+            {
+                // Fallback tooltip without base penalty info
+                return string.Format("LawAndOrder_PenaltyBreakdown_Simple".Translate(), crime.debtAmount);
+            }
+
+            // Build detailed breakdown
+            System.Text.StringBuilder tooltip = new System.Text.StringBuilder();
+            tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Header".Translate());
+            tooltip.AppendLine();
+            tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Crime".Translate(), crimeDef.label));
+            tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_BaseRange".Translate(), crimeDef.minPenalty, crimeDef.maxPenalty));
+            tooltip.AppendLine();
+
+            // Show victim if applicable
+            if (crime.victim != null)
+            {
+                tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Victim".Translate(), crime.victim.LabelShort));
+            }
+
+            // Show damage if applicable
+            if (crime.damageDealt > 0)
+            {
+                tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Damage".Translate(), crime.damageDealt.ToString("F1")));
+            }
+
+            tooltip.AppendLine();
+            tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Final".Translate(), crime.debtAmount));
+
+            // Show global penalty scale if it's not 1.0
+            var globalScale = Law_and_Order.Source.Settings.LawAndOrderSettings.GlobalPenaltyScale?.Value ?? 1.0f;
+            if (globalScale != 1.0f)
+            {
+                tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_GlobalScale".Translate(), (globalScale * 100).ToString("F0")));
+            }
+
+            return tooltip.ToString();
         }
     }
 }

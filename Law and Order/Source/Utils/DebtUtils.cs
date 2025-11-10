@@ -120,6 +120,76 @@ namespace Law_and_Order.Source.Utils
         }
 
         /// <summary>
+        /// Forgive all remaining debt for a pawn if they've paid the threshold percentage
+        /// </summary>
+        public static bool TryForgiveDebt(Pawn pawn, out string failReason)
+        {
+            failReason = null;
+
+            // Check if debt forgiveness is enabled
+            if (!Law_and_Order.Source.Settings.LawAndOrderSettings.EnableDebtForgiveness.Value)
+            {
+                failReason = "LawAndOrder_DebtForgiveness_Disabled".Translate();
+                return false;
+            }
+
+            var debtRecord = TryGetDebtRecord(pawn);
+            if (debtRecord == null || debtRecord.CurrentDebt <= 0)
+            {
+                failReason = "LawAndOrder_DebtForgiveness_NoDebt".Translate();
+                return false;
+            }
+
+            // Calculate percentage paid
+            float totalDebt = debtRecord.TotalDebtOwed;
+            float paidDebt = debtRecord.TotalDebtPaid;
+            float percentPaid = totalDebt > 0 ? (paidDebt / totalDebt) * 100f : 0f;
+
+            // Check threshold
+            int requiredPercent = Law_and_Order.Source.Settings.LawAndOrderSettings.DebtForgivenessThreshold.Value;
+            if (percentPaid < requiredPercent)
+            {
+                failReason = string.Format("LawAndOrder_DebtForgiveness_BelowThreshold".Translate(), percentPaid.ToString("F1"), requiredPercent);
+                return false;
+            }
+
+            // Forgive the debt
+            float forgivenAmount = debtRecord.CurrentDebt;
+            debtRecord.PayDebt(forgivenAmount, "LawAndOrder_DebtForgiveness_Reason".Translate());
+
+            if (Prefs.DevMode)
+            {
+                Mod.Log?.Message($"[Law & Order] Forgave {forgivenAmount:F0} silver debt for {pawn.LabelShort} ({percentPaid:F1}% of {totalDebt:F0} silver paid)");
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if a pawn is eligible for debt forgiveness
+        /// </summary>
+        public static bool IsEligibleForDebtForgiveness(Pawn pawn)
+        {
+            if (!Law_and_Order.Source.Settings.LawAndOrderSettings.EnableDebtForgiveness.Value)
+            {
+                return false;
+            }
+
+            var debtRecord = TryGetDebtRecord(pawn);
+            if (debtRecord == null || debtRecord.CurrentDebt <= 0)
+            {
+                return false;
+            }
+
+            float totalDebt = debtRecord.TotalDebtOwed;
+            float paidDebt = debtRecord.TotalDebtPaid;
+            float percentPaid = totalDebt > 0 ? (paidDebt / totalDebt) * 100f : 0f;
+
+            int requiredPercent = Law_and_Order.Source.Settings.LawAndOrderSettings.DebtForgivenessThreshold.Value;
+            return percentPaid >= requiredPercent;
+        }
+
+        /// <summary>
         /// Calculate total debt for all crimes in a criminal record.
         /// Uses the pre-calculated debt amounts stored in each Crime object.
         /// </summary>
@@ -677,7 +747,7 @@ namespace Law_and_Order.Source.Utils
 
         /// <summary>
         /// Get colony wealth multiplier factor
-        /// Scales penalties based on how wealthy the colony is
+        /// Scales penalties based on how wealthy the colony is using a smooth logarithmic curve
         /// </summary>
         private static float GetColonyWealthFactor()
         {
@@ -690,28 +760,34 @@ namespace Law_and_Order.Source.Utils
 
             float wealth = map.wealthWatcher.WealthTotal;
 
-            // Scale penalties based on wealth brackets:
-            // < 10k wealth = 0.5x (poor colony)
-            // 10k-50k = 1.0x (normal)
-            // 50k-100k = 1.5x (wealthy)
-            // > 100k = 2.0x (very wealthy)
+            // Use logarithmic scaling for smoother progression
+            // Reference points:
+            // 10k wealth = 0.5x (poor early colony)
+            // 50k wealth = 1.0x (established colony - baseline)
+            // 150k wealth = 1.5x (wealthy colony)
+            // 300k+ wealth = 2.0x (very wealthy endgame colony)
 
-            if (wealth < 10000f)
+            const float baselineWealth = 50000f;
+            const float minMultiplier = 0.5f;
+            const float maxMultiplier = 2.0f;
+
+            if (wealth <= 0)
             {
-                return 0.5f;
+                return minMultiplier;
             }
-            else if (wealth < 50000f)
-            {
-                return 1.0f;
-            }
-            else if (wealth < 100000f)
-            {
-                return 1.5f;
-            }
-            else
-            {
-                return 2.0f;
-            }
+
+            // Logarithmic scaling formula: factor = 1.0 + log2(wealth / baseline) * 0.5
+            // This creates a smooth curve where:
+            // - Doubling wealth from baseline adds +0.5x multiplier
+            // - Halving wealth from baseline subtracts -0.5x multiplier
+            float wealthRatio = wealth / baselineWealth;
+            float logFactor = UnityEngine.Mathf.Log(wealthRatio, 2f) * 0.5f;
+            float multiplier = 1.0f + logFactor;
+
+            // Clamp to min/max range
+            multiplier = UnityEngine.Mathf.Clamp(multiplier, minMultiplier, maxMultiplier);
+
+            return multiplier;
         }
 
         /// <summary>
@@ -941,12 +1017,16 @@ namespace Law_and_Order.Source.Utils
             // Apply multipliers
             float finalPenalty = ApplyMultipliers(basePenalty, manager, criminal, victim, damageInfo);
 
+            // Apply global penalty scale from settings
+            float globalScale = Law_and_Order.Source.Settings.LawAndOrderSettings.GlobalPenaltyScale?.Value ?? 1.0f;
+            finalPenalty *= globalScale;
+
             // Clamp to valid range (1 to 100,000 silver)
             int penalty = UnityEngine.Mathf.Clamp(UnityEngine.Mathf.RoundToInt(finalPenalty), 1, 100000);
 
             if (Prefs.DevMode)
             {
-                Mod.Log?.Message($"[Law & Order] Calculated penalty: {penalty} silver for {crimeDefName} (base: {basePenalty:F0}, final: {finalPenalty:F0})");
+                Mod.Log?.Message($"[Law & Order] Calculated penalty: {penalty} silver for {crimeDefName} (base: {basePenalty:F0}, multipliers: {finalPenalty/basePenalty/globalScale:F2}x, global scale: {globalScale:F2}x, final: {finalPenalty:F0})");
             }
 
             return penalty;
