@@ -905,11 +905,8 @@ namespace Law_and_Order.Source.Utils
             var manager = WorldComponent_CrimePenaltyManager.Instance;
             if (manager == null)
             {
-                if (Prefs.DevMode)
-                {
-                    Mod.Log?.Warning("[Law & Order] CrimePenaltyManager not found, cannot calculate penalty using new system");
-                }
-                return 0f; // Fallback to legacy system handled by caller
+                Mod.Log?.Error("[Law & Order] CrimePenaltyManager not found, cannot calculate penalty. This should never happen.");
+                return 0f;
             }
 
             // Determine crime type if not provided
@@ -922,11 +919,8 @@ namespace Law_and_Order.Source.Utils
             var crimeDef = manager.GetCrimeDefinition(crimeDefName);
             if (crimeDef == null)
             {
-                if (Prefs.DevMode)
-                {
-                    Mod.Log?.Warning($"[Law & Order] Crime definition '{crimeDefName}' not found in manager");
-                }
-                return 0f; // Fallback to legacy system
+                Mod.Log?.Error($"[Law & Order] Crime definition '{crimeDefName}' not found in manager. Crime will not be penalized.");
+                return 0f;
             }
 
             // Calculate base penalty within range
@@ -944,6 +938,66 @@ namespace Law_and_Order.Source.Utils
             }
 
             return penalty;
+        }
+
+        /// <summary>
+        /// Calculate debt for crimes that don't involve direct victim damage
+        /// (Theft, Trespassing, Contraband, Property Destruction, etc.)
+        /// </summary>
+        public static float CalculateDebtForNonVictimCrime(Pawn criminal, CrimeType crimeType, Thing targetThing = null)
+        {
+            // Base penalties for non-victim crimes
+            switch (crimeType)
+            {
+                case CrimeType.Theft:
+                    // Theft penalty based on item value
+                    if (targetThing != null)
+                    {
+                        float itemValue = targetThing.MarketValue * targetThing.stackCount;
+                        return itemValue * 1.5f; // 150% of item value
+                    }
+                    return 100f; // Minimum for unspecified theft
+
+                case CrimeType.PropertyDestruction:
+                    // Property destruction based on thing value
+                    if (targetThing != null)
+                    {
+                        return targetThing.MarketValue * 2.0f; // 200% of property value
+                    }
+                    return 500f; // Default for severe property damage
+
+                case CrimeType.Vandalism:
+                    // Vandalism is minor property damage
+                    if (targetThing != null)
+                    {
+                        return targetThing.MarketValue * 1.0f; // 100% of property value
+                    }
+                    return 200f; // Default for minor damage
+
+                case CrimeType.Arson:
+                    // Arson is a serious crime
+                    return 1000f; // Base penalty for arson
+
+                case CrimeType.Trespassing:
+                    // Trespassing is a minor offense
+                    return 50f;
+
+                case CrimeType.ContrabandPossession:
+                    // Contraband penalty based on item
+                    if (targetThing != null)
+                    {
+                        return targetThing.MarketValue * 2.0f; // 200% of contraband value
+                    }
+                    return 100f; // Default contraband penalty
+
+                case CrimeType.Kidnapping:
+                    // Kidnapping is a serious crime even without immediate damage
+                    return 2000f;
+
+                default:
+                    Mod.Log?.Warning($"CalculateDebtForNonVictimCrime called with unsupported crime type: {crimeType}");
+                    return 100f; // Fallback penalty
+            }
         }
 
         #endregion

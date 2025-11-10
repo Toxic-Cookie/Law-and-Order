@@ -346,14 +346,6 @@ namespace Law_and_Order.Source.Hediffs
             }
         }
 
-        /// <summary>
-        /// Clear old crimes (legacy method - now archives instead of deleting)
-        /// </summary>
-        [System.Obsolete("Use ArchiveOldCrimes instead")]
-        public void ClearCrimesOlderThan(int days)
-        {
-            ArchiveOldCrimes(days);
-        }
 
         public override void ExposeData()
         {

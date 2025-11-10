@@ -40,7 +40,12 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Select-String -Pattern \"error\" -Context 0,2)",
       "Bash(Select-String -Pattern \"error|warning|succeeded|failed\" -Context 0,1)",
-      "Bash(cmd /c copy \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\" /Y)"
+      "Bash(cmd /c copy \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Languages\\English\\Keyed\\LawAndOrder_Keys.xml\" /Y)",
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\MapComponentDefs\\MapComponents.xml\")",
+      "Bash(if [ -d \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\MapComponentDefs\" ])",
+      "Bash(then rmdir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\MapComponentDefs\")",
+      "Bash(else echo \"Directory does not exist in source\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

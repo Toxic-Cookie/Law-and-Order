@@ -62,9 +62,10 @@ namespace Law_and_Order.Source.Utils
             {
                 float debtAmount = 0f;
 
-                // Use new penalty management system if DamageInfo is provided
+                // Calculate penalty using the penalty management system
                 if (damageInfo.HasValue && victim != null)
                 {
+                    // Crimes with direct damage (Assault, Murder, Animal Abuse)
                     debtAmount = DebtUtils.CalculateDebtForCrimeNew(
                         criminal: criminal,
                         victim: victim,
@@ -72,12 +73,21 @@ namespace Law_and_Order.Source.Utils
                         crimeDefName: null  // Auto-detect based on damage
                     );
                 }
+                else if (crimeType == CrimeType.Theft || crimeType == CrimeType.PropertyDestruction ||
+                         crimeType == CrimeType.Vandalism || crimeType == CrimeType.Trespassing ||
+                         crimeType == CrimeType.ContrabandPossession || crimeType == CrimeType.Kidnapping ||
+                         crimeType == CrimeType.Arson)
+                {
+                    // Crimes without direct damage calculation (property crimes, trespassing, kidnapping, etc.)
+                    // These crimes use fixed or value-based penalties instead of damage-based penalties
+                    debtAmount = DebtUtils.CalculateDebtForNonVictimCrime(criminal, crimeType, targetThing);
+                }
                 else
                 {
-                    // No DamageInfo provided - cannot calculate penalty accurately
-                    // Log warning and use minimal penalty
-                    Mod.Log?.Warning($"Crime recorded without DamageInfo for {criminal.NameShortColored}. Cannot calculate accurate penalty.");
-                    debtAmount = 100f; // Minimal penalty as fallback
+                    // Invalid crime configuration - log error and skip
+                    Mod.Log?.Error($"Crime recording failed for {criminal.NameShortColored}: Invalid crime configuration. " +
+                                  $"Crime type {crimeType} requires DamageInfo for penalty calculation.");
+                    return;
                 }
 
                 // Extract damage type from DamageInfo if available
@@ -102,8 +112,7 @@ namespace Law_and_Order.Source.Utils
                     string damageInfoStr = damageDealt > 0 ? $" ({damageDealt:F1} damage)" : "";
                     string downedInfo = wasVictimDowned ? " [DOWNED]" : "";
                     string killedInfo = wasVictimKilled ? " [KILLED]" : "";
-                    string systemUsed = damageInfo.HasValue ? "[NEW]" : "[LEGACY]";
-                    Mod.Log?.Message($"{systemUsed} Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo} - Debt: {debtAmount:F0} silver");
+                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo} - Debt: {debtAmount:F0} silver");
                 }
             }
             catch (System.Exception e)

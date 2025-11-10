@@ -326,6 +326,110 @@ namespace Law_and_Order.Source.CrimeDetection
         }
 
         /// <summary>
+        /// Tracks when explosions create toxic gas clouds
+        /// This allows us to track who is responsible for the gas
+        /// </summary>
+        [HarmonyPatch(typeof(Verse.Explosion), "StartExplosion")]
+        public static class TrackToxicGasCreation_Patch
+        {
+            static void Postfix(Verse.Explosion __instance)
+            {
+                try
+                {
+                    // Check if this explosion will create toxic gas
+                    var gasType = Traverse.Create(__instance).Field("postExplosionGasType").GetValue<GasType?>();
+                    if (gasType.HasValue && gasType.Value == GasType.ToxGas)
+                    {
+                        // Get the instigator (the pawn who threw the grenade)
+                        var instigator = Traverse.Create(__instance).Field("instigator").GetValue<Thing>();
+                        Pawn instigatorPawn = instigator as Pawn;
+
+                        if (instigatorPawn != null && __instance.Map != null)
+                        {
+                            // Get the gas tracker component
+                            var tracker = __instance.Map.GetComponent<Law_and_Order.Source.Components.MapComponent_ToxicGasTracker>();
+                            if (tracker != null)
+                            {
+                                // Register this gas cloud with its instigator
+                                float radius = Traverse.Create(__instance).Field("radius").GetValue<float>();
+                                tracker.RegisterGasInstigator(__instance.Position, radius, instigatorPawn);
+                            }
+                        }
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Law_and_Order.Source.Mod.Log?.Error($"Error in toxic gas tracking patch: {e.Message}\n{e.StackTrace}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tracks when toxic buildup is added to colonists from toxic gas exposure
+        /// Links the buildup back to the raider who created the gas
+        /// </summary>
+        [HarmonyPatch(typeof(Verse.HealthUtility), "AdjustSeverity")]
+        public static class TrackToxicBuildup_Patch
+        {
+            static void Postfix(Pawn pawn, HediffDef hdDef, float sevOffset)
+            {
+                try
+                {
+                    // Only track ToxicBuildup on colonists
+                    if (hdDef != HediffDefOf.ToxicBuildup || !pawn.IsColonist || sevOffset <= 0f)
+                        return;
+
+                    // Check if the pawn is standing in toxic gas
+                    if (!pawn.Spawned || pawn.Map == null)
+                        return;
+
+                    byte gasDensity = pawn.Position.GasDensity(pawn.Map, GasType.ToxGas);
+                    if (gasDensity == 0)
+                        return; // Not in toxic gas
+
+                    // Get the gas tracker to find who created this gas
+                    var tracker = pawn.Map.GetComponent<Law_and_Order.Source.Components.MapComponent_ToxicGasTracker>();
+                    if (tracker == null)
+                        return;
+
+                    Pawn instigator = tracker.GetGasInstigator(pawn.Position);
+                    if (instigator == null)
+                        return;
+
+                    // Only track if instigator is hostile
+                    if (!instigator.HostileTo(pawn.Faction))
+                        return;
+
+                    // Record the assault crime
+                    // We create a fake DamageInfo to pass to the crime recording system
+                    DamageInfo fakeInfo = new DamageInfo(
+                        def: DamageDefOf.ToxGas,
+                        amount: sevOffset * 100f, // Convert severity to approximate damage value
+                        instigator: instigator,
+                        angle: 0f,
+                        intendedTarget: pawn
+                    );
+
+                    CrimeUtils.RecordCrime(
+                        criminal: instigator,
+                        crimeType: pawn.Dead ? CrimeType.Murder : CrimeType.Assault,
+                        victim: pawn,
+                        damageDealt: sevOffset * 100f,
+                        additionalInfo: "Toxic gas exposure",
+                        wasVictimDowned: pawn.Downed,
+                        wasVictimKilled: pawn.Dead,
+                        damageInfo: fakeInfo,
+                        damageType: "toxic gas"
+                    );
+                }
+                catch (System.Exception e)
+                {
+                    Law_and_Order.Source.Mod.Log?.Error($"Error in toxic buildup tracking patch: {e.Message}\n{e.StackTrace}");
+                }
+            }
+        }
+
+        /// <summary>
         /// Example usage demonstrating the crime detection API
         /// </summary>
         public static void ExampleUsage()
