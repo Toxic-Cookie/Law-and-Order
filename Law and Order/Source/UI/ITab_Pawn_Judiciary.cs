@@ -26,13 +26,14 @@ namespace Law_and_Order.Source.UI
         }
 
         /// <summary>
-        /// Only show this tab if the pawn has a criminal record
+        /// Always show this tab for pawns - displays "No criminal record" if none exists
         /// </summary>
         public override bool IsVisible
         {
             get
             {
-                return CrimeUtils.HasCriminalRecord(this.SelPawn);
+                // Always show the tab if we have a valid pawn
+                return this.SelPawn != null;
             }
         }
 
