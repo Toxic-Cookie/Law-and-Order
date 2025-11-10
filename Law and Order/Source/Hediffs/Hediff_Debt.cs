@@ -56,6 +56,15 @@ namespace Law_and_Order.Source.Hediffs
     }
 
     /// <summary>
+    /// What action to take when a prisoner's debt is fully paid
+    /// </summary>
+    public enum PostDebtAction
+    {
+        Release,    // Emancipate and release the pawn (default)
+        Recruit     // Attempt to recruit the pawn
+    }
+
+    /// <summary>
     /// Hediff that tracks the financial debt owed by a prisoner
     /// This works in conjunction with Hediff_Crimes to track both the crimes and their financial consequences
     /// </summary>
@@ -68,6 +77,7 @@ namespace Law_and_Order.Source.Hediffs
         // Grace period tracking
         private int debtPaidTick = -1;         // When debt reached 0
         private bool emancipationQueued = false; // Has emancipate been auto-set?
+        private PostDebtAction postDebtAction = PostDebtAction.Release; // What to do when debt is paid
 
         // Grace period constants
         private const int GRACE_PERIOD_DAYS = 10;
@@ -123,6 +133,15 @@ namespace Law_and_Order.Source.Hediffs
         {
             get => emancipationQueued;
             set => emancipationQueued = value;
+        }
+
+        /// <summary>
+        /// What action to take when this pawn's debt is fully paid
+        /// </summary>
+        public PostDebtAction PostDebtAction
+        {
+            get => postDebtAction;
+            set => postDebtAction = value;
         }
 
         /// <summary>
@@ -236,6 +255,7 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_Collections.Look(ref debtHistory, "debtHistory", LookMode.Deep);
             Scribe_Values.Look(ref debtPaidTick, "debtPaidTick", -1);
             Scribe_Values.Look(ref emancipationQueued, "emancipationQueued", false);
+            Scribe_Values.Look(ref postDebtAction, "postDebtAction", PostDebtAction.Release);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {

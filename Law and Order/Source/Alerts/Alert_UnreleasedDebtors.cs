@@ -38,7 +38,10 @@ namespace Law_and_Order.Source.Alerts
                     {
                         var debtRecord = DebtUtils.TryGetDebtRecord(pawn);
                         // Show all debt-free slaves (both in grace period and overdue)
-                        if (debtRecord != null && (debtRecord.IsInGracePeriod || debtRecord.IsOverdueForRelease))
+                        // BUT skip pawns marked for recruitment (intentionally keeping them)
+                        if (debtRecord != null &&
+                            (debtRecord.IsInGracePeriod || debtRecord.IsOverdueForRelease) &&
+                            debtRecord.PostDebtAction != Hediffs.PostDebtAction.Recruit)
                         {
                             unreleasedDebtorsResult.Add(pawn);
                         }

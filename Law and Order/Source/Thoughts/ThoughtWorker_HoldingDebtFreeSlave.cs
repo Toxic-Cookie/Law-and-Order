@@ -14,7 +14,7 @@ namespace LawAndOrder
             if (!p.IsColonist || p.IsSlave)
                 return false;
 
-            // Check if colony has any debt-free slaves
+            // Check if colony has any debt-free slaves (excluding those marked for recruitment)
             foreach (Map map in Find.Maps)
             {
                 if (!map.IsPlayerHome)
@@ -23,7 +23,10 @@ namespace LawAndOrder
                 foreach (Pawn slave in map.mapPawns.SlavesOfColonySpawned)
                 {
                     var debtRecord = DebtUtils.TryGetDebtRecord(slave);
-                    if (debtRecord != null && debtRecord.IsOverdueForRelease)
+                    // Skip pawns marked for recruitment - they're intentionally being kept to recruit
+                    if (debtRecord != null &&
+                        debtRecord.IsOverdueForRelease &&
+                        debtRecord.PostDebtAction != Law_and_Order.Source.Hediffs.PostDebtAction.Recruit)
                     {
                         return true; // Found at least one
                     }

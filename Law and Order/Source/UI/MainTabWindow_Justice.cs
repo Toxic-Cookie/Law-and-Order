@@ -497,6 +497,49 @@ namespace Law_and_Order.Source.UI
             {
                 PardonCriminal();
             }
+
+            // Post-debt action radio buttons
+            float radioYOffset = buttonHeight + 10f;
+            DrawPostDebtActionRadios(new Rect(rect.x, rect.y + radioYOffset, rect.width, 45f));
+        }
+
+        private void DrawPostDebtActionRadios(Rect rect)
+        {
+            if (selectedCriminal == null)
+                return;
+
+            var debtRecord = DebtUtils.TryGetDebtRecord(selectedCriminal);
+            if (debtRecord == null)
+                return;
+
+            // Label
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+            Rect labelRect = new Rect(rect.x, rect.y, rect.width, 20f);
+            Widgets.Label(labelRect, "LawAndOrder_PostDebtAction".Translate());
+
+            // Radio buttons
+            float radioYPos = rect.y + 22f;
+            float radioWidth = rect.width / 2f;
+            float spacing = 30f; // Gap between radio buttons
+
+            // Release option
+            Rect releaseRect = new Rect(rect.x + 10f, radioYPos, radioWidth - 25f, 20f);
+            if (Widgets.RadioButtonLabeled(releaseRect, "LawAndOrder_PostDebtAction_Release".Translate(),
+                debtRecord.PostDebtAction == Hediffs.PostDebtAction.Release))
+            {
+                debtRecord.PostDebtAction = Hediffs.PostDebtAction.Release;
+            }
+
+            // Recruit option
+            Rect recruitRect = new Rect(rect.x + radioWidth + spacing, radioYPos, radioWidth - spacing - 10f, 20f);
+            if (Widgets.RadioButtonLabeled(recruitRect, "LawAndOrder_PostDebtAction_Recruit".Translate(),
+                debtRecord.PostDebtAction == Hediffs.PostDebtAction.Recruit))
+            {
+                debtRecord.PostDebtAction = Hediffs.PostDebtAction.Recruit;
+            }
+
+            Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private void ScheduleHearing()

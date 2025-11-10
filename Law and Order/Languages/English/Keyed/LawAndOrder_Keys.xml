@@ -32,6 +32,11 @@
   <LawAndOrder_BeginHearing>Begin Hearing</LawAndOrder_BeginHearing>
   <LawAndOrder_Pardon>Pardon</LawAndOrder_Pardon>
 
+  <!-- Post-Debt Action -->
+  <LawAndOrder_PostDebtAction>When debt is paid:</LawAndOrder_PostDebtAction>
+  <LawAndOrder_PostDebtAction_Release>Release</LawAndOrder_PostDebtAction_Release>
+  <LawAndOrder_PostDebtAction_Recruit>Recruit</LawAndOrder_PostDebtAction_Recruit>
+
   <!-- Messages -->
   <LawAndOrder_NoCourtroom>Cannot schedule hearing: No courtroom available. Build a courtroom to proceed.</LawAndOrder_NoCourtroom>
   <LawAndOrder_HearingScheduled>Hearing scheduled for {0}</LawAndOrder_HearingScheduled>

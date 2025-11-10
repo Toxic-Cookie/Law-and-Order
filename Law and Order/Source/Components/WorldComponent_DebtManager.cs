@@ -574,26 +574,47 @@ namespace Law_and_Order.Source.Components
         }
 
         /// <summary>
-        /// Automatically sets the slave to be emancipated
+        /// Automatically sets the slave to be emancipated or recruited based on preference
         /// </summary>
         private void AutoQueueEmancipation(Pawn slave, Hediff_Debt debtRecord)
         {
             if (slave?.guest == null)
                 return;
 
-            // Set emancipate flag
-            slave.guest.slaveInteractionMode = SlaveInteractionModeDefOf.Emancipate;
             debtRecord.EmancipationQueued = true;
 
-            Messages.Message(
-                $"{slave.LabelShort} has been queued for emancipation. They will be freed once a warden is available.",
-                slave,
-                MessageTypeDefOf.NeutralEvent
-            );
+            // Check what action to take
+            if (debtRecord.PostDebtAction == Hediffs.PostDebtAction.Recruit)
+            {
+                // Convert slave to prisoner and set to recruit mode
+                slave.guest.SetGuestStatus(Faction.OfPlayer, GuestStatus.Prisoner);
+                slave.guest.SetExclusiveInteraction(PrisonerInteractionModeDefOf.AttemptRecruit);
 
-            #if DEBUG
-            Mod.Log?.Message($"Auto-queued {slave.LabelShort} for emancipation");
-            #endif
+                Messages.Message(
+                    $"{slave.LabelShort} has been converted to a prisoner and set to recruitment. Wardens will attempt to recruit them.",
+                    slave,
+                    MessageTypeDefOf.NeutralEvent
+                );
+
+                #if DEBUG
+                Mod.Log?.Message($"Auto-converted {slave.LabelShort} to prisoner for recruitment");
+                #endif
+            }
+            else
+            {
+                // Set emancipate flag (default)
+                slave.guest.slaveInteractionMode = SlaveInteractionModeDefOf.Emancipate;
+
+                Messages.Message(
+                    $"{slave.LabelShort} has been queued for emancipation. They will be freed once a warden is available.",
+                    slave,
+                    MessageTypeDefOf.NeutralEvent
+                );
+
+                #if DEBUG
+                Mod.Log?.Message($"Auto-queued {slave.LabelShort} for emancipation");
+                #endif
+            }
         }
 
         /// <summary>

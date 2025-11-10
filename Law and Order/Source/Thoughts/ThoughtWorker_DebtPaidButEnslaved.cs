@@ -15,7 +15,10 @@ namespace LawAndOrder
                 return false;
 
             var debtRecord = DebtUtils.TryGetDebtRecord(p);
-            if (debtRecord != null && debtRecord.IsOverdueForRelease)
+            // Skip pawns marked for recruitment - they're intentionally being kept to recruit
+            if (debtRecord != null &&
+                debtRecord.IsOverdueForRelease &&
+                debtRecord.PostDebtAction != Law_and_Order.Source.Hediffs.PostDebtAction.Recruit)
             {
                 return true;
             }
