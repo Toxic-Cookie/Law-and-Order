@@ -298,6 +298,7 @@ namespace LawAndOrder
             crimeDefinitions.Add(new CrimeDefinition("Insult", "LawAndOrder_Crime_Insult".Translate(), "LawAndOrder_Crime_Insult_Desc".Translate(), CrimeSeverity.Low, 25, 100, CrimeCategory.Social));
             crimeDefinitions.Add(new CrimeDefinition("WitnessedExecution", "LawAndOrder_Crime_WitnessedExecution".Translate(), "LawAndOrder_Crime_WitnessedExecution_Desc".Translate(), CrimeSeverity.Moderate, 300, 600, CrimeCategory.Social));
             crimeDefinitions.Add(new CrimeDefinition("Terrorizing", "LawAndOrder_Crime_Terrorizing".Translate(), "LawAndOrder_Crime_Terrorizing_Desc".Translate(), CrimeSeverity.Moderate, 200, 500, CrimeCategory.Social));
+            crimeDefinitions.Add(new CrimeDefinition("Trespassing", "LawAndOrder_Crime_Trespassing".Translate(), "LawAndOrder_Crime_Trespassing_Desc".Translate(), CrimeSeverity.Low, 50, 150, CrimeCategory.Social));
 
             // ANOMALY-SPECIFIC CRIMES (DLC)
             if (ModsConfig.AnomalyActive)

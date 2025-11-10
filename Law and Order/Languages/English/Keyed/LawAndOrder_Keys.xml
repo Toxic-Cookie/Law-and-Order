@@ -373,6 +373,7 @@
   <LawAndOrder_Crime_WitnessedExecution_Desc>Forcing colonists to witness executions</LawAndOrder_Crime_WitnessedExecution_Desc>
   <LawAndOrder_Crime_Terrorizing>Terrorizing</LawAndOrder_Crime_Terrorizing>
   <LawAndOrder_Crime_Terrorizing_Desc>Terrorizing colonists through threats or intimidation</LawAndOrder_Crime_Terrorizing_Desc>
+  <LawAndOrder_Crime_Trespassing_Desc>Entering colony territory during a raid</LawAndOrder_Crime_Trespassing_Desc>
 
   <!-- Crime Definitions - Anomaly (DLC) -->
   <LawAndOrder_Crime_ShamblerInfection>Shambler Infection</LawAndOrder_Crime_ShamblerInfection>

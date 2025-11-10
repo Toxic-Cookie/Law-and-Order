@@ -979,8 +979,18 @@ namespace Law_and_Order.Source.Utils
                     return 1000f; // Base penalty for arson
 
                 case CrimeType.Trespassing:
-                    // Trespassing is a minor offense
-                    return 50f;
+                    // Trespassing - use crime definition system
+                    var manager = WorldComponent_CrimePenaltyManager.Instance;
+                    if (manager != null)
+                    {
+                        var crimeDef = manager.GetCrimeDefinition("Trespassing");
+                        if (crimeDef != null)
+                        {
+                            // Use average of min and max penalty
+                            return (crimeDef.minPenalty + crimeDef.maxPenalty) / 2f;
+                        }
+                    }
+                    return 100f; // Fallback if crime definition not found
 
                 case CrimeType.ContrabandPossession:
                     // Contraband penalty based on item
