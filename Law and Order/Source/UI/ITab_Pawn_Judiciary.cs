@@ -20,7 +20,7 @@ namespace Law_and_Order.Source.UI
 
         public ITab_Pawn_Judiciary()
         {
-            this.size = new Vector2(500f, 450f);
+            this.size = new Vector2(630f, 450f);
             this.labelKey = "TabJudiciary";
             this.tutorTag = "Judiciary";
         }
@@ -288,7 +288,7 @@ namespace Law_and_Order.Source.UI
         protected override void UpdateSize()
         {
             base.UpdateSize();
-            this.size = new Vector2(500f, 450f);
+            this.size = new Vector2(630f, 450f);
         }
     }
 }
