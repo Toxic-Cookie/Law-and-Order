@@ -1052,29 +1052,53 @@ namespace Law_and_Order.Source.Utils
 
                 case CrimeType.PropertyDestruction:
                     // Property destruction based on thing value
-                    if (targetThing != null)
+                    if (targetThing != null && !targetThing.Destroyed)
                     {
-                        return targetThing.MarketValue * 1.5f; // 150% of property value
+                        float marketValue = targetThing.MarketValue;
+                        if (marketValue > 0)
+                        {
+                            return marketValue * 1.5f; // 150% of property value
+                        }
                     }
-                    return 500f; // Default for severe property damage
+
+                    // Fallback: Use crime definition system for destroyed or invaluable buildings
+                    var manager = WorldComponent_CrimePenaltyManager.Instance;
+                    if (manager != null)
+                    {
+                        var crimeDef = manager.GetCrimeDefinition("BuildingDestruction");
+                        if (crimeDef != null)
+                        {
+                            // Use average of min and max penalty
+                            return (crimeDef.minPenalty + crimeDef.maxPenalty) / 2f;
+                        }
+                    }
+                    return 350f; // Final fallback for severe property damage
 
                 case CrimeType.Vandalism:
                     // Vandalism is minor property damage
-                    if (targetThing != null)
+                    if (targetThing != null && !targetThing.Destroyed)
                     {
-                        return targetThing.MarketValue * 0.75f; // 75% of property value
+                        float marketValue = targetThing.MarketValue;
+                        if (marketValue > 0)
+                        {
+                            return marketValue * 0.75f; // 75% of property value
+                        }
                     }
                     return 200f; // Default for minor damage
 
                 case CrimeType.Arson:
                     // Arson - scales with property value destroyed, like property destruction but more severe
-                    if (targetThing != null)
+                    if (targetThing != null && !targetThing.Destroyed)
                     {
-                        // Use 2.5x multiplier for arson (more severe than property destruction's 1.5x)
-                        return targetThing.MarketValue * 2.5f;
+                        float marketValue = targetThing.MarketValue;
+                        if (marketValue > 0)
+                        {
+                            // Use 2.5x multiplier for arson (more severe than property destruction's 1.5x)
+                            return marketValue * 2.5f;
+                        }
                     }
 
-                    // No target thing provided - use crime definition system for base penalty
+                    // Target destroyed or no value - use crime definition system for base penalty
                     var arsonManager = WorldComponent_CrimePenaltyManager.Instance;
                     if (arsonManager != null)
                     {
@@ -1085,7 +1109,7 @@ namespace Law_and_Order.Source.Utils
                             return (arsonCrimeDef.minPenalty + arsonCrimeDef.maxPenalty) / 2f;
                         }
                     }
-                    return 1500f; // Fallback if crime definition not found
+                    return 850f; // Fallback if crime definition not found (average of 500-1200)
 
                 case CrimeType.Trespassing:
                     // Trespassing - use crime definition system

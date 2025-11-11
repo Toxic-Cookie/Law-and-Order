@@ -355,8 +355,8 @@ namespace Law_and_Order.Source.UI
                 return "LawAndOrder_PenaltyBreakdown_NotAvailable".Translate();
             }
 
-            // Try to find the crime definition to get base penalty range
-            string crimeDefName = DebtUtils.DetermineCrimeType(null, crime.victim);
+            // Determine crime definition name based on crime type and damage type
+            string crimeDefName = GetCrimeDefinitionName(crime);
             var crimeDef = manager.GetCrimeDefinition(crimeDefName);
 
             if (crimeDef == null)
@@ -396,6 +396,57 @@ namespace Law_and_Order.Source.UI
             }
 
             return tooltip.ToString();
+        }
+
+        /// <summary>
+        /// Map a Crime object to its corresponding crime definition name
+        /// </summary>
+        private string GetCrimeDefinitionName(Crime crime)
+        {
+            // For Assault crimes, use the damageType if available (e.g., "GunshotWound", "StabWound")
+            if (crime.crimeType == CrimeType.Assault && !string.IsNullOrEmpty(crime.damageType))
+            {
+                // Remove spaces from damage type to match crime definition names
+                return crime.damageType.Replace(" ", "");
+            }
+
+            // Map CrimeType enum to crime definition names
+            switch (crime.crimeType)
+            {
+                case CrimeType.Murder:
+                    return "Murder";
+
+                case CrimeType.Kidnapping:
+                    return "Kidnapping";
+
+                case CrimeType.Arson:
+                    return "Arson";
+
+                case CrimeType.Trespassing:
+                    return "Trespassing";
+
+                case CrimeType.PropertyDestruction:
+                    // Could be various types like DoorDestruction, BuildingDestruction, etc.
+                    // Default to BuildingDestruction as the most common
+                    return "BuildingDestruction";
+
+                case CrimeType.Theft:
+                    // Could be PettyTheft, Theft, or GrandTheft depending on value
+                    // Default to Theft as mid-range
+                    return "Theft";
+
+                case CrimeType.Vandalism:
+                    return "BuildingDestruction"; // Vandalism uses same penalty calculation
+
+                case CrimeType.AnimalAbuse:
+                    return "Assault"; // Animal abuse uses assault-like penalties
+
+                case CrimeType.ContrabandPossession:
+                    return "Theft"; // Contraband uses theft-like penalties
+
+                default:
+                    return "SuperficialWound"; // Fallback for unknown types
+            }
         }
     }
 }
