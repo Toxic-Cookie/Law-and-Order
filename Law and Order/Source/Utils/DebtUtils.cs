@@ -1113,14 +1113,14 @@ namespace Law_and_Order.Source.Utils
 
                 case CrimeType.Trespassing:
                     // Trespassing - use crime definition system
-                    var manager = WorldComponent_CrimePenaltyManager.Instance;
-                    if (manager != null)
+                    var trespassingManager = WorldComponent_CrimePenaltyManager.Instance;
+                    if (trespassingManager != null)
                     {
-                        var crimeDef = manager.GetCrimeDefinition("Trespassing");
-                        if (crimeDef != null)
+                        var trespassingCrimeDef = trespassingManager.GetCrimeDefinition("Trespassing");
+                        if (trespassingCrimeDef != null)
                         {
                             // Use average of min and max penalty
-                            return (crimeDef.minPenalty + crimeDef.maxPenalty) / 2f;
+                            return (trespassingCrimeDef.minPenalty + trespassingCrimeDef.maxPenalty) / 2f;
                         }
                     }
                     return 100f; // Fallback if crime definition not found
