@@ -130,13 +130,6 @@ namespace Law_and_Order.Source.Utils
         {
             failReason = null;
 
-            // Check if debt forgiveness is enabled
-            if (!Law_and_Order.Source.Settings.LawAndOrderSettings.EnableDebtForgiveness.Value)
-            {
-                failReason = "LawAndOrder_DebtForgiveness_Disabled".Translate();
-                return false;
-            }
-
             var debtRecord = TryGetDebtRecord(pawn);
             if (debtRecord == null || debtRecord.CurrentDebt <= 0)
             {

@@ -228,8 +228,7 @@ namespace Law_and_Order.Source.UI
                 Widgets.Label(debtInfoRect, debtInfo);
                 yPos += 100f;
 
-                // Debt forgiveness section - only show if enabled in settings
-                if (Law_and_Order.Source.Settings.LawAndOrderSettings.EnableDebtForgiveness.Value)
+                // Debt forgiveness section
                 {
                     // Get or initialize forgiveness percentage for this pawn
                     if (!forgivenessPercentages.ContainsKey(this.SelPawn))

@@ -21,9 +21,6 @@ namespace Law_and_Order.Source.Settings
         // Penalty settings
         public static SettingHandle<float> GlobalPenaltyScale;
 
-        // Debt forgiveness settings
-        public static SettingHandle<bool> EnableDebtForgiveness;
-
         // Debug/Logging settings
         public static SettingHandle<LogLevel> LogLevel;
 
@@ -57,14 +54,6 @@ namespace Law_and_Order.Source.Settings
                 "LawAndOrder_Setting_GlobalPenaltyScale_Desc".Translate(),
                 1.0f,
                 Validators.FloatRangeValidator(0.25f, 3.0f)
-            );
-
-            // Debt forgiveness settings
-            EnableDebtForgiveness = settings.GetHandle(
-                "EnableDebtForgiveness",
-                "LawAndOrder_Setting_EnableDebtForgiveness_Title".Translate(),
-                "LawAndOrder_Setting_EnableDebtForgiveness_Desc".Translate(),
-                true
             );
 
             // Debug/Logging settings
@@ -111,7 +100,6 @@ namespace Law_and_Order.Source.Settings
             ContrabandPerDrug.Value = 50f;
             DefaultSilverPerDay.Value = 35f;
             GlobalPenaltyScale.Value = 1.0f;
-            EnableDebtForgiveness.Value = true;
         }
 
         /// <summary>
