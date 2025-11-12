@@ -1028,7 +1028,8 @@ namespace Law_and_Order.Source.Utils
 
                 case CrimeType.PropertyDestruction:
                     // Property destruction based on thing value
-                    if (targetThing != null && !targetThing.Destroyed)
+                    // Note: MarketValue is still accessible even if the thing is destroyed
+                    if (targetThing != null)
                     {
                         float marketValue = targetThing.MarketValue;
                         if (marketValue > 0)
@@ -1052,7 +1053,8 @@ namespace Law_and_Order.Source.Utils
 
                 case CrimeType.Vandalism:
                     // Vandalism is minor property damage
-                    if (targetThing != null && !targetThing.Destroyed)
+                    // Note: MarketValue is still accessible even if the thing is destroyed
+                    if (targetThing != null)
                     {
                         float marketValue = targetThing.MarketValue;
                         if (marketValue > 0)
@@ -1064,7 +1066,8 @@ namespace Law_and_Order.Source.Utils
 
                 case CrimeType.Arson:
                     // Arson - scales with property value destroyed, like property destruction but more severe
-                    if (targetThing != null && !targetThing.Destroyed)
+                    // Note: MarketValue is still accessible even if the thing is destroyed
+                    if (targetThing != null)
                     {
                         float marketValue = targetThing.MarketValue;
                         if (marketValue > 0)
