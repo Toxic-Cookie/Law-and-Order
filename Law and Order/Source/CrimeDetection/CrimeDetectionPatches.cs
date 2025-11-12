@@ -29,6 +29,51 @@ namespace Law_and_Order.Source.CrimeDetection
                 clearTrackerTick = 0;
             }
         }
+
+        /// <summary>
+        /// Helper method to check if a pawn is a valid criminal
+        /// (exists, is not an animal, and is hostile to player)
+        /// </summary>
+        private static bool IsValidCriminal(Pawn pawn)
+        {
+            if (pawn == null)
+                return false;
+
+            // Animals cannot commit crimes
+            if (pawn.RaceProps.Animal)
+                return false;
+
+            // Must be hostile to player
+            if (!pawn.HostileTo(Faction.OfPlayer))
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Helper method to check if a pawn is a valid colonist victim
+        /// </summary>
+        private static bool IsValidColonistVictim(Pawn pawn)
+        {
+            if (pawn == null)
+                return false;
+
+            return pawn.IsColonist;
+        }
+
+        /// <summary>
+        /// Helper method to check if a pawn is a valid player-owned animal victim
+        /// </summary>
+        private static bool IsValidPlayerAnimalVictim(Pawn pawn)
+        {
+            if (pawn == null)
+                return false;
+
+            if (!pawn.RaceProps.Animal)
+                return false;
+
+            return pawn.Faction == Faction.OfPlayer;
+        }
         /// <summary>
         /// Tracks when a raider damages a colonist by patching the PostApplyDamage method
         /// </summary>
@@ -45,17 +90,11 @@ namespace Law_and_Order.Source.CrimeDetection
                     // Get the attacker
                     Pawn attacker = dinfo.Instigator as Pawn;
 
-                    // Only track if:
-                    // 1. Both pawns exist
-                    // 2. Victim is a colonist
-                    // 3. Attacker is hostile
-                    if (victim == null || attacker == null)
+                    // Validate criminal and victim
+                    if (!IsValidCriminal(attacker))
                         return;
 
-                    if (!victim.IsColonist)
-                        return;
-
-                    if (!attacker.HostileTo(victim.Faction))
+                    if (!IsValidColonistVictim(victim))
                         return;
 
                     // Determine crime type based on damage
@@ -127,11 +166,9 @@ namespace Law_and_Order.Source.CrimeDetection
 
                     // Get the attacker
                     Pawn attacker = dinfo.Instigator as Pawn;
-                    if (attacker == null)
-                        return;
 
-                    // Only track if attacker is hostile to player
-                    if (!attacker.HostileTo(Faction.OfPlayer))
+                    // Validate criminal
+                    if (!IsValidCriminal(attacker))
                         return;
 
                     // Calculate HP percentage after damage
@@ -212,19 +249,11 @@ namespace Law_and_Order.Source.CrimeDetection
                     // Get the attacker
                     Pawn attacker = dinfo.Instigator as Pawn;
 
-                    // Basic validation checks
-                    if (victim == null || attacker == null)
+                    // Validate criminal and victim
+                    if (!IsValidCriminal(attacker))
                         return;
 
-                    // Only track if attacker is hostile to player
-                    if (!attacker.HostileTo(Faction.OfPlayer))
-                        return;
-
-                    // Check if victim is a colony animal (not wild, not hostile)
-                    if (!victim.RaceProps.Animal)
-                        return;
-
-                    if (victim.Faction != Faction.OfPlayer)
+                    if (!IsValidPlayerAnimalVictim(victim))
                         return;
 
                     // Record the animal abuse crime with DamageInfo for penalty calculation
@@ -262,11 +291,9 @@ namespace Law_and_Order.Source.CrimeDetection
 
                     // Get the pawn who owns this carry tracker
                     Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-                    if (pawn == null)
-                        return;
 
-                    // Only track if the pawn is hostile to player
-                    if (!pawn.HostileTo(Faction.OfPlayer))
+                    // Validate criminal
+                    if (!IsValidCriminal(pawn))
                         return;
 
                     // Only track if the item belongs to player or is in a player storage zone
@@ -317,15 +344,13 @@ namespace Law_and_Order.Source.CrimeDetection
 
                     // Get the victim from the job target
                     Pawn victim = __result.targetA.Thing as Pawn;
-                    if (victim == null)
-                        return;
 
-                    // Only track if kidnapper is hostile to player
-                    if (!pawn.HostileTo(Faction.OfPlayer))
+                    // Validate criminal
+                    if (!IsValidCriminal(pawn))
                         return;
 
                     // Only track if victim is a colonist or player-owned pawn
-                    if (!victim.IsColonist && victim.Faction != Faction.OfPlayer)
+                    if (victim == null || (!victim.IsColonist && victim.Faction != Faction.OfPlayer))
                         return;
 
                     // Only track if victim is downed (this should always be true for kidnapping, but double-check)
@@ -420,11 +445,9 @@ namespace Law_and_Order.Source.CrimeDetection
                         return;
 
                     Pawn instigator = tracker.GetGasInstigator(pawn.Position);
-                    if (instigator == null)
-                        return;
 
-                    // Only track if instigator is hostile
-                    if (!instigator.HostileTo(pawn.Faction))
+                    // Validate criminal
+                    if (!IsValidCriminal(instigator))
                         return;
 
                     // Check if we've already recorded a crime for this victim-instigator pair recently
