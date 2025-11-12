@@ -415,10 +415,7 @@
   <LawAndOrder_Setting_GlobalPenaltyScale_Desc>Globally adjust all crime penalties by a percentage. 1.0 = 100% (default), 0.5 = 50% (easier), 2.0 = 200% (harder). Range: 0.25x to 3.0x</LawAndOrder_Setting_GlobalPenaltyScale_Desc>
 
   <LawAndOrder_Setting_EnableDebtForgiveness_Title>Enable Debt Forgiveness</LawAndOrder_Setting_EnableDebtForgiveness_Title>
-  <LawAndOrder_Setting_EnableDebtForgiveness_Desc>Allow forgiving remaining debt once a prisoner has paid a certain percentage. This provides a way to release reformed prisoners who have shown good behavior.</LawAndOrder_Setting_EnableDebtForgiveness_Desc>
-
-  <LawAndOrder_Setting_DebtForgivenessThreshold_Title>Debt Forgiveness Threshold (%)</LawAndOrder_Setting_DebtForgivenessThreshold_Title>
-  <LawAndOrder_Setting_DebtForgivenessThreshold_Desc>Percentage of total debt that must be paid before debt forgiveness becomes available. Default: 90% (prisoner must pay 90% before remaining 10% can be forgiven)</LawAndOrder_Setting_DebtForgivenessThreshold_Desc>
+  <LawAndOrder_Setting_EnableDebtForgiveness_Desc>Allow manually forgiving a prisoner's debt using a slider. At 100% forgiveness, this acts as a pardon. Provides flexibility in releasing or rewarding prisoners.</LawAndOrder_Setting_EnableDebtForgiveness_Desc>
 
   <!-- Penalty Breakdown Tooltips -->
   <LawAndOrder_PenaltyBreakdown_Header>Penalty Calculation Breakdown</LawAndOrder_PenaltyBreakdown_Header>
@@ -433,14 +430,16 @@
 
   <!-- Debt Forgiveness UI -->
   <LawAndOrder_ITab_DebtPercentPaid>Paid: {0}%</LawAndOrder_ITab_DebtPercentPaid>
-  <LawAndOrder_ITab_ForgiveDebt>Forgive Remaining Debt</LawAndOrder_ITab_ForgiveDebt>
-  <LawAndOrder_ITab_ForgiveDebt_Tooltip>Requires {0}% debt paid (currently {1}%). Click to forgive all remaining debt and mark the prisoner as reformed.</LawAndOrder_ITab_ForgiveDebt_Tooltip>
+  <LawAndOrder_ITab_ForgiveDebt_Header>Debt Forgiveness</LawAndOrder_ITab_ForgiveDebt_Header>
+  <LawAndOrder_ITab_ForgiveDebt_Confirm>Forgive Debt</LawAndOrder_ITab_ForgiveDebt_Confirm>
+  <LawAndOrder_ITab_ForgiveDebt_Pardon>Pardon (100%)</LawAndOrder_ITab_ForgiveDebt_Pardon>
 
   <!-- Debt Forgiveness Messages -->
   <LawAndOrder_DebtForgiveness_Disabled>Debt forgiveness is disabled in settings</LawAndOrder_DebtForgiveness_Disabled>
   <LawAndOrder_DebtForgiveness_NoDebt>Prisoner has no outstanding debt</LawAndOrder_DebtForgiveness_NoDebt>
-  <LawAndOrder_DebtForgiveness_BelowThreshold>Only {0}% of debt paid. Must pay {1}% before forgiveness is available.</LawAndOrder_DebtForgiveness_BelowThreshold>
+  <LawAndOrder_DebtForgiveness_ZeroAmount>Must forgive more than 0 silver</LawAndOrder_DebtForgiveness_ZeroAmount>
   <LawAndOrder_DebtForgiveness_Reason>Debt Forgiven</LawAndOrder_DebtForgiveness_Reason>
-  <LawAndOrder_DebtForgiveness_Success>{0}'s remaining debt has been forgiven. They are now free to be released or recruited.</LawAndOrder_DebtForgiveness_Success>
+  <LawAndOrder_DebtForgiveness_Pardon>{0} has been pardoned. All debt forgiven.</LawAndOrder_DebtForgiveness_Pardon>
+  <LawAndOrder_DebtForgiveness_Partial>{0} had {1} silver ({2}%) of debt forgiven.</LawAndOrder_DebtForgiveness_Partial>
 
 </LanguageData>

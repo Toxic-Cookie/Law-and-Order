@@ -18,6 +18,9 @@ namespace Law_and_Order.Source.UI
         private const float LeftColumnWidth = 0.5f;
         private CrimeCategoryUIHelper categoryHelper = new CrimeCategoryUIHelper();
 
+        // Track debt forgiveness percentage per pawn (persists across UI redraws)
+        private static Dictionary<Pawn, float> forgivenessPercentages = new Dictionary<Pawn, float>();
+
         public ITab_Pawn_Judiciary()
         {
             this.size = new Vector2(630f, 450f);
@@ -225,38 +228,77 @@ namespace Law_and_Order.Source.UI
                 Widgets.Label(debtInfoRect, debtInfo);
                 yPos += 100f;
 
-                // Debt forgiveness button
-                bool isEligible = DebtUtils.IsEligibleForDebtForgiveness(this.SelPawn);
-                Rect forgivenessButtonRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
-
-                if (isEligible)
+                // Debt forgiveness section - only show if enabled in settings
+                if (Law_and_Order.Source.Settings.LawAndOrderSettings.EnableDebtForgiveness.Value)
                 {
-                    if (Widgets.ButtonText(forgivenessButtonRect, "LawAndOrder_ITab_ForgiveDebt".Translate()))
+                    // Get or initialize forgiveness percentage for this pawn
+                    if (!forgivenessPercentages.ContainsKey(this.SelPawn))
+                    {
+                        forgivenessPercentages[this.SelPawn] = 100f; // Default to 100% (full pardon)
+                    }
+
+                    // Label
+                    Text.Font = GameFont.Small;
+                    Rect forgiveHeaderRect = new Rect(rect.x, rect.y + yPos, rect.width, 22f);
+                    Widgets.Label(forgiveHeaderRect, "LawAndOrder_ITab_ForgiveDebt_Header".Translate());
+                    yPos += 25f;
+
+                    // Slider
+                    Rect sliderRect = new Rect(rect.x, rect.y + yPos, rect.width - 80f, 22f);
+                    Rect sliderLabelRect = new Rect(rect.x + rect.width - 75f, rect.y + yPos, 75f, 22f);
+
+                    float percentage = forgivenessPercentages[this.SelPawn];
+                    float newPercentage = Widgets.HorizontalSlider(sliderRect, percentage, 0f, 100f, false,
+                        percentage.ToString("F0") + "%", "0%", "100%", 1f);
+
+                    // Update if changed
+                    if (newPercentage != percentage)
+                    {
+                        forgivenessPercentages[this.SelPawn] = newPercentage;
+                    }
+
+                    // Show amount that will be forgiven
+                    float amountToForgive = debtRecord.CurrentDebt * (newPercentage / 100f);
+                    Text.Anchor = TextAnchor.MiddleRight;
+                    GUI.color = new Color(0.9f, 0.6f, 0.2f);
+                    Widgets.Label(sliderLabelRect, amountToForgive.ToString("F0") + "§");
+                    GUI.color = Color.white;
+                    Text.Anchor = TextAnchor.UpperLeft;
+                    yPos += 27f;
+
+                    // Confirm button
+                    Rect confirmButtonRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
+                    string buttonLabel = newPercentage >= 100f
+                        ? "LawAndOrder_ITab_ForgiveDebt_Pardon".Translate()
+                        : "LawAndOrder_ITab_ForgiveDebt_Confirm".Translate();
+
+                    if (Widgets.ButtonText(confirmButtonRect, buttonLabel))
                     {
                         string failReason;
-                        if (DebtUtils.TryForgiveDebt(this.SelPawn, out failReason))
+                        if (DebtUtils.TryForgiveDebt(this.SelPawn, newPercentage, out failReason))
                         {
-                            Messages.Message("LawAndOrder_DebtForgiveness_Success".Translate(this.SelPawn.LabelShort), MessageTypeDefOf.PositiveEvent);
+                            if (newPercentage >= 100f)
+                            {
+                                Messages.Message(string.Format("LawAndOrder_DebtForgiveness_Pardon".Translate(), this.SelPawn.LabelShort), MessageTypeDefOf.PositiveEvent);
+                            }
+                            else
+                            {
+                                Messages.Message(string.Format("LawAndOrder_DebtForgiveness_Partial".Translate(),
+                                    this.SelPawn.LabelShort, amountToForgive.ToString("F0"), newPercentage.ToString("F0")),
+                                    MessageTypeDefOf.PositiveEvent);
+                            }
+
+                            // Reset slider to 100% after forgiving
+                            forgivenessPercentages[this.SelPawn] = 100f;
                         }
                         else
                         {
                             Messages.Message(failReason, MessageTypeDefOf.RejectInput);
                         }
                     }
-                }
-                else
-                {
-                    // Show disabled button with tooltip
-                    GUI.color = new Color(0.5f, 0.5f, 0.5f);
-                    Widgets.ButtonText(forgivenessButtonRect, "LawAndOrder_ITab_ForgiveDebt".Translate());
-                    GUI.color = Color.white;
 
-                    int requiredPercent = Law_and_Order.Source.Settings.LawAndOrderSettings.DebtForgivenessThreshold.Value;
-                    string tooltipText = string.Format("LawAndOrder_ITab_ForgiveDebt_Tooltip".Translate(), requiredPercent, percentPaid.ToString("F1"));
-                    TooltipHandler.TipRegion(forgivenessButtonRect, tooltipText);
+                    yPos += 35f;
                 }
-
-                yPos += 35f;
             }
             else if (debtRecord != null && debtRecord.TotalDebtOwed > 0)
             {

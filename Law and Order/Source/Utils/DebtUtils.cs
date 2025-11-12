@@ -120,9 +120,13 @@ namespace Law_and_Order.Source.Utils
         }
 
         /// <summary>
-        /// Forgive all remaining debt for a pawn if they've paid the threshold percentage
+        /// Forgive a specified percentage of a pawn's current debt
         /// </summary>
-        public static bool TryForgiveDebt(Pawn pawn, out string failReason)
+        /// <param name="pawn">The pawn whose debt to forgive</param>
+        /// <param name="percentageToForgive">Percentage of current debt to forgive (0-100)</param>
+        /// <param name="failReason">Output reason if forgiveness fails</param>
+        /// <returns>True if debt was forgiven, false otherwise</returns>
+        public static bool TryForgiveDebt(Pawn pawn, float percentageToForgive, out string failReason)
         {
             failReason = null;
 
@@ -140,53 +144,32 @@ namespace Law_and_Order.Source.Utils
                 return false;
             }
 
-            // Calculate percentage paid
-            float totalDebt = debtRecord.TotalDebtOwed;
-            float paidDebt = debtRecord.TotalDebtPaid;
-            float percentPaid = totalDebt > 0 ? (paidDebt / totalDebt) * 100f : 0f;
-
-            // Check threshold
-            int requiredPercent = Law_and_Order.Source.Settings.LawAndOrderSettings.DebtForgivenessThreshold.Value;
-            if (percentPaid < requiredPercent)
+            // Validate percentage
+            if (percentageToForgive < 0 || percentageToForgive > 100)
             {
-                failReason = string.Format("LawAndOrder_DebtForgiveness_BelowThreshold".Translate(), percentPaid.ToString("F1"), requiredPercent);
+                failReason = "Invalid forgiveness percentage";
+                return false;
+            }
+
+            // Calculate amount to forgive
+            float currentDebt = debtRecord.CurrentDebt;
+            float amountToForgive = currentDebt * (percentageToForgive / 100f);
+
+            if (amountToForgive <= 0)
+            {
+                failReason = "LawAndOrder_DebtForgiveness_ZeroAmount".Translate();
                 return false;
             }
 
             // Forgive the debt
-            float forgivenAmount = debtRecord.CurrentDebt;
-            debtRecord.PayDebt(forgivenAmount, "LawAndOrder_DebtForgiveness_Reason".Translate());
+            debtRecord.PayDebt(amountToForgive, "LawAndOrder_DebtForgiveness_Reason".Translate());
 
             if (Prefs.DevMode)
             {
-                Mod.Log?.Message($"[Law & Order] Forgave {forgivenAmount:F0} silver debt for {pawn.LabelShort} ({percentPaid:F1}% of {totalDebt:F0} silver paid)");
+                Mod.Log?.Message($"[Law & Order] Forgave {amountToForgive:F0} silver ({percentageToForgive:F0}% of {currentDebt:F0}) for {pawn.LabelShort}");
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Check if a pawn is eligible for debt forgiveness
-        /// </summary>
-        public static bool IsEligibleForDebtForgiveness(Pawn pawn)
-        {
-            if (!Law_and_Order.Source.Settings.LawAndOrderSettings.EnableDebtForgiveness.Value)
-            {
-                return false;
-            }
-
-            var debtRecord = TryGetDebtRecord(pawn);
-            if (debtRecord == null || debtRecord.CurrentDebt <= 0)
-            {
-                return false;
-            }
-
-            float totalDebt = debtRecord.TotalDebtOwed;
-            float paidDebt = debtRecord.TotalDebtPaid;
-            float percentPaid = totalDebt > 0 ? (paidDebt / totalDebt) * 100f : 0f;
-
-            int requiredPercent = Law_and_Order.Source.Settings.LawAndOrderSettings.DebtForgivenessThreshold.Value;
-            return percentPaid >= requiredPercent;
         }
 
         /// <summary>
