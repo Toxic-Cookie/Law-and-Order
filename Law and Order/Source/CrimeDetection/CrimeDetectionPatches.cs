@@ -393,6 +393,11 @@ namespace Law_and_Order.Source.CrimeDetection
         [HarmonyPatch(typeof(Verse.HealthUtility), "AdjustSeverity")]
         public static class TrackToxicBuildup_Patch
         {
+            // Track which victim-instigator pairs have already had crimes recorded
+            // Key: (victim pawn ID, instigator pawn ID), Value: tick when crime was recorded
+            private static Dictionary<(int, int), int> recordedToxicCrimes = new Dictionary<(int, int), int>();
+            private const int CRIME_COOLDOWN_TICKS = GenDate.TicksPerHour; // Only record once per hour per victim-instigator pair
+
             static void Postfix(Pawn pawn, HediffDef hdDef, float sevOffset)
             {
                 try
@@ -421,6 +426,39 @@ namespace Law_and_Order.Source.CrimeDetection
                     // Only track if instigator is hostile
                     if (!instigator.HostileTo(pawn.Faction))
                         return;
+
+                    // Check if we've already recorded a crime for this victim-instigator pair recently
+                    var crimeKey = (pawn.thingIDNumber, instigator.thingIDNumber);
+                    int currentTick = Find.TickManager.TicksGame;
+
+                    if (recordedToxicCrimes.TryGetValue(crimeKey, out int lastRecordedTick))
+                    {
+                        // If less than cooldown period has passed, don't record another crime
+                        if (currentTick - lastRecordedTick < CRIME_COOLDOWN_TICKS)
+                        {
+                            return; // Skip - already recorded recently
+                        }
+                    }
+
+                    // Update the last recorded time for this pair
+                    recordedToxicCrimes[crimeKey] = currentTick;
+
+                    // Clean up old entries periodically (every hour)
+                    if (currentTick % GenDate.TicksPerHour == 0)
+                    {
+                        var keysToRemove = new List<(int, int)>();
+                        foreach (var kvp in recordedToxicCrimes)
+                        {
+                            if (currentTick - kvp.Value > CRIME_COOLDOWN_TICKS * 2) // Remove entries older than 2x cooldown
+                            {
+                                keysToRemove.Add(kvp.Key);
+                            }
+                        }
+                        foreach (var key in keysToRemove)
+                        {
+                            recordedToxicCrimes.Remove(key);
+                        }
+                    }
 
                     // Record the assault crime
                     // We create a fake DamageInfo to pass to the crime recording system
