@@ -90,9 +90,6 @@
   <LawAndOrder_Setting_TheftMultiplier_Title>Theft Multiplier</LawAndOrder_Setting_TheftMultiplier_Title>
   <LawAndOrder_Setting_TheftMultiplier_Desc>Multiplier applied to stolen item value. Default 1.5x means debt is 150% of item value.</LawAndOrder_Setting_TheftMultiplier_Desc>
 
-  <LawAndOrder_Setting_ContrabandPerDrug_Title>Contraband per Drug</LawAndOrder_Setting_ContrabandPerDrug_Title>
-  <LawAndOrder_Setting_ContrabandPerDrug_Desc>Debt per illegal drug found on the raider (flake, yayo, go-juice).</LawAndOrder_Setting_ContrabandPerDrug_Desc>
-
   <!-- Crimes Against Persons -->
   <LawAndOrder_Setting_Assault_Title>Assault</LawAndOrder_Setting_Assault_Title>
   <LawAndOrder_Setting_Assault_Desc>Debt for injuring a colonist during combat.</LawAndOrder_Setting_Assault_Desc>

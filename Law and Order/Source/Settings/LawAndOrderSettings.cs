@@ -12,9 +12,6 @@ namespace Law_and_Order.Source.Settings
     /// </summary>
     public static class LawAndOrderSettings
     {
-        // Contraband settings (specific to contraband system, not in Crimes Tab)
-        public static SettingHandle<float> ContrabandPerDrug;
-
         // Labor settings
         public static SettingHandle<float> DefaultSilverPerDay;
 
@@ -29,15 +26,6 @@ namespace Law_and_Order.Source.Settings
         /// </summary>
         public static void Initialize(ModSettingsPack settings)
         {
-            // Contraband settings
-            ContrabandPerDrug = settings.GetHandle(
-                "ContrabandPerDrug",
-                "LawAndOrder_Setting_ContrabandPerDrug_Title".Translate(),
-                "LawAndOrder_Setting_ContrabandPerDrug_Desc".Translate(),
-                50f,
-                Validators.FloatRangeValidator(0f, 1000f)
-            );
-
             // Labor settings
             DefaultSilverPerDay = settings.GetHandle(
                 "DefaultSilverPerDay",
@@ -97,7 +85,6 @@ namespace Law_and_Order.Source.Settings
         /// </summary>
         public static void ResetToDefaults()
         {
-            ContrabandPerDrug.Value = 50f;
             DefaultSilverPerDay.Value = 35f;
             GlobalPenaltyScale.Value = 1.0f;
         }
@@ -109,9 +96,6 @@ namespace Law_and_Order.Source.Settings
         public static void ValidateSettings()
         {
             bool hadInvalidValues = false;
-
-            // Contraband settings
-            hadInvalidValues |= ClampSetting(ref ContrabandPerDrug, 0f, 1000f, 50f, "ContrabandPerDrug");
 
             // Labor settings
             hadInvalidValues |= ClampSetting(ref DefaultSilverPerDay, 1f, 500f, 35f, "DefaultSilverPerDay");

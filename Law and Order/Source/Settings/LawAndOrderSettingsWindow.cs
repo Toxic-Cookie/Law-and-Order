@@ -64,12 +64,6 @@ namespace Law_and_Order.Source.Settings
 
             listing.Gap(20f);
 
-            // Contraband Settings Section
-            DrawSectionHeader(listing, "Contraband Settings");
-            DrawSetting(listing, "Contraband per Drug", LawAndOrderSettings.ContrabandPerDrug, "silver");
-
-            listing.Gap(20f);
-
             // Labor Settings Section
             DrawSectionHeader(listing, "Labor Settings");
             DrawSetting(listing, "Default Silver per Day (labor)", LawAndOrderSettings.DefaultSilverPerDay, "silver/day");
