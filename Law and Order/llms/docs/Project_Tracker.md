@@ -1,9 +1,11 @@
 # Law and Order - Project Tracker
 
-**Last Updated:** November 9, 2025
+**Last Updated:** November 12, 2025
 **Current Status:** ✅ Production Ready - Crimes Tab Phase 3 FULLY Complete (Integration + Legacy Cleanup)
 
 **Recent Updates:**
+- ✅ **Property Damage Penalty Fix (Nov 12, 2025):** Fixed bug where destroyed buildings (e.g., walls destroyed by grenades) used fallback penalties instead of actual market value
+- ✅ **Justice Tab UI Enhancement (Nov 12, 2025):** Added double-click to pan camera to criminals in the justice tab list
 - ✅ **Phase 1 Complete (Nov 2, 2025):** Ritual Quality Reframe - Eliminated hearing sabotage exploit
 - ✅ **Phase 2 Complete (Nov 2, 2025):** Contraband Penalty Cap - Penalties capped at 3x market value (min 10 silver)
 - ✅ **Phase 3 Complete (Nov 2, 2025):** Grace Period & Release System - 10-day grace period with auto-emancipation

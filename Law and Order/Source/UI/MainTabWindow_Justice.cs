@@ -203,6 +203,13 @@ namespace Law_and_Order.Source.UI
                 Widgets.DrawLightHighlight(rect);
             }
 
+            // Handle double-click to pan camera to criminal
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Event.current.clickCount == 2 && Mouse.IsOver(rect))
+            {
+                Event.current.Use();
+                CameraJumper.TryJump(criminal, CameraJumper.MovementMode.Pan);
+            }
+
             if (Widgets.ButtonInvisible(rect))
             {
                 selectedCriminal = criminal;
