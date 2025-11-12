@@ -369,6 +369,13 @@ namespace Law_and_Order.Source.UI
                 if (justiceTab != null)
                 {
                     justiceTab.Worker.Activate();
+
+                    // Select this criminal in the Justice tab
+                    var justiceWindow = justiceTab.TabWindow as MainTabWindow_Justice;
+                    if (justiceWindow != null)
+                    {
+                        justiceWindow.SelectCriminal(this.SelPawn);
+                    }
                 }
             }
         }

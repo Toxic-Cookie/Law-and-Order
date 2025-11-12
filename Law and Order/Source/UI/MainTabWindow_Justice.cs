@@ -112,6 +112,29 @@ namespace Law_and_Order.Source.UI
             ));
         }
 
+        /// <summary>
+        /// Selects a criminal and switches to the appropriate tab (Imprisoned if prisoner, ActiveCriminals otherwise)
+        /// </summary>
+        public void SelectCriminal(Pawn criminal)
+        {
+            if (criminal == null)
+            {
+                return;
+            }
+
+            selectedCriminal = criminal;
+
+            // Switch to appropriate tab based on prisoner status
+            if (criminal.IsPrisonerOfColony)
+            {
+                curTab = JusticeTab.Imprisoned;
+            }
+            else
+            {
+                curTab = JusticeTab.ActiveCriminals;
+            }
+        }
+
         public override void DoWindowContents(Rect inRect)
         {
             // Adjust rect for tabs and draw them
