@@ -30,7 +30,7 @@
 
   <!-- Action Buttons -->
   <LawAndOrder_BeginHearing>Begin Hearing</LawAndOrder_BeginHearing>
-  <LawAndOrder_Pardon>Pardon</LawAndOrder_Pardon>
+  <LawAndOrder_Pardon>Pardon Crimes</LawAndOrder_Pardon>
 
   <!-- Post-Debt Action -->
   <LawAndOrder_PostDebtAction>When debt is paid:</LawAndOrder_PostDebtAction>
@@ -429,7 +429,7 @@
   <LawAndOrder_ITab_DebtPercentPaid>Paid: {0}%</LawAndOrder_ITab_DebtPercentPaid>
   <LawAndOrder_ITab_ForgiveDebt_Header>Debt Forgiveness</LawAndOrder_ITab_ForgiveDebt_Header>
   <LawAndOrder_ITab_ForgiveDebt_Confirm>Forgive Debt</LawAndOrder_ITab_ForgiveDebt_Confirm>
-  <LawAndOrder_ITab_ForgiveDebt_Pardon>Pardon (100%)</LawAndOrder_ITab_ForgiveDebt_Pardon>
+  <LawAndOrder_ITab_ForgiveDebt_Pardon>Pardon Debt</LawAndOrder_ITab_ForgiveDebt_Pardon>
 
   <!-- Debt Forgiveness Messages -->
   <LawAndOrder_DebtForgiveness_NoDebt>Prisoner has no outstanding debt</LawAndOrder_DebtForgiveness_NoDebt>
