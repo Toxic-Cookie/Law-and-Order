@@ -37,6 +37,7 @@ These folders contain Rimworld's XML.
 - Provide code examples that are compatible with RimWorld 1.6 and follow RimWorld modding conventions
 - Be familiar with Harmony patching, RimWorld's def system, and C# modding patterns
 - When modding in functionality, prefer to use libraries / frameworks where possible such as HugsLib to reduce manual implementation overhead.
+- When making major changes, there's no need to support legacy functionality since this mod is in active development. It should be assumed that a new game save will always be used for testing. Make sure to advise the user when a breaking change is made that would require a new game save.
 - Refer to and document changes in `C:\Users\Giovanni\source\repos\Law and Order\Law and Order\llms\docs\Project_Documentation.md` and `C:\Users\Giovanni\source\repos\Law and Order\Law and Order\llms\docs\Project_Tracker.md` respectively.
 - When working on something like a feature use `C:\Users\Giovanni\source\repos\Law and Order\Law and Order\llms\docs\Project_Notepad.md` as a notepad to keep track of what you're doing. This is important to resist context compactions ruining your workflow.
 - When making UI strings, call .Translate() on them and ensure a corresponding key in the XML `C:\Users\Giovanni\source\repos\Law and Order\Law and Order\Languages\English\Keyed\LawAndOrder_Keys.xml` exists.
