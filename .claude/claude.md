@@ -32,6 +32,7 @@ These folders contain Rimworld's XML.
 
 ## Guidelines
 
+- When asked to perform a task, make sure to ask questions until you're at least 95% of how to proceed.
 - When answering questions, prefer checking the RimWorld source code directory for accurate information about game systems
 - Consult the llms directory for information about mod-specific libraries
 - Provide code examples that are compatible with RimWorld 1.6 and follow RimWorld modding conventions
