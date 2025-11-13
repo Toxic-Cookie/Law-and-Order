@@ -53,7 +53,8 @@
       "Bash(Select-String -Pattern \"error|warning\" -Context 0,2)",
       "Bash(Select-String -Pattern \"error|warning|succeeded|failed\" -Context 0,2)",
       "Bash(cmd /c copy:*)",
-      "WebFetch(domain:dwarffortresswiki.org)"
+      "WebFetch(domain:dwarffortresswiki.org)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

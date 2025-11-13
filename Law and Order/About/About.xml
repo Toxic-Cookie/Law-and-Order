@@ -21,10 +21,16 @@
 		    <downloadUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/releases/latest</downloadUrl>
 		    <steamWorkshopUrl>steam://url/CommunityFilePage/818773962</steamWorkshopUrl>
 	    </li>
+        <li>
+		    <packageId>Mlie.NWNRealFogOfWar</packageId>
+		    <displayName>(NWN) Real Fog of War (Continued)</displayName>
+		    <steamWorkshopUrl>steam://url/CommunityFilePage/3391128917</steamWorkshopUrl>
+	    </li>
 	</modDependencies>
 	<loadAfter>
 		<li>brrainz.harmony</li>
 		<li>Ludeon.RimWorld</li>
         <li>UnlimitedHugs.HugsLib</li>
+        <li>Mlie.NWNRealFogOfWar</li>
 	</loadAfter>
 </ModMetaData>
