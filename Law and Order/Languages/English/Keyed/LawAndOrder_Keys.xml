@@ -203,8 +203,6 @@
   <LawAndOrder_Multiplier_VictimNobility_Desc>Applied when victim is a noble or royal</LawAndOrder_Multiplier_VictimNobility_Desc>
   <LawAndOrder_Multiplier_VictimAge>Victim Age (Child)</LawAndOrder_Multiplier_VictimAge>
   <LawAndOrder_Multiplier_VictimAge_Desc>Applied when victim is a child</LawAndOrder_Multiplier_VictimAge_Desc>
-  <LawAndOrder_Multiplier_Wartime>Wartime</LawAndOrder_Multiplier_Wartime>
-  <LawAndOrder_Multiplier_Wartime_Desc>Applied during declared war (reduces penalties)</LawAndOrder_Multiplier_Wartime_Desc>
   <LawAndOrder_Multiplier_Premeditated>Premeditated</LawAndOrder_Multiplier_Premeditated>
   <LawAndOrder_Multiplier_Premeditated_Desc>Applied for planned attacks (vs opportunistic)</LawAndOrder_Multiplier_Premeditated_Desc>
   <LawAndOrder_Multiplier_VictimRelationship>Victim Relationship</LawAndOrder_Multiplier_VictimRelationship>
@@ -215,8 +213,6 @@
   <LawAndOrder_Multiplier_ColonyWealth_Desc>Applied based on colony wealth</LawAndOrder_Multiplier_ColonyWealth_Desc>
   <LawAndOrder_Multiplier_DifficultySetting>Difficulty Setting</LawAndOrder_Multiplier_DifficultySetting>
   <LawAndOrder_Multiplier_DifficultySetting_Desc>Applied based on game difficulty</LawAndOrder_Multiplier_DifficultySetting_Desc>
-  <LawAndOrder_Multiplier_FactionRelations>Faction Relations</LawAndOrder_Multiplier_FactionRelations>
-  <LawAndOrder_Multiplier_FactionRelations_Desc>Applied based on relations with raider's faction</LawAndOrder_Multiplier_FactionRelations_Desc>
 
   <!-- Crime Definitions - Lethal -->
   <LawAndOrder_Crime_Execution>Execution</LawAndOrder_Crime_Execution>

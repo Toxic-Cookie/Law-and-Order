@@ -549,10 +549,6 @@ namespace Law_and_Order.Source.Utils
                         shouldApply = IsChild(victim);
                         break;
 
-                    case MultiplierType.Wartime:
-                        shouldApply = IsWartime(criminal?.Faction);
-                        break;
-
                     case MultiplierType.Premeditated:
                         shouldApply = WasPremeditated(damageInfo);
                         break;
@@ -587,16 +583,6 @@ namespace Law_and_Order.Source.Utils
                         if (customFactor != 1.0f && breakdown != null)
                         {
                             breakdown.appliedMultipliers.Add(new Hediffs.MultiplierInfo("Difficulty", customFactor));
-                        }
-                        penalty *= customFactor;
-                        continue;
-
-                    case MultiplierType.FactionRelations:
-                        // Custom factor based on faction relations
-                        customFactor = GetFactionRelationFactor(criminal?.Faction);
-                        if (customFactor != 1.0f && breakdown != null)
-                        {
-                            breakdown.appliedMultipliers.Add(new Hediffs.MultiplierInfo("Faction Relations", customFactor));
                         }
                         penalty *= customFactor;
                         continue;
@@ -683,20 +669,6 @@ namespace Law_and_Order.Source.Utils
 
             return victim.DevelopmentalStage == DevelopmentalStage.Child ||
                    victim.DevelopmentalStage == DevelopmentalStage.Baby;
-        }
-
-        /// <summary>
-        /// Check if the colony is currently at war with the criminal's faction
-        /// </summary>
-        private static bool IsWartime(Faction faction)
-        {
-            if (faction == null)
-            {
-                return false;
-            }
-
-            // Check if faction is hostile to player
-            return faction.HostileTo(Faction.OfPlayer);
         }
 
         /// <summary>
@@ -816,37 +788,6 @@ namespace Law_and_Order.Source.Utils
             // For now, return 1.0 (no adjustment)
             // Could use Find.Storyteller.difficulty or similar
             return 1.0f;
-        }
-
-        /// <summary>
-        /// Get faction relations multiplier factor
-        /// Hostile factions get higher penalties, allies get lower
-        /// </summary>
-        private static float GetFactionRelationFactor(Faction faction)
-        {
-            if (faction == null)
-            {
-                return 1.0f;
-            }
-
-            int goodwill = faction.GoodwillWith(Faction.OfPlayer);
-
-            // Hostile factions (-100 to -50) = 2.0x penalty
-            // Neutral factions (-50 to 50) = 1.0x penalty
-            // Allied factions (50 to 100) = 0.5x penalty
-
-            if (goodwill < -50)
-            {
-                return 2.0f;
-            }
-            else if (goodwill > 50)
-            {
-                return 0.5f;
-            }
-            else
-            {
-                return 1.0f;
-            }
         }
 
         /// <summary>

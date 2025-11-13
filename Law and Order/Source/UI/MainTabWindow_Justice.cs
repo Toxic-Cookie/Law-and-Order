@@ -1512,8 +1512,6 @@ namespace Law_and_Order.Source.UI
                     return "LawAndOrder_Multiplier_VictimNobility".Translate();
                 case MultiplierType.VictimAge:
                     return "LawAndOrder_Multiplier_VictimAge".Translate();
-                case MultiplierType.Wartime:
-                    return "LawAndOrder_Multiplier_Wartime".Translate();
                 case MultiplierType.Premeditated:
                     return "LawAndOrder_Multiplier_Premeditated".Translate();
                 case MultiplierType.VictimRelationship:
@@ -1524,8 +1522,6 @@ namespace Law_and_Order.Source.UI
                     return "LawAndOrder_Multiplier_ColonyWealth".Translate();
                 case MultiplierType.DifficultySetting:
                     return "LawAndOrder_Multiplier_DifficultySetting".Translate();
-                case MultiplierType.FactionRelations:
-                    return "LawAndOrder_Multiplier_FactionRelations".Translate();
                 default:
                     return type.ToString();
             }

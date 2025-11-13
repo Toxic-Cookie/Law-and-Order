@@ -324,13 +324,11 @@ namespace LawAndOrder
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.RepeatOffender, 1.3f, "LawAndOrder_Multiplier_RepeatOffender_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.VictimNobility, 2.0f, "LawAndOrder_Multiplier_VictimNobility_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.VictimAge, 1.3f, "LawAndOrder_Multiplier_VictimAge_Desc".Translate(), true));
-            penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.Wartime, 0.75f, "LawAndOrder_Multiplier_Wartime_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.Premeditated, 1.4f, "LawAndOrder_Multiplier_Premeditated_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.VictimRelationship, 1.25f, "LawAndOrder_Multiplier_VictimRelationship_Desc".Translate(), true));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.RaiderWealth, 1.0f, "LawAndOrder_Multiplier_RaiderWealth_Desc".Translate(), false));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.ColonyWealth, 1.0f, "LawAndOrder_Multiplier_ColonyWealth_Desc".Translate(), false));
             penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.DifficultySetting, 1.0f, "LawAndOrder_Multiplier_DifficultySetting_Desc".Translate(), false));
-            penaltyMultipliers.Add(new CrimePenaltyMultiplier(MultiplierType.FactionRelations, 1.0f, "LawAndOrder_Multiplier_FactionRelations_Desc".Translate(), true));
         }
 
         /// <summary>
