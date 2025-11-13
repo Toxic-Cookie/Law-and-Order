@@ -279,8 +279,9 @@ namespace Law_and_Order.Source.Utils
         #region Phase 3: Crime Penalty Management System Integration
 
         /// <summary>
-        /// Calculate penalty within the crime's min-max range based on damage context.
+        /// Calculate contextual penalty based on the crime's base penalty, player multiplier, and damage context.
         /// Returns a contextual penalty (not random) based on severity factors.
+        /// Severity causes ±33% variation around the base value (0.67x to 1.33x).
         /// Also populates the breakdown object with severity calculation details.
         /// </summary>
         private static float CalculatePenaltyInRange(CrimeDefinition crimeDef, DamageInfo? damageInfo, Pawn victim, Hediffs.PenaltyBreakdown breakdown)
@@ -290,7 +291,7 @@ namespace Law_and_Order.Source.Utils
                 return 0f;
             }
 
-            // Default to middle of range (0.5 = 50% severity)
+            // Default to middle severity (0.5 = 50% severity)
             float severity = 0.5f;
             float bodyPartImportance = 0.5f;
             float damageRatio = 0.5f;
@@ -333,12 +334,15 @@ namespace Law_and_Order.Source.Utils
                 breakdown.severityScore = severity;
             }
 
-            // Interpolate between min and max penalty
-            int basePenalty = UnityEngine.Mathf.RoundToInt(
-                UnityEngine.Mathf.Lerp(crimeDef.minPenalty, crimeDef.maxPenalty, severity)
-            );
+            // Calculate base value with player multiplier
+            float baseValue = crimeDef.basePenalty * crimeDef.penaltyMultiplier;
 
-            return basePenalty;
+            // Apply severity-based variation: 0.67x to 1.33x of base value
+            // This maintains the same range width as before (±33% around center)
+            float severityMultiplier = UnityEngine.Mathf.Lerp(0.67f, 1.33f, severity);
+            float contextualPenalty = baseValue * severityMultiplier;
+
+            return contextualPenalty;
         }
 
         /// <summary>
@@ -1027,8 +1031,10 @@ namespace Law_and_Order.Source.Utils
 
             // Store crime definition info in breakdown
             breakdown.crimeDefName = crimeDefName;
-            breakdown.minPenalty = crimeDef.minPenalty;
-            breakdown.maxPenalty = crimeDef.maxPenalty;
+            // Calculate effective range for display (based on ±33% severity variation)
+            crimeDef.GetEffectivePenaltyRange(out int displayMin, out int displayMax);
+            breakdown.minPenalty = displayMin;
+            breakdown.maxPenalty = displayMax;
             breakdown.isNonVictimCrime = false;
 
             // Calculate base penalty within range
@@ -1119,11 +1125,12 @@ namespace Law_and_Order.Source.Utils
                         var crimeDef = manager.GetCrimeDefinition("BuildingDestruction");
                         if (crimeDef != null)
                         {
-                            penalty = (crimeDef.minPenalty + crimeDef.maxPenalty) / 2f;
+                            penalty = crimeDef.basePenalty * crimeDef.penaltyMultiplier;
                             breakdown.crimeDefName = "BuildingDestruction";
-                            breakdown.minPenalty = crimeDef.minPenalty;
-                            breakdown.maxPenalty = crimeDef.maxPenalty;
-                            breakdown.calculationMethod = $"Range Average: ({crimeDef.minPenalty} + {crimeDef.maxPenalty}) / 2";
+                            crimeDef.GetEffectivePenaltyRange(out int min, out int max);
+                            breakdown.minPenalty = min;
+                            breakdown.maxPenalty = max;
+                            breakdown.calculationMethod = $"Base Penalty: {crimeDef.basePenalty}§ × {crimeDef.penaltyMultiplier:F2}x";
                             break;
                         }
                     }
@@ -1197,11 +1204,12 @@ namespace Law_and_Order.Source.Utils
                         var arsonCrimeDef = arsonManager.GetCrimeDefinition("Arson");
                         if (arsonCrimeDef != null)
                         {
-                            penalty = (arsonCrimeDef.minPenalty + arsonCrimeDef.maxPenalty) / 2f;
+                            penalty = arsonCrimeDef.basePenalty * arsonCrimeDef.penaltyMultiplier;
                             breakdown.crimeDefName = "Arson";
-                            breakdown.minPenalty = arsonCrimeDef.minPenalty;
-                            breakdown.maxPenalty = arsonCrimeDef.maxPenalty;
-                            breakdown.calculationMethod = $"Range Average: ({arsonCrimeDef.minPenalty} + {arsonCrimeDef.maxPenalty}) / 2";
+                            arsonCrimeDef.GetEffectivePenaltyRange(out int min, out int max);
+                            breakdown.minPenalty = min;
+                            breakdown.maxPenalty = max;
+                            breakdown.calculationMethod = $"Base Penalty: {arsonCrimeDef.basePenalty}§ × {arsonCrimeDef.penaltyMultiplier:F2}x";
                             break;
                         }
                     }

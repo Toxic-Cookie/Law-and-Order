@@ -50,7 +50,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git restore:*)",
-      "Bash(Select-String -Pattern \"error|warning\" -Context 0,2)"
+      "Bash(Select-String -Pattern \"error|warning\" -Context 0,2)",
+      "Bash(Select-String -Pattern \"error|warning|succeeded|failed\" -Context 0,2)"
     ],
     "deny": [],
     "ask": []

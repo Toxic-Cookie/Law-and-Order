@@ -61,16 +61,11 @@ namespace LawAndOrder
         /// </summary>
         public void SetCrimeDefinition(CrimeDefinition crime)
         {
-            // Validate penalty range
-            crime.minPenalty = Mathf.Clamp(crime.minPenalty, MIN_PENALTY, MAX_PENALTY);
-            crime.maxPenalty = Mathf.Clamp(crime.maxPenalty, MIN_PENALTY, MAX_PENALTY);
+            // Validate base penalty
+            crime.basePenalty = Mathf.Clamp(crime.basePenalty, MIN_PENALTY, MAX_PENALTY);
 
-            if (crime.minPenalty > crime.maxPenalty)
-            {
-                int temp = crime.minPenalty;
-                crime.minPenalty = crime.maxPenalty;
-                crime.maxPenalty = temp;
-            }
+            // Validate multiplier (0.5x to 3.0x)
+            crime.penaltyMultiplier = Mathf.Clamp(crime.penaltyMultiplier, 0.5f, 3.0f);
 
             var existing = GetCrimeDefinition(crime.defName);
             if (existing != null)
@@ -79,8 +74,8 @@ namespace LawAndOrder
                 existing.label = crime.label;
                 existing.description = crime.description;
                 existing.severity = crime.severity;
-                existing.minPenalty = crime.minPenalty;
-                existing.maxPenalty = crime.maxPenalty;
+                existing.basePenalty = crime.basePenalty;
+                existing.penaltyMultiplier = crime.penaltyMultiplier;
                 existing.category = crime.category;
             }
             else

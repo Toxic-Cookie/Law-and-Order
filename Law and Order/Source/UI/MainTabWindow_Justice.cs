@@ -71,8 +71,7 @@ namespace Law_and_Order.Source.UI
         private Vector2 crimeListScrollPos;
         private Vector2 multiplierListScrollPos;
         private string crimeSearchQuery = "";
-        private string crimeMinPenaltyInput = "";
-        private string crimeMaxPenaltyInput = "";
+        private float crimeCategoryMultiplier = 1.0f; // For bulk operations on crime categories
         private string multiplierValueInput = "";
         private List<CrimeCategoryNode> crimeCategoryTree;
         private List<CrimeCategoryNode> crimeFlattenedList;
@@ -1702,17 +1701,7 @@ namespace Law_and_Order.Source.UI
                     selectedMultiplier = null; // Clear multiplier selection
                     showMultipliers = false; // Hide multipliers section
 
-                    // Load penalty values
-                    if (hasPendingChange)
-                    {
-                        crimeMinPenaltyInput = crime.pendingMinPenalty.ToString();
-                        crimeMaxPenaltyInput = crime.pendingMaxPenalty.ToString();
-                    }
-                    else
-                    {
-                        crimeMinPenaltyInput = crime.minPenalty.ToString();
-                        crimeMaxPenaltyInput = crime.maxPenalty.ToString();
-                    }
+                    // No need to initialize input fields since we're using a slider now
 
                     SoundDefOf.Click.PlayOneShotOnCamera(null);
                 }
@@ -1723,17 +1712,12 @@ namespace Law_and_Order.Source.UI
                 Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.MiddleLeft;
 
-                string labelText = "";
+                string labelText = crime.label;
                 Color labelColor = Color.white;
 
                 if (hasPendingChange)
                 {
                     labelColor = new Color(1f, 0.8f, 0.2f);
-                    labelText = $"{crime.label} ({crime.pendingMinPenalty}-{crime.pendingMaxPenalty} silver) [PENDING]";
-                }
-                else
-                {
-                    labelText = $"{crime.label} ({crime.minPenalty}-{crime.maxPenalty} silver)";
                 }
 
                 GUI.color = labelColor;
@@ -1838,9 +1822,12 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
+            selectedCrime.GetEffectivePenaltyRange(out int effectiveMin, out int effectiveMax);
             string stats = $"{"LawAndOrder_Category".Translate()}: {selectedCrime.category}\n";
             stats += $"{"LawAndOrder_Severity".Translate()}: {selectedCrime.severity}\n";
-            stats += $"Current Range: {selectedCrime.minPenalty}-{selectedCrime.maxPenalty} silver";
+            stats += $"Base Penalty: {selectedCrime.basePenalty}§\n";
+            stats += $"Multiplier: {selectedCrime.penaltyMultiplier:F2}x\n";
+            stats += $"Effective Range: {effectiveMin}-{effectiveMax}§";
 
             Widgets.Label(statsTextRect, stats);
             Text.Anchor = TextAnchor.UpperLeft;
@@ -1856,7 +1843,12 @@ namespace Law_and_Order.Source.UI
                 Text.Anchor = TextAnchor.MiddleCenter;
                 GUI.color = new Color(1f, 0.8f, 0.2f);
 
-                string pendingText = $"Pending: {selectedCrime.pendingMinPenalty}-{selectedCrime.pendingMaxPenalty} silver";
+                float pendingMultiplier = selectedCrime.GetEffectiveMultiplier();
+                int pendingMin, pendingMax;
+                float baseValue = selectedCrime.basePenalty * pendingMultiplier;
+                pendingMin = UnityEngine.Mathf.RoundToInt(baseValue * 0.67f);
+                pendingMax = UnityEngine.Mathf.RoundToInt(baseValue * 1.33f);
+                string pendingText = $"Pending: {pendingMultiplier:F2}x (range: {pendingMin}-{pendingMax}§)";
 
                 Widgets.Label(pendingTextRect, pendingText);
                 GUI.color = Color.white;
@@ -1867,60 +1859,80 @@ namespace Law_and_Order.Source.UI
             // Penalty inputs (only show for crimes that use range calculation)
             if (selectedCrime.usesRangeCalculation)
             {
-                Rect minPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
-                Widgets.Label(minPenaltyLabelRect, "LawAndOrder_MinPenalty".Translate());
+                // Show base penalty (read-only)
+                Rect basePenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
+                Widgets.Label(basePenaltyLabelRect, "Base Penalty (read-only):");
 
-                Rect minPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
-                crimeMinPenaltyInput = Widgets.TextField(minPenaltyInputRect, crimeMinPenaltyInput);
+                Rect basePenaltyValueRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
+                Text.Anchor = TextAnchor.MiddleRight;
+                Widgets.Label(basePenaltyValueRect, $"{selectedCrime.basePenalty}§");
+                Text.Anchor = TextAnchor.UpperLeft;
 
                 innerRect.yMin += 30f;
 
-                Rect maxPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
-                Widgets.Label(maxPenaltyLabelRect, "LawAndOrder_MaxPenalty".Translate());
+                // Multiplier slider
+                Rect multiplierLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 24f);
+                float currentMultiplier = selectedCrime.hasPendingChanges ? selectedCrime.GetEffectiveMultiplier() : selectedCrime.penaltyMultiplier;
+                Widgets.Label(multiplierLabelRect, $"Penalty Multiplier: {currentMultiplier:F2}x");
 
-                Rect maxPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
-                crimeMaxPenaltyInput = Widgets.TextField(maxPenaltyInputRect, crimeMaxPenaltyInput);
+                innerRect.yMin += 30f;
+
+                Rect multiplierSliderRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 24f);
+                float newMultiplier = Widgets.HorizontalSlider(
+                    multiplierSliderRect,
+                    currentMultiplier,
+                    0.5f,
+                    3.0f,
+                    middleAlignment: true,
+                    label: $"{currentMultiplier:F2}x",
+                    leftAlignedLabel: "0.5x",
+                    rightAlignedLabel: "3.0x",
+                    roundTo: 0.05f
+                );
+
+                // If multiplier changed, stage the change
+                if (newMultiplier != currentMultiplier)
+                {
+                    selectedCrime.StageMultiplierChange(newMultiplier);
+                }
 
                 innerRect.yMin += 35f;
 
-                // Update button
+                // Show resulting range
+                float tempBaseValue = selectedCrime.basePenalty * newMultiplier;
+                int resultMin = UnityEngine.Mathf.RoundToInt(tempBaseValue * 0.67f);
+                int resultMax = UnityEngine.Mathf.RoundToInt(tempBaseValue * 1.33f);
+
+                Rect rangeInfoRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 24f);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(rangeInfoRect, $"Effective Range: {resultMin}-{resultMax}§");
+                Text.Anchor = TextAnchor.UpperLeft;
+
+                innerRect.yMin += 30f;
+
+                // Update button (commits the pending change)
                 float buttonWidth = innerRect.width;
                 float buttonHeight = 35f;
 
-                Rect updateButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
-                if (Widgets.ButtonText(updateButtonRect, "LawAndOrder_UpdateCrime".Translate()))
+                if (selectedCrime.hasPendingChanges)
                 {
-                    if (int.TryParse(crimeMinPenaltyInput, out int minPenalty) &&
-                        int.TryParse(crimeMaxPenaltyInput, out int maxPenalty) &&
-                        minPenalty > 0 && maxPenalty >= minPenalty)
+                    Rect updateButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
+                    if (Widgets.ButtonText(updateButtonRect, "LawAndOrder_UpdateCrime".Translate()))
                     {
-                        // Stage the change
-                        selectedCrime.StagePenaltyChange(minPenalty, maxPenalty);
+                        // The change is already staged, just show confirmation message
                         Messages.Message(
                             $"{selectedCrime.label} update staged (not yet committed)",
                             MessageTypeDefOf.NeutralEvent
                         );
                     }
-                    else
-                    {
-                        Messages.Message(
-                            "LawAndOrder_InvalidPenaltyRange".Translate(),
-                            MessageTypeDefOf.RejectInput
-                        );
-                    }
-                }
 
-                innerRect.yMin += buttonHeight + 10f;
+                    innerRect.yMin += buttonHeight + 10f;
 
-                // Reset button (cancel pending changes for this crime)
-                if (selectedCrime.hasPendingChanges)
-                {
+                    // Reset button (cancel pending changes for this crime)
                     Rect resetButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
                     if (Widgets.ButtonText(resetButtonRect, "LawAndOrder_ResetCrime".Translate()))
                     {
                         selectedCrime.ClearPendingChanges();
-                        crimeMinPenaltyInput = selectedCrime.minPenalty.ToString();
-                        crimeMaxPenaltyInput = selectedCrime.maxPenalty.ToString();
                         Messages.Message(
                             $"{selectedCrime.label} reset to current values",
                             MessageTypeDefOf.NeutralEvent
@@ -1994,20 +2006,28 @@ namespace Law_and_Order.Source.UI
 
             innerRect.yMin += 30f;
 
-            // Penalty inputs
-            Rect minPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
-            Widgets.Label(minPenaltyLabelRect, "LawAndOrder_MinPenalty".Translate());
-
-            Rect minPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
-            crimeMinPenaltyInput = Widgets.TextField(minPenaltyInputRect, crimeMinPenaltyInput);
+            // Multiplier slider for bulk operations
+            Rect multiplierLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 24f);
+            if (crimeCategoryMultiplier < 0.5f)
+            {
+                crimeCategoryMultiplier = 1.0f; // Initialize if not set
+            }
+            Widgets.Label(multiplierLabelRect, $"Penalty Multiplier: {crimeCategoryMultiplier:F2}x");
 
             innerRect.yMin += 30f;
 
-            Rect maxPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
-            Widgets.Label(maxPenaltyLabelRect, "LawAndOrder_MaxPenalty".Translate());
-
-            Rect maxPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
-            crimeMaxPenaltyInput = Widgets.TextField(maxPenaltyInputRect, crimeMaxPenaltyInput);
+            Rect multiplierSliderRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 24f);
+            crimeCategoryMultiplier = Widgets.HorizontalSlider(
+                multiplierSliderRect,
+                crimeCategoryMultiplier,
+                0.5f,
+                3.0f,
+                middleAlignment: true,
+                label: $"{crimeCategoryMultiplier:F2}x",
+                leftAlignedLabel: "0.5x",
+                rightAlignedLabel: "3.0x",
+                roundTo: 0.05f
+            );
 
             innerRect.yMin += 35f;
 
@@ -2017,29 +2037,17 @@ namespace Law_and_Order.Source.UI
             Rect updateAllButtonRect = new Rect(innerRect.x, innerRect.y, innerRect.width, buttonHeight);
             if (Widgets.ButtonText(updateAllButtonRect, "LawAndOrder_UpdateAllCrimes".Translate()))
             {
-                if (int.TryParse(crimeMinPenaltyInput, out int minPenalty) &&
-                    int.TryParse(crimeMaxPenaltyInput, out int maxPenalty) &&
-                    minPenalty > 0 && maxPenalty >= minPenalty)
+                var crimes = selectedCrimeCategory.GetAllCrimes();
+                int count = 0;
+                foreach (var crime in crimes)
                 {
-                    var crimes = selectedCrimeCategory.GetAllCrimes();
-                    int count = 0;
-                    foreach (var crime in crimes)
-                    {
-                        crime.StagePenaltyChange(minPenalty, maxPenalty);
-                        count++;
-                    }
-                    Messages.Message(
-                        $"{count} crimes in {selectedCrimeCategory.GetLabel()} staged for update (not yet committed)",
-                        MessageTypeDefOf.PositiveEvent
-                    );
+                    crime.StageMultiplierChange(crimeCategoryMultiplier);
+                    count++;
                 }
-                else
-                {
-                    Messages.Message(
-                        "LawAndOrder_InvalidPenaltyRange".Translate(),
-                        MessageTypeDefOf.RejectInput
-                    );
-                }
+                Messages.Message(
+                    $"{count} crimes in {selectedCrimeCategory.GetLabel()} staged for {crimeCategoryMultiplier:F2}x multiplier (not yet committed)",
+                    MessageTypeDefOf.PositiveEvent
+                );
             }
         }
 
