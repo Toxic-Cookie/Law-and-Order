@@ -430,6 +430,9 @@
   <LawAndOrder_PenaltyBreakdown_BasePenalty>Base Penalty (after severity): {0} silver</LawAndOrder_PenaltyBreakdown_BasePenalty>
   <LawAndOrder_PenaltyBreakdown_Multipliers>Applied Multipliers:</LawAndOrder_PenaltyBreakdown_Multipliers>
 
+  <!-- Crime UI Messages -->
+  <LawAndOrder_CrimeUsesValueCalculation>This crime uses value-based calculation (item value, property value, or fixed amount) instead of a penalty range.</LawAndOrder_CrimeUsesValueCalculation>
+
   <!-- Debt Forgiveness UI -->
   <LawAndOrder_ITab_DebtPercentPaid>Paid: {0}%</LawAndOrder_ITab_DebtPercentPaid>
   <LawAndOrder_ITab_ForgiveDebt_Header>Debt Forgiveness</LawAndOrder_ITab_ForgiveDebt_Header>

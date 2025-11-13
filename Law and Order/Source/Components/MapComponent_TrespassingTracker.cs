@@ -45,9 +45,10 @@ namespace Law_and_Order.Source.Components
             // Clean up dead/despawned pawns from tracking set
             CleanupInvalidTrespassers();
 
-            // Find all hostile pawns on the map
+            // Find all hostile pawns on the map (humanlike only - animals shouldn't be criminals)
             var hostilePawns = map.mapPawns.AllPawnsSpawned
                 .Where(p => p != null &&
+                           p.RaceProps.Humanlike &&
                            p.HostileTo(Faction.OfPlayer) &&
                            !p.Downed &&
                            !p.Dead);

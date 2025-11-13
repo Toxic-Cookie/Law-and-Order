@@ -1571,7 +1571,9 @@ namespace Law_and_Order.Source.UI
             // Build or rebuild tree if needed
             if (crimeTreeNeedsRebuild || crimeCategoryTree == null)
             {
-                crimeCategoryTree = CrimeCategoryTreeBuilder.BuildCategoryTree(crimeManager.CrimeDefinitions);
+                // Filter out crimes that don't use range calculation (not configurable)
+                var configurableCrimes = crimeManager.CrimeDefinitions.Where(c => c.usesRangeCalculation).ToList();
+                crimeCategoryTree = CrimeCategoryTreeBuilder.BuildCategoryTree(configurableCrimes);
                 crimeTreeNeedsRebuild = false;
             }
 
@@ -1862,66 +1864,83 @@ namespace Law_and_Order.Source.UI
                 innerRect.yMin += 35f;
             }
 
-            // Penalty inputs
-            Rect minPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
-            Widgets.Label(minPenaltyLabelRect, "LawAndOrder_MinPenalty".Translate());
-
-            Rect minPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
-            crimeMinPenaltyInput = Widgets.TextField(minPenaltyInputRect, crimeMinPenaltyInput);
-
-            innerRect.yMin += 30f;
-
-            Rect maxPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
-            Widgets.Label(maxPenaltyLabelRect, "LawAndOrder_MaxPenalty".Translate());
-
-            Rect maxPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
-            crimeMaxPenaltyInput = Widgets.TextField(maxPenaltyInputRect, crimeMaxPenaltyInput);
-
-            innerRect.yMin += 35f;
-
-            // Update button
-            float buttonWidth = innerRect.width;
-            float buttonHeight = 35f;
-
-            Rect updateButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
-            if (Widgets.ButtonText(updateButtonRect, "LawAndOrder_UpdateCrime".Translate()))
+            // Penalty inputs (only show for crimes that use range calculation)
+            if (selectedCrime.usesRangeCalculation)
             {
-                if (int.TryParse(crimeMinPenaltyInput, out int minPenalty) &&
-                    int.TryParse(crimeMaxPenaltyInput, out int maxPenalty) &&
-                    minPenalty > 0 && maxPenalty >= minPenalty)
+                Rect minPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
+                Widgets.Label(minPenaltyLabelRect, "LawAndOrder_MinPenalty".Translate());
+
+                Rect minPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
+                crimeMinPenaltyInput = Widgets.TextField(minPenaltyInputRect, crimeMinPenaltyInput);
+
+                innerRect.yMin += 30f;
+
+                Rect maxPenaltyLabelRect = new Rect(innerRect.x, innerRect.y, innerRect.width * 0.5f, 24f);
+                Widgets.Label(maxPenaltyLabelRect, "LawAndOrder_MaxPenalty".Translate());
+
+                Rect maxPenaltyInputRect = new Rect(innerRect.x + innerRect.width * 0.55f, innerRect.y, innerRect.width * 0.45f, 24f);
+                crimeMaxPenaltyInput = Widgets.TextField(maxPenaltyInputRect, crimeMaxPenaltyInput);
+
+                innerRect.yMin += 35f;
+
+                // Update button
+                float buttonWidth = innerRect.width;
+                float buttonHeight = 35f;
+
+                Rect updateButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
+                if (Widgets.ButtonText(updateButtonRect, "LawAndOrder_UpdateCrime".Translate()))
                 {
-                    // Stage the change
-                    selectedCrime.StagePenaltyChange(minPenalty, maxPenalty);
-                    Messages.Message(
-                        $"{selectedCrime.label} update staged (not yet committed)",
-                        MessageTypeDefOf.NeutralEvent
-                    );
+                    if (int.TryParse(crimeMinPenaltyInput, out int minPenalty) &&
+                        int.TryParse(crimeMaxPenaltyInput, out int maxPenalty) &&
+                        minPenalty > 0 && maxPenalty >= minPenalty)
+                    {
+                        // Stage the change
+                        selectedCrime.StagePenaltyChange(minPenalty, maxPenalty);
+                        Messages.Message(
+                            $"{selectedCrime.label} update staged (not yet committed)",
+                            MessageTypeDefOf.NeutralEvent
+                        );
+                    }
+                    else
+                    {
+                        Messages.Message(
+                            "LawAndOrder_InvalidPenaltyRange".Translate(),
+                            MessageTypeDefOf.RejectInput
+                        );
+                    }
                 }
-                else
+
+                innerRect.yMin += buttonHeight + 10f;
+
+                // Reset button (cancel pending changes for this crime)
+                if (selectedCrime.hasPendingChanges)
                 {
-                    Messages.Message(
-                        "LawAndOrder_InvalidPenaltyRange".Translate(),
-                        MessageTypeDefOf.RejectInput
-                    );
+                    Rect resetButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
+                    if (Widgets.ButtonText(resetButtonRect, "LawAndOrder_ResetCrime".Translate()))
+                    {
+                        selectedCrime.ClearPendingChanges();
+                        crimeMinPenaltyInput = selectedCrime.minPenalty.ToString();
+                        crimeMaxPenaltyInput = selectedCrime.maxPenalty.ToString();
+                        Messages.Message(
+                            $"{selectedCrime.label} reset to current values",
+                            MessageTypeDefOf.NeutralEvent
+                        );
+                    }
                 }
             }
-
-            innerRect.yMin += buttonHeight + 10f;
-
-            // Reset button (cancel pending changes for this crime)
-            if (selectedCrime.hasPendingChanges)
+            else
             {
-                Rect resetButtonRect = new Rect(innerRect.x, innerRect.y, buttonWidth, buttonHeight);
-                if (Widgets.ButtonText(resetButtonRect, "LawAndOrder_ResetCrime".Translate()))
-                {
-                    selectedCrime.ClearPendingChanges();
-                    crimeMinPenaltyInput = selectedCrime.minPenalty.ToString();
-                    crimeMaxPenaltyInput = selectedCrime.maxPenalty.ToString();
-                    Messages.Message(
-                        $"{selectedCrime.label} reset to current values",
-                        MessageTypeDefOf.NeutralEvent
-                    );
-                }
+                // For crimes that don't use range calculation, show an info message
+                Rect infoBoxRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 60f);
+                Widgets.DrawBoxSolid(infoBoxRect, new Color(0.2f, 0.3f, 0.4f, 0.5f));
+                Rect infoTextRect = infoBoxRect.ContractedBy(5f);
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = new Color(0.7f, 0.9f, 1f);
+                Widgets.Label(infoTextRect, "LawAndOrder_CrimeUsesValueCalculation".Translate());
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+                innerRect.yMin += 65f;
             }
         }
 

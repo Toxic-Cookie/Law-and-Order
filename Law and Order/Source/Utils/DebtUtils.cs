@@ -1086,15 +1086,27 @@ namespace Law_and_Order.Source.Utils
                     break;
 
                 case CrimeType.PropertyDestruction:
-                    // Property destruction based on thing value
+                    // Property destruction based on thing value + work cost
                     // Note: MarketValue is still accessible even if the thing is destroyed
                     if (targetThing != null)
                     {
                         float marketValue = targetThing.MarketValue;
-                        if (marketValue > 0)
+                        float workCost = CalculateWorkCost(targetThing);
+
+                        if (marketValue > 0 || workCost > 0)
                         {
-                            penalty = marketValue * 1.5f; // 150% of property value
-                            breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 1.5";
+                            // Total value includes materials + labor
+                            float totalValue = marketValue + workCost;
+                            penalty = totalValue * 1.5f; // 150% of total value (materials + labor)
+
+                            if (workCost > 0)
+                            {
+                                breakdown.calculationMethod = $"(Materials: {marketValue:F0}§ + Labor: {workCost:F0}§) × 1.5 = {totalValue:F0}§ × 1.5";
+                            }
+                            else
+                            {
+                                breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 1.5";
+                            }
                             breakdown.crimeDefName = "PropertyDestruction";
                             break;
                         }
@@ -1126,10 +1138,22 @@ namespace Law_and_Order.Source.Utils
                     if (targetThing != null)
                     {
                         float marketValue = targetThing.MarketValue;
-                        if (marketValue > 0)
+                        float workCost = CalculateWorkCost(targetThing);
+
+                        if (marketValue > 0 || workCost > 0)
                         {
-                            penalty = marketValue * 0.75f; // 75% of property value
-                            breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 0.75";
+                            // Total value includes materials + labor
+                            float totalValue = marketValue + workCost;
+                            penalty = totalValue * 0.75f; // 75% of total value (materials + labor)
+
+                            if (workCost > 0)
+                            {
+                                breakdown.calculationMethod = $"(Materials: {marketValue:F0}§ + Labor: {workCost:F0}§) × 0.75 = {totalValue:F0}§ × 0.75";
+                            }
+                            else
+                            {
+                                breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 0.75";
+                            }
                             breakdown.crimeDefName = "Vandalism";
                             break;
                         }
@@ -1140,15 +1164,27 @@ namespace Law_and_Order.Source.Utils
                     break;
 
                 case CrimeType.Arson:
-                    // Arson - scales with property value destroyed, like property destruction but more severe
+                    // Arson - scales with property value + work cost, like property destruction but more severe
                     // Note: MarketValue is still accessible even if the thing is destroyed
                     if (targetThing != null)
                     {
                         float marketValue = targetThing.MarketValue;
-                        if (marketValue > 0)
+                        float workCost = CalculateWorkCost(targetThing);
+
+                        if (marketValue > 0 || workCost > 0)
                         {
-                            penalty = marketValue * 2.5f; // Use 2.5x multiplier for arson
-                            breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 2.5";
+                            // Total value includes materials + labor
+                            float totalValue = marketValue + workCost;
+                            penalty = totalValue * 2.5f; // 2.5x multiplier for arson (materials + labor)
+
+                            if (workCost > 0)
+                            {
+                                breakdown.calculationMethod = $"(Materials: {marketValue:F0}§ + Labor: {workCost:F0}§) × 2.5 = {totalValue:F0}§ × 2.5";
+                            }
+                            else
+                            {
+                                breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 2.5";
+                            }
                             breakdown.crimeDefName = "Arson";
                             break;
                         }
@@ -1175,23 +1211,9 @@ namespace Law_and_Order.Source.Utils
                     break;
 
                 case CrimeType.Trespassing:
-                    // Trespassing - use crime definition system
-                    var trespassingManager = WorldComponent_CrimePenaltyManager.Instance;
-                    if (trespassingManager != null)
-                    {
-                        var trespassingCrimeDef = trespassingManager.GetCrimeDefinition("Trespassing");
-                        if (trespassingCrimeDef != null)
-                        {
-                            penalty = (trespassingCrimeDef.minPenalty + trespassingCrimeDef.maxPenalty) / 2f;
-                            breakdown.crimeDefName = "Trespassing";
-                            breakdown.minPenalty = trespassingCrimeDef.minPenalty;
-                            breakdown.maxPenalty = trespassingCrimeDef.maxPenalty;
-                            breakdown.calculationMethod = $"Range Average: ({trespassingCrimeDef.minPenalty} + {trespassingCrimeDef.maxPenalty}) / 2";
-                            break;
-                        }
-                    }
-                    penalty = 100f; // Fallback if crime definition not found
-                    breakdown.calculationMethod = "Fixed: 100§ (fallback)";
+                    // Trespassing - simple fixed penalty
+                    penalty = 100f;
+                    breakdown.calculationMethod = "Fixed: 100§";
                     breakdown.crimeDefName = "Trespassing";
                     break;
 
@@ -1230,6 +1252,36 @@ namespace Law_and_Order.Source.Utils
             breakdown.finalPenalty = penalty;
 
             return penalty;
+        }
+
+        /// <summary>
+        /// Calculate the work cost (labor value) of a building based on work-to-build stat.
+        /// This accounts for the colonist labor invested in constructing the building.
+        /// </summary>
+        private static float CalculateWorkCost(Thing thing)
+        {
+            if (thing == null)
+                return 0f;
+
+            // Check if this is a building (has WorkToBuild stat)
+            if (thing.def.building == null)
+                return 0f;
+
+            // Get work to build in ticks
+            float workToBuild = thing.GetStatValue(RimWorld.StatDefOf.WorkToBuild);
+            if (workToBuild <= 0)
+                return 0f;
+
+            // Convert work ticks to work days (60000 ticks per day)
+            float workDays = workToBuild / GenDate.TicksPerDay;
+
+            // Get silver per day labor rate from settings (default 10)
+            float silverPerDay = Law_and_Order.Source.Settings.LawAndOrderSettings.DefaultSilverPerDay?.Value ?? 10f;
+
+            // Calculate work cost
+            float workCost = workDays * silverPerDay;
+
+            return workCost;
         }
 
         #endregion

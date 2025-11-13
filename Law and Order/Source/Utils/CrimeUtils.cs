@@ -58,6 +58,15 @@ namespace Law_and_Order.Source.Utils
                 return;
             }
 
+            // Animals cannot be criminals - only humanlike pawns can commit crimes
+            if (criminal.RaceProps?.Animal == true)
+            {
+#if DEBUG
+                Mod.Log?.Message($"Skipping crime recording for animal: {criminal.LabelShort}");
+#endif
+                return;
+            }
+
             try
             {
                 float debtAmount = 0f;

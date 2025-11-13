@@ -16,6 +16,10 @@ namespace LawAndOrder
         public int maxPenalty;
         public CrimeCategory category;
 
+        // Indicates whether this crime uses the min/max range for penalty calculation
+        // False for value-based crimes (Theft, Vandalism, etc.) that calculate penalties from item values
+        public bool usesRangeCalculation = true;
+
         // Track pending changes (staged values before commit)
         public int pendingMinPenalty = -1;
         public int pendingMaxPenalty = -1;
@@ -26,7 +30,7 @@ namespace LawAndOrder
         }
 
         public CrimeDefinition(string defName, string label, string description, CrimeSeverity severity,
-            int minPenalty, int maxPenalty, CrimeCategory category)
+            int minPenalty, int maxPenalty, CrimeCategory category, bool usesRangeCalculation = true)
         {
             this.defName = defName;
             this.label = label;
@@ -35,6 +39,7 @@ namespace LawAndOrder
             this.minPenalty = minPenalty;
             this.maxPenalty = maxPenalty;
             this.category = category;
+            this.usesRangeCalculation = usesRangeCalculation;
             this.pendingMinPenalty = -1;
             this.pendingMaxPenalty = -1;
         }
@@ -98,6 +103,7 @@ namespace LawAndOrder
             Scribe_Values.Look(ref minPenalty, "minPenalty", 0);
             Scribe_Values.Look(ref maxPenalty, "maxPenalty", 0);
             Scribe_Values.Look(ref category, "category");
+            Scribe_Values.Look(ref usesRangeCalculation, "usesRangeCalculation", true);
             Scribe_Values.Look(ref pendingMinPenalty, "pendingMinPenalty", -1);
             Scribe_Values.Look(ref pendingMaxPenalty, "pendingMaxPenalty", -1);
         }

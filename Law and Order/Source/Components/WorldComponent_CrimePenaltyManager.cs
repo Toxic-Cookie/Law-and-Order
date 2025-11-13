@@ -235,7 +235,7 @@ namespace LawAndOrder
             crimeDefinitions.Add(new CrimeDefinition("Execution", "LawAndOrder_Crime_Execution".Translate(), "LawAndOrder_Crime_Execution_Desc".Translate(), CrimeSeverity.Critical, 4000, 8000, CrimeCategory.Lethal));
             crimeDefinitions.Add(new CrimeDefinition("VitalOrganDestruction", "LawAndOrder_Crime_VitalOrganDestruction".Translate(), "LawAndOrder_Crime_VitalOrganDestruction_Desc".Translate(), CrimeSeverity.Critical, 3500, 7000, CrimeCategory.Lethal));
             crimeDefinitions.Add(new CrimeDefinition("Murder", "LawAndOrder_Crime_Murder".Translate(), "LawAndOrder_Crime_Murder_Desc".Translate(), CrimeSeverity.Critical, 2500, 5000, CrimeCategory.Lethal));
-            crimeDefinitions.Add(new CrimeDefinition("Kidnapping", "LawAndOrder_Crime_Kidnapping".Translate(), "LawAndOrder_Crime_Kidnapping_Desc".Translate(), CrimeSeverity.Critical, 2000, 4000, CrimeCategory.Lethal));
+            crimeDefinitions.Add(new CrimeDefinition("Kidnapping", "LawAndOrder_Crime_Kidnapping".Translate(), "LawAndOrder_Crime_Kidnapping_Desc".Translate(), CrimeSeverity.Critical, 2000, 4000, CrimeCategory.Lethal, usesRangeCalculation: false)); // Always uses fixed 2000§
             crimeDefinitions.Add(new CrimeDefinition("Vaporization", "LawAndOrder_Crime_Vaporization".Translate(), "LawAndOrder_Crime_Vaporization_Desc".Translate(), CrimeSeverity.Critical, 2500, 5000, CrimeCategory.Lethal));
 
             // CRIMES AGAINST PERSONS - SEVERE INJURY
@@ -298,7 +298,7 @@ namespace LawAndOrder
             crimeDefinitions.Add(new CrimeDefinition("Insult", "LawAndOrder_Crime_Insult".Translate(), "LawAndOrder_Crime_Insult_Desc".Translate(), CrimeSeverity.Low, 20, 60, CrimeCategory.Social));
             crimeDefinitions.Add(new CrimeDefinition("WitnessedExecution", "LawAndOrder_Crime_WitnessedExecution".Translate(), "LawAndOrder_Crime_WitnessedExecution_Desc".Translate(), CrimeSeverity.Moderate, 200, 450, CrimeCategory.Social));
             crimeDefinitions.Add(new CrimeDefinition("Terrorizing", "LawAndOrder_Crime_Terrorizing".Translate(), "LawAndOrder_Crime_Terrorizing_Desc".Translate(), CrimeSeverity.Moderate, 150, 350, CrimeCategory.Social));
-            crimeDefinitions.Add(new CrimeDefinition("Trespassing", "LawAndOrder_Crime_Trespassing".Translate(), "LawAndOrder_Crime_Trespassing_Desc".Translate(), CrimeSeverity.Low, 30, 100, CrimeCategory.Social));
+            crimeDefinitions.Add(new CrimeDefinition("Trespassing", "LawAndOrder_Crime_Trespassing".Translate(), "LawAndOrder_Crime_Trespassing_Desc".Translate(), CrimeSeverity.Low, 30, 100, CrimeCategory.Social, usesRangeCalculation: false)); // Always uses fixed 100§
 
             // ANOMALY-SPECIFIC CRIMES (DLC)
             if (ModsConfig.AnomalyActive)
