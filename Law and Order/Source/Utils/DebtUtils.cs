@@ -120,6 +120,52 @@ namespace Law_and_Order.Source.Utils
         }
 
         /// <summary>
+        /// Forgive a specified percentage of a pawn's current debt
+        /// </summary>
+        /// <param name="pawn">The pawn whose debt to forgive</param>
+        /// <param name="percentageToForgive">Percentage of current debt to forgive (0-100)</param>
+        /// <param name="failReason">Output reason if forgiveness fails</param>
+        /// <returns>True if debt was forgiven, false otherwise</returns>
+        public static bool TryForgiveDebt(Pawn pawn, float percentageToForgive, out string failReason)
+        {
+            failReason = null;
+
+            var debtRecord = TryGetDebtRecord(pawn);
+            if (debtRecord == null || debtRecord.CurrentDebt <= 0)
+            {
+                failReason = "LawAndOrder_DebtForgiveness_NoDebt".Translate();
+                return false;
+            }
+
+            // Validate percentage
+            if (percentageToForgive < 0 || percentageToForgive > 100)
+            {
+                failReason = "Invalid forgiveness percentage";
+                return false;
+            }
+
+            // Calculate amount to forgive
+            float currentDebt = debtRecord.CurrentDebt;
+            float amountToForgive = currentDebt * (percentageToForgive / 100f);
+
+            if (amountToForgive <= 0)
+            {
+                failReason = "LawAndOrder_DebtForgiveness_ZeroAmount".Translate();
+                return false;
+            }
+
+            // Forgive the debt
+            debtRecord.PayDebt(amountToForgive, "LawAndOrder_DebtForgiveness_Reason".Translate());
+
+            if (Prefs.DevMode)
+            {
+                Mod.Log?.Message($"[Law & Order] Forgave {amountToForgive:F0} silver ({percentageToForgive:F0}% of {currentDebt:F0}) for {pawn.LabelShort}");
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Calculate total debt for all crimes in a criminal record.
         /// Uses the pre-calculated debt amounts stored in each Crime object.
         /// </summary>
@@ -233,18 +279,23 @@ namespace Law_and_Order.Source.Utils
         #region Phase 3: Crime Penalty Management System Integration
 
         /// <summary>
-        /// Calculate penalty within the crime's min-max range based on damage context.
+        /// Calculate contextual penalty based on the crime's base penalty, player multiplier, and damage context.
         /// Returns a contextual penalty (not random) based on severity factors.
+        /// Severity causes ±33% variation around the base value (0.67x to 1.33x).
+        /// Also populates the breakdown object with severity calculation details.
         /// </summary>
-        private static float CalculatePenaltyInRange(CrimeDefinition crimeDef, DamageInfo? damageInfo, Pawn victim)
+        private static float CalculatePenaltyInRange(CrimeDefinition crimeDef, DamageInfo? damageInfo, Pawn victim, Hediffs.PenaltyBreakdown breakdown)
         {
             if (crimeDef == null)
             {
                 return 0f;
             }
 
-            // Default to middle of range (0.5 = 50% severity)
+            // Default to middle severity (0.5 = 50% severity)
             float severity = 0.5f;
+            float bodyPartImportance = 0.5f;
+            float damageRatio = 0.5f;
+            bool permanentEffect = false;
 
             // Analyze damage severity if we have damage info
             if (damageInfo != null && damageInfo.HasValue && victim != null)
@@ -252,10 +303,10 @@ namespace Law_and_Order.Source.Utils
                 DamageInfo dinfo = damageInfo.Value;
 
                 // Factor 1: Body part importance (0.0 to 1.0)
-                float bodyPartImportance = GetBodyPartImportance(dinfo.HitPart);
+                bodyPartImportance = GetBodyPartImportance(dinfo.HitPart);
 
                 // Factor 2: Damage amount relative to victim health (0.0 to 1.0)
-                float damageRatio = 0.5f;
+                damageRatio = 0.5f;
                 if (victim.health?.summaryHealth?.SummaryHealthPercent > 0)
                 {
                     // Calculate how much of victim's health was damaged
@@ -265,20 +316,33 @@ namespace Law_and_Order.Source.Utils
                 }
 
                 // Factor 3: Permanent effects (0.0 or 1.0)
-                float permanentEffect = IsPermanentInjury(dinfo, victim) ? 1.0f : 0.0f;
+                permanentEffect = IsPermanentInjury(dinfo, victim);
+                float permanentEffectValue = permanentEffect ? 1.0f : 0.0f;
 
                 // Combine factors (weighted average)
                 // Body part: 40%, Damage ratio: 40%, Permanent: 20%
-                severity = (bodyPartImportance * 0.4f) + (damageRatio * 0.4f) + (permanentEffect * 0.2f);
+                severity = (bodyPartImportance * 0.4f) + (damageRatio * 0.4f) + (permanentEffectValue * 0.2f);
                 severity = UnityEngine.Mathf.Clamp01(severity);
             }
 
-            // Interpolate between min and max penalty
-            int basePenalty = UnityEngine.Mathf.RoundToInt(
-                UnityEngine.Mathf.Lerp(crimeDef.minPenalty, crimeDef.maxPenalty, severity)
-            );
+            // Store severity calculation in breakdown
+            if (breakdown != null)
+            {
+                breakdown.bodyPartImportance = bodyPartImportance;
+                breakdown.damageRatio = damageRatio;
+                breakdown.hasPermanentEffect = permanentEffect;
+                breakdown.severityScore = severity;
+            }
 
-            return basePenalty;
+            // Calculate base value with player multiplier
+            float baseValue = crimeDef.basePenalty * crimeDef.penaltyMultiplier;
+
+            // Apply severity-based variation: 0.67x to 1.33x of base value
+            // This maintains the same range width as before (±33% around center)
+            float severityMultiplier = UnityEngine.Mathf.Lerp(0.67f, 1.33f, severity);
+            float contextualPenalty = baseValue * severityMultiplier;
+
+            return contextualPenalty;
         }
 
         /// <summary>
@@ -443,13 +507,15 @@ namespace Law_and_Order.Source.Utils
         /// <summary>
         /// Apply all enabled penalty multipliers based on crime context.
         /// Multipliers are applied multiplicatively (not additively).
+        /// Tracks applied multipliers in the breakdown object.
         /// </summary>
         private static float ApplyMultipliers(
             float basePenalty,
             WorldComponent_CrimePenaltyManager manager,
             Pawn criminal,
             Pawn victim,
-            DamageInfo? damageInfo)
+            DamageInfo? damageInfo,
+            Hediffs.PenaltyBreakdown breakdown)
         {
             if (manager == null || manager.PenaltyMultipliers == null)
             {
@@ -483,10 +549,6 @@ namespace Law_and_Order.Source.Utils
                         shouldApply = IsChild(victim);
                         break;
 
-                    case MultiplierType.Wartime:
-                        shouldApply = IsWartime(criminal?.Faction);
-                        break;
-
                     case MultiplierType.Premeditated:
                         shouldApply = WasPremeditated(damageInfo);
                         break;
@@ -498,24 +560,30 @@ namespace Law_and_Order.Source.Utils
                     case MultiplierType.RaiderWealth:
                         // Custom factor based on faction wealth
                         customFactor = GetFactionWealthFactor(criminal?.Faction);
+                        if (customFactor != 1.0f && breakdown != null)
+                        {
+                            breakdown.appliedMultipliers.Add(new Hediffs.MultiplierInfo("Raider Wealth", customFactor));
+                        }
                         penalty *= customFactor;
                         continue; // Skip standard multiplier application
 
                     case MultiplierType.ColonyWealth:
                         // Custom factor based on colony wealth
                         customFactor = GetColonyWealthFactor();
+                        if (customFactor != 1.0f && breakdown != null)
+                        {
+                            breakdown.appliedMultipliers.Add(new Hediffs.MultiplierInfo("Colony Wealth", customFactor));
+                        }
                         penalty *= customFactor;
                         continue;
 
                     case MultiplierType.DifficultySetting:
                         // Custom factor based on difficulty
                         customFactor = GetDifficultyFactor();
-                        penalty *= customFactor;
-                        continue;
-
-                    case MultiplierType.FactionRelations:
-                        // Custom factor based on faction relations
-                        customFactor = GetFactionRelationFactor(criminal?.Faction);
+                        if (customFactor != 1.0f && breakdown != null)
+                        {
+                            breakdown.appliedMultipliers.Add(new Hediffs.MultiplierInfo("Difficulty", customFactor));
+                        }
                         penalty *= customFactor;
                         continue;
                 }
@@ -524,6 +592,22 @@ namespace Law_and_Order.Source.Utils
                 if (shouldApply)
                 {
                     penalty *= multiplier.multiplierValue;
+                    if (breakdown != null)
+                    {
+                        breakdown.appliedMultipliers.Add(new Hediffs.MultiplierInfo(multiplier.multiplierType.ToString(), multiplier.multiplierValue));
+                    }
+                }
+            }
+
+            // Cap total multiplier at 4x base penalty to prevent extreme outliers
+            float totalMultiplier = penalty / basePenalty;
+            if (totalMultiplier > 4.0f)
+            {
+                penalty = basePenalty * 4.0f;
+
+                if (Prefs.DevMode)
+                {
+                    Mod.Log?.Message($"[Law & Order] Penalty capped: {totalMultiplier:F2}x reduced to 4.0x (from {penalty:F0} to {basePenalty * 4.0f:F0} silver)");
                 }
             }
 
@@ -585,20 +669,6 @@ namespace Law_and_Order.Source.Utils
 
             return victim.DevelopmentalStage == DevelopmentalStage.Child ||
                    victim.DevelopmentalStage == DevelopmentalStage.Baby;
-        }
-
-        /// <summary>
-        /// Check if the colony is currently at war with the criminal's faction
-        /// </summary>
-        private static bool IsWartime(Faction faction)
-        {
-            if (faction == null)
-            {
-                return false;
-            }
-
-            // Check if faction is hostile to player
-            return faction.HostileTo(Faction.OfPlayer);
         }
 
         /// <summary>
@@ -665,7 +735,7 @@ namespace Law_and_Order.Source.Utils
 
         /// <summary>
         /// Get colony wealth multiplier factor
-        /// Scales penalties based on how wealthy the colony is
+        /// Scales penalties based on how wealthy the colony is using a smooth logarithmic curve
         /// </summary>
         private static float GetColonyWealthFactor()
         {
@@ -678,28 +748,34 @@ namespace Law_and_Order.Source.Utils
 
             float wealth = map.wealthWatcher.WealthTotal;
 
-            // Scale penalties based on wealth brackets:
-            // < 10k wealth = 0.5x (poor colony)
-            // 10k-50k = 1.0x (normal)
-            // 50k-100k = 1.5x (wealthy)
-            // > 100k = 2.0x (very wealthy)
+            // Use logarithmic scaling for smoother progression
+            // Reference points:
+            // 10k wealth = 0.5x (poor early colony)
+            // 50k wealth = 1.0x (established colony - baseline)
+            // 150k wealth = 1.5x (wealthy colony)
+            // 300k+ wealth = 2.0x (very wealthy endgame colony)
 
-            if (wealth < 10000f)
+            const float baselineWealth = 50000f;
+            const float minMultiplier = 0.5f;
+            const float maxMultiplier = 2.0f;
+
+            if (wealth <= 0)
             {
-                return 0.5f;
+                return minMultiplier;
             }
-            else if (wealth < 50000f)
-            {
-                return 1.0f;
-            }
-            else if (wealth < 100000f)
-            {
-                return 1.5f;
-            }
-            else
-            {
-                return 2.0f;
-            }
+
+            // Logarithmic scaling formula: factor = 1.0 + log2(wealth / baseline) * 0.5
+            // This creates a smooth curve where:
+            // - Doubling wealth from baseline adds +0.5x multiplier
+            // - Halving wealth from baseline subtracts -0.5x multiplier
+            float wealthRatio = wealth / baselineWealth;
+            float logFactor = UnityEngine.Mathf.Log(wealthRatio, 2f) * 0.5f;
+            float multiplier = 1.0f + logFactor;
+
+            // Clamp to min/max range
+            multiplier = UnityEngine.Mathf.Clamp(multiplier, minMultiplier, maxMultiplier);
+
+            return multiplier;
         }
 
         /// <summary>
@@ -712,37 +788,6 @@ namespace Law_and_Order.Source.Utils
             // For now, return 1.0 (no adjustment)
             // Could use Find.Storyteller.difficulty or similar
             return 1.0f;
-        }
-
-        /// <summary>
-        /// Get faction relations multiplier factor
-        /// Hostile factions get higher penalties, allies get lower
-        /// </summary>
-        private static float GetFactionRelationFactor(Faction faction)
-        {
-            if (faction == null)
-            {
-                return 1.0f;
-            }
-
-            int goodwill = faction.GoodwillWith(Faction.OfPlayer);
-
-            // Hostile factions (-100 to -50) = 2.0x penalty
-            // Neutral factions (-50 to 50) = 1.0x penalty
-            // Allied factions (50 to 100) = 0.5x penalty
-
-            if (goodwill < -50)
-            {
-                return 2.0f;
-            }
-            else if (goodwill > 50)
-            {
-                return 0.5f;
-            }
-            else
-            {
-                return 1.0f;
-            }
         }
 
         /// <summary>
@@ -899,8 +944,10 @@ namespace Law_and_Order.Source.Utils
         /// Calculate debt for a crime using the new penalty management system.
         /// This is the primary method for Phase 3 integration.
         /// </summary>
-        public static float CalculateDebtForCrimeNew(Pawn criminal, Pawn victim, DamageInfo? damageInfo, string crimeDefName = null)
+        public static float CalculateDebtForCrimeNew(Pawn criminal, Pawn victim, DamageInfo? damageInfo, out Hediffs.PenaltyBreakdown breakdown, string crimeDefName = null)
         {
+            breakdown = new Hediffs.PenaltyBreakdown();
+
             // Get the crime penalty manager
             var manager = WorldComponent_CrimePenaltyManager.Instance;
             if (manager == null)
@@ -923,18 +970,33 @@ namespace Law_and_Order.Source.Utils
                 return 0f;
             }
 
+            // Store crime definition info in breakdown
+            breakdown.crimeDefName = crimeDefName;
+            // Calculate effective range for display (based on ±33% severity variation)
+            crimeDef.GetEffectivePenaltyRange(out int displayMin, out int displayMax);
+            breakdown.minPenalty = displayMin;
+            breakdown.maxPenalty = displayMax;
+            breakdown.isNonVictimCrime = false;
+
             // Calculate base penalty within range
-            float basePenalty = CalculatePenaltyInRange(crimeDef, damageInfo, victim);
+            float basePenalty = CalculatePenaltyInRange(crimeDef, damageInfo, victim, breakdown);
+            breakdown.basePenalty = basePenalty;
 
             // Apply multipliers
-            float finalPenalty = ApplyMultipliers(basePenalty, manager, criminal, victim, damageInfo);
+            float finalPenalty = ApplyMultipliers(basePenalty, manager, criminal, victim, damageInfo, breakdown);
+
+            // Apply global penalty scale from settings
+            float globalScale = Law_and_Order.Source.Settings.LawAndOrderSettings.GlobalPenaltyScale?.Value ?? 1.0f;
+            breakdown.globalPenaltyScale = globalScale;
+            finalPenalty *= globalScale;
 
             // Clamp to valid range (1 to 100,000 silver)
             int penalty = UnityEngine.Mathf.Clamp(UnityEngine.Mathf.RoundToInt(finalPenalty), 1, 100000);
+            breakdown.finalPenalty = penalty;
 
             if (Prefs.DevMode)
             {
-                Mod.Log?.Message($"[Law & Order] Calculated penalty: {penalty} silver for {crimeDefName} (base: {basePenalty:F0}, final: {finalPenalty:F0})");
+                Mod.Log?.Message($"[Law & Order] Calculated penalty: {penalty} silver for {crimeDefName} (base: {basePenalty:F0}, multipliers: {finalPenalty/basePenalty/globalScale:F2}x, global scale: {globalScale:F2}x, final: {finalPenalty:F0})");
             }
 
             return penalty;
@@ -944,8 +1006,13 @@ namespace Law_and_Order.Source.Utils
         /// Calculate debt for crimes that don't involve direct victim damage
         /// (Theft, Trespassing, Contraband, Property Destruction, etc.)
         /// </summary>
-        public static float CalculateDebtForNonVictimCrime(Pawn criminal, CrimeType crimeType, Thing targetThing = null)
+        public static float CalculateDebtForNonVictimCrime(Pawn criminal, CrimeType crimeType, out Hediffs.PenaltyBreakdown breakdown, Thing targetThing = null)
         {
+            breakdown = new Hediffs.PenaltyBreakdown();
+            breakdown.isNonVictimCrime = true;
+
+            float penalty = 0f;
+
             // Base penalties for non-victim crimes
             switch (crimeType)
             {
@@ -954,77 +1021,216 @@ namespace Law_and_Order.Source.Utils
                     if (targetThing != null)
                     {
                         float itemValue = targetThing.MarketValue * targetThing.stackCount;
-                        return itemValue * 1.5f; // 150% of item value
+                        penalty = itemValue * 1.25f; // 125% of item value
+                        breakdown.calculationMethod = $"Item Value ({itemValue:F0}§) × 1.25";
                     }
-                    return 100f; // Minimum for unspecified theft
+                    else
+                    {
+                        penalty = 100f; // Minimum for unspecified theft
+                        breakdown.calculationMethod = "Fixed: 100§ (unspecified theft)";
+                    }
+                    breakdown.crimeDefName = "Theft";
+                    break;
 
                 case CrimeType.PropertyDestruction:
-                    // Property destruction based on thing value
+                    // Property destruction based on thing value + work cost
+                    // Note: MarketValue is still accessible even if the thing is destroyed
                     if (targetThing != null)
                     {
-                        return targetThing.MarketValue * 2.0f; // 200% of property value
+                        float marketValue = targetThing.MarketValue;
+                        float workCost = CalculateWorkCost(targetThing);
+
+                        if (marketValue > 0 || workCost > 0)
+                        {
+                            // Total value includes materials + labor
+                            float totalValue = marketValue + workCost;
+                            penalty = totalValue * 1.5f; // 150% of total value (materials + labor)
+
+                            if (workCost > 0)
+                            {
+                                breakdown.calculationMethod = $"(Materials: {marketValue:F0}§ + Labor: {workCost:F0}§) × 1.5 = {totalValue:F0}§ × 1.5";
+                            }
+                            else
+                            {
+                                breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 1.5";
+                            }
+                            breakdown.crimeDefName = "PropertyDestruction";
+                            break;
+                        }
                     }
-                    return 500f; // Default for severe property damage
+
+                    // Fallback: Use crime definition system for destroyed or invaluable buildings
+                    var manager = WorldComponent_CrimePenaltyManager.Instance;
+                    if (manager != null)
+                    {
+                        var crimeDef = manager.GetCrimeDefinition("BuildingDestruction");
+                        if (crimeDef != null)
+                        {
+                            penalty = crimeDef.basePenalty * crimeDef.penaltyMultiplier;
+                            breakdown.crimeDefName = "BuildingDestruction";
+                            crimeDef.GetEffectivePenaltyRange(out int min, out int max);
+                            breakdown.minPenalty = min;
+                            breakdown.maxPenalty = max;
+                            breakdown.calculationMethod = $"Base Penalty: {crimeDef.basePenalty}§ × {crimeDef.penaltyMultiplier:F2}x";
+                            break;
+                        }
+                    }
+                    penalty = 350f; // Final fallback for severe property damage
+                    breakdown.calculationMethod = "Fixed: 350§ (fallback)";
+                    breakdown.crimeDefName = "PropertyDestruction";
+                    break;
 
                 case CrimeType.Vandalism:
                     // Vandalism is minor property damage
+                    // Note: MarketValue is still accessible even if the thing is destroyed
                     if (targetThing != null)
                     {
-                        return targetThing.MarketValue * 1.0f; // 100% of property value
+                        float marketValue = targetThing.MarketValue;
+                        float workCost = CalculateWorkCost(targetThing);
+
+                        if (marketValue > 0 || workCost > 0)
+                        {
+                            // Total value includes materials + labor
+                            float totalValue = marketValue + workCost;
+                            penalty = totalValue * 0.75f; // 75% of total value (materials + labor)
+
+                            if (workCost > 0)
+                            {
+                                breakdown.calculationMethod = $"(Materials: {marketValue:F0}§ + Labor: {workCost:F0}§) × 0.75 = {totalValue:F0}§ × 0.75";
+                            }
+                            else
+                            {
+                                breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 0.75";
+                            }
+                            breakdown.crimeDefName = "Vandalism";
+                            break;
+                        }
                     }
-                    return 200f; // Default for minor damage
+                    penalty = 200f; // Default for minor damage
+                    breakdown.calculationMethod = "Fixed: 200§ (minor damage)";
+                    breakdown.crimeDefName = "Vandalism";
+                    break;
 
                 case CrimeType.Arson:
-                    // Arson - scales with property value destroyed, like property destruction but more severe
+                    // Arson - scales with property value + work cost, like property destruction but more severe
+                    // Note: MarketValue is still accessible even if the thing is destroyed
                     if (targetThing != null)
                     {
-                        // Use 3x multiplier for arson (more severe than property destruction's 2x)
-                        return targetThing.MarketValue * 3.0f;
+                        float marketValue = targetThing.MarketValue;
+                        float workCost = CalculateWorkCost(targetThing);
+
+                        if (marketValue > 0 || workCost > 0)
+                        {
+                            // Total value includes materials + labor
+                            float totalValue = marketValue + workCost;
+                            penalty = totalValue * 2.5f; // 2.5x multiplier for arson (materials + labor)
+
+                            if (workCost > 0)
+                            {
+                                breakdown.calculationMethod = $"(Materials: {marketValue:F0}§ + Labor: {workCost:F0}§) × 2.5 = {totalValue:F0}§ × 2.5";
+                            }
+                            else
+                            {
+                                breakdown.calculationMethod = $"Property Value ({marketValue:F0}§) × 2.5";
+                            }
+                            breakdown.crimeDefName = "Arson";
+                            break;
+                        }
                     }
 
-                    // No target thing provided - use crime definition system for base penalty
+                    // Target destroyed or no value - use crime definition system for base penalty
                     var arsonManager = WorldComponent_CrimePenaltyManager.Instance;
                     if (arsonManager != null)
                     {
                         var arsonCrimeDef = arsonManager.GetCrimeDefinition("Arson");
                         if (arsonCrimeDef != null)
                         {
-                            // Use average of min and max penalty
-                            return (arsonCrimeDef.minPenalty + arsonCrimeDef.maxPenalty) / 2f;
+                            penalty = arsonCrimeDef.basePenalty * arsonCrimeDef.penaltyMultiplier;
+                            breakdown.crimeDefName = "Arson";
+                            arsonCrimeDef.GetEffectivePenaltyRange(out int min, out int max);
+                            breakdown.minPenalty = min;
+                            breakdown.maxPenalty = max;
+                            breakdown.calculationMethod = $"Base Penalty: {arsonCrimeDef.basePenalty}§ × {arsonCrimeDef.penaltyMultiplier:F2}x";
+                            break;
                         }
                     }
-                    return 1500f; // Fallback if crime definition not found
+                    penalty = 850f; // Fallback if crime definition not found
+                    breakdown.calculationMethod = "Fixed: 850§ (fallback)";
+                    breakdown.crimeDefName = "Arson";
+                    break;
 
                 case CrimeType.Trespassing:
-                    // Trespassing - use crime definition system
-                    var manager = WorldComponent_CrimePenaltyManager.Instance;
-                    if (manager != null)
-                    {
-                        var crimeDef = manager.GetCrimeDefinition("Trespassing");
-                        if (crimeDef != null)
-                        {
-                            // Use average of min and max penalty
-                            return (crimeDef.minPenalty + crimeDef.maxPenalty) / 2f;
-                        }
-                    }
-                    return 100f; // Fallback if crime definition not found
+                    // Trespassing - simple fixed penalty
+                    penalty = 100f;
+                    breakdown.calculationMethod = "Fixed: 100§";
+                    breakdown.crimeDefName = "Trespassing";
+                    break;
 
                 case CrimeType.ContrabandPossession:
                     // Contraband penalty based on item
                     if (targetThing != null)
                     {
-                        return targetThing.MarketValue * 2.0f; // 200% of contraband value
+                        float contrabandValue = targetThing.MarketValue;
+                        penalty = contrabandValue * 2.0f; // 200% of contraband value
+                        breakdown.calculationMethod = $"Contraband Value ({contrabandValue:F0}§) × 2.0";
                     }
-                    return 100f; // Default contraband penalty
+                    else
+                    {
+                        penalty = 100f; // Default contraband penalty
+                        breakdown.calculationMethod = "Fixed: 100§ (unspecified contraband)";
+                    }
+                    breakdown.crimeDefName = "ContrabandPossession";
+                    break;
 
                 case CrimeType.Kidnapping:
                     // Kidnapping is a serious crime even without immediate damage
-                    return 2000f;
+                    penalty = 2000f;
+                    breakdown.calculationMethod = "Fixed: 2000§ (kidnapping)";
+                    breakdown.crimeDefName = "Kidnapping";
+                    break;
 
                 default:
                     Mod.Log?.Warning($"CalculateDebtForNonVictimCrime called with unsupported crime type: {crimeType}");
-                    return 100f; // Fallback penalty
+                    penalty = 100f; // Fallback penalty
+                    breakdown.calculationMethod = "Fixed: 100§ (unknown crime type)";
+                    breakdown.crimeDefName = "Unknown";
+                    break;
             }
+
+            breakdown.basePenalty = penalty;
+            breakdown.finalPenalty = penalty;
+
+            return penalty;
+        }
+
+        /// <summary>
+        /// Calculate the work cost (labor value) of a building based on work-to-build stat.
+        /// This accounts for the colonist labor invested in constructing the building.
+        /// </summary>
+        private static float CalculateWorkCost(Thing thing)
+        {
+            if (thing == null)
+                return 0f;
+
+            // Check if this is a building (has WorkToBuild stat)
+            if (thing.def.building == null)
+                return 0f;
+
+            // Get work to build in ticks
+            float workToBuild = thing.GetStatValue(RimWorld.StatDefOf.WorkToBuild);
+            if (workToBuild <= 0)
+                return 0f;
+
+            // Convert work ticks to work days (60000 ticks per day)
+            float workDays = workToBuild / GenDate.TicksPerDay;
+
+            // Get silver per day labor rate from settings (default 10)
+            float silverPerDay = Law_and_Order.Source.Settings.LawAndOrderSettings.DefaultSilverPerDay?.Value ?? 10f;
+
+            // Calculate work cost
+            float workCost = workDays * silverPerDay;
+
+            return workCost;
         }
 
         #endregion

@@ -45,7 +45,14 @@
       "Bash(if [ -d \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\MapComponentDefs\" ])",
       "Bash(then rmdir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\MapComponentDefs\")",
       "Bash(else echo \"Directory does not exist in source\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git restore:*)",
+      "Bash(Select-String -Pattern \"error|warning\" -Context 0,2)",
+      "Bash(Select-String -Pattern \"error|warning|succeeded|failed\" -Context 0,2)",
+      "Bash(cmd /c copy:*)"
     ],
     "deny": [],
     "ask": []

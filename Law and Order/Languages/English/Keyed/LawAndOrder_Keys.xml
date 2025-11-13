@@ -30,7 +30,7 @@
 
   <!-- Action Buttons -->
   <LawAndOrder_BeginHearing>Begin Hearing</LawAndOrder_BeginHearing>
-  <LawAndOrder_Pardon>Pardon</LawAndOrder_Pardon>
+  <LawAndOrder_Pardon>Pardon Crimes</LawAndOrder_Pardon>
 
   <!-- Post-Debt Action -->
   <LawAndOrder_PostDebtAction>When debt is paid:</LawAndOrder_PostDebtAction>
@@ -89,9 +89,6 @@
 
   <LawAndOrder_Setting_TheftMultiplier_Title>Theft Multiplier</LawAndOrder_Setting_TheftMultiplier_Title>
   <LawAndOrder_Setting_TheftMultiplier_Desc>Multiplier applied to stolen item value. Default 1.5x means debt is 150% of item value.</LawAndOrder_Setting_TheftMultiplier_Desc>
-
-  <LawAndOrder_Setting_ContrabandPerDrug_Title>Contraband per Drug</LawAndOrder_Setting_ContrabandPerDrug_Title>
-  <LawAndOrder_Setting_ContrabandPerDrug_Desc>Debt per illegal drug found on the raider (flake, yayo, go-juice).</LawAndOrder_Setting_ContrabandPerDrug_Desc>
 
   <!-- Crimes Against Persons -->
   <LawAndOrder_Setting_Assault_Title>Assault</LawAndOrder_Setting_Assault_Title>
@@ -206,8 +203,6 @@
   <LawAndOrder_Multiplier_VictimNobility_Desc>Applied when victim is a noble or royal</LawAndOrder_Multiplier_VictimNobility_Desc>
   <LawAndOrder_Multiplier_VictimAge>Victim Age (Child)</LawAndOrder_Multiplier_VictimAge>
   <LawAndOrder_Multiplier_VictimAge_Desc>Applied when victim is a child</LawAndOrder_Multiplier_VictimAge_Desc>
-  <LawAndOrder_Multiplier_Wartime>Wartime</LawAndOrder_Multiplier_Wartime>
-  <LawAndOrder_Multiplier_Wartime_Desc>Applied during declared war (reduces penalties)</LawAndOrder_Multiplier_Wartime_Desc>
   <LawAndOrder_Multiplier_Premeditated>Premeditated</LawAndOrder_Multiplier_Premeditated>
   <LawAndOrder_Multiplier_Premeditated_Desc>Applied for planned attacks (vs opportunistic)</LawAndOrder_Multiplier_Premeditated_Desc>
   <LawAndOrder_Multiplier_VictimRelationship>Victim Relationship</LawAndOrder_Multiplier_VictimRelationship>
@@ -218,8 +213,6 @@
   <LawAndOrder_Multiplier_ColonyWealth_Desc>Applied based on colony wealth</LawAndOrder_Multiplier_ColonyWealth_Desc>
   <LawAndOrder_Multiplier_DifficultySetting>Difficulty Setting</LawAndOrder_Multiplier_DifficultySetting>
   <LawAndOrder_Multiplier_DifficultySetting_Desc>Applied based on game difficulty</LawAndOrder_Multiplier_DifficultySetting_Desc>
-  <LawAndOrder_Multiplier_FactionRelations>Faction Relations</LawAndOrder_Multiplier_FactionRelations>
-  <LawAndOrder_Multiplier_FactionRelations_Desc>Applied based on relations with raider's faction</LawAndOrder_Multiplier_FactionRelations_Desc>
 
   <!-- Crime Definitions - Lethal -->
   <LawAndOrder_Crime_Execution>Execution</LawAndOrder_Crime_Execution>
@@ -409,5 +402,44 @@
   <LawAndOrder_CrimeCategory_Trespassing>Trespassing</LawAndOrder_CrimeCategory_Trespassing>
   <LawAndOrder_CrimeCategory_ContrabandPossession>Contraband Possession</LawAndOrder_CrimeCategory_ContrabandPossession>
   <LawAndOrder_CrimeCategory_Unknown>Unknown Crime</LawAndOrder_CrimeCategory_Unknown>
+
+  <!-- Phase 5: Enhanced Settings -->
+  <LawAndOrder_Setting_GlobalPenaltyScale_Title>Global Penalty Scale</LawAndOrder_Setting_GlobalPenaltyScale_Title>
+  <LawAndOrder_Setting_GlobalPenaltyScale_Desc>Globally adjust all crime penalties by a percentage. 1.0 = 100% (default), 0.5 = 50% (easier), 2.0 = 200% (harder). Range: 0.25x to 3.0x</LawAndOrder_Setting_GlobalPenaltyScale_Desc>
+
+  <!-- Penalty Breakdown Tooltips -->
+  <LawAndOrder_PenaltyBreakdown_Header>Penalty Calculation Breakdown</LawAndOrder_PenaltyBreakdown_Header>
+  <LawAndOrder_PenaltyBreakdown_Crime>Crime Type: {0}</LawAndOrder_PenaltyBreakdown_Crime>
+  <LawAndOrder_PenaltyBreakdown_BaseRange>Base Range: {0}-{1} silver</LawAndOrder_PenaltyBreakdown_BaseRange>
+  <LawAndOrder_PenaltyBreakdown_Victim>Victim: {0}</LawAndOrder_PenaltyBreakdown_Victim>
+  <LawAndOrder_PenaltyBreakdown_Damage>Damage Dealt: {0}</LawAndOrder_PenaltyBreakdown_Damage>
+  <LawAndOrder_PenaltyBreakdown_Final>Final Penalty: {0} silver</LawAndOrder_PenaltyBreakdown_Final>
+  <LawAndOrder_PenaltyBreakdown_GlobalScale>Global Scale: {0}%</LawAndOrder_PenaltyBreakdown_GlobalScale>
+  <LawAndOrder_PenaltyBreakdown_NotAvailable>Penalty breakdown not available</LawAndOrder_PenaltyBreakdown_NotAvailable>
+  <LawAndOrder_PenaltyBreakdown_Simple>Penalty: {0} silver</LawAndOrder_PenaltyBreakdown_Simple>
+  <LawAndOrder_PenaltyBreakdown_Calculation>Calculation: {0}</LawAndOrder_PenaltyBreakdown_Calculation>
+  <LawAndOrder_PenaltyBreakdown_SeverityFactors>Severity Factors:</LawAndOrder_PenaltyBreakdown_SeverityFactors>
+  <LawAndOrder_PenaltyBreakdown_BodyPartImportance>Body Part Importance: {0}%</LawAndOrder_PenaltyBreakdown_BodyPartImportance>
+  <LawAndOrder_PenaltyBreakdown_DamageRatio>Damage Ratio (% Health Lost): {0}%</LawAndOrder_PenaltyBreakdown_DamageRatio>
+  <LawAndOrder_PenaltyBreakdown_PermanentEffect>Permanent Effect: {0}</LawAndOrder_PenaltyBreakdown_PermanentEffect>
+  <LawAndOrder_PenaltyBreakdown_SeverityScore>Combined Severity Score: {0}%</LawAndOrder_PenaltyBreakdown_SeverityScore>
+  <LawAndOrder_PenaltyBreakdown_BasePenalty>Base Penalty (after severity): {0} silver</LawAndOrder_PenaltyBreakdown_BasePenalty>
+  <LawAndOrder_PenaltyBreakdown_Multipliers>Applied Multipliers:</LawAndOrder_PenaltyBreakdown_Multipliers>
+
+  <!-- Crime UI Messages -->
+  <LawAndOrder_CrimeUsesValueCalculation>This crime uses value-based calculation (item value, property value, or fixed amount) instead of a penalty range.</LawAndOrder_CrimeUsesValueCalculation>
+
+  <!-- Debt Forgiveness UI -->
+  <LawAndOrder_ITab_DebtPercentPaid>Paid: {0}%</LawAndOrder_ITab_DebtPercentPaid>
+  <LawAndOrder_ITab_ForgiveDebt_Header>Debt Forgiveness</LawAndOrder_ITab_ForgiveDebt_Header>
+  <LawAndOrder_ITab_ForgiveDebt_Confirm>Forgive Debt</LawAndOrder_ITab_ForgiveDebt_Confirm>
+  <LawAndOrder_ITab_ForgiveDebt_Pardon>Pardon Debt</LawAndOrder_ITab_ForgiveDebt_Pardon>
+
+  <!-- Debt Forgiveness Messages -->
+  <LawAndOrder_DebtForgiveness_NoDebt>Prisoner has no outstanding debt</LawAndOrder_DebtForgiveness_NoDebt>
+  <LawAndOrder_DebtForgiveness_ZeroAmount>Must forgive more than 0 silver</LawAndOrder_DebtForgiveness_ZeroAmount>
+  <LawAndOrder_DebtForgiveness_Reason>Debt Forgiven</LawAndOrder_DebtForgiveness_Reason>
+  <LawAndOrder_DebtForgiveness_Pardon>{0} has been pardoned. All debt forgiven.</LawAndOrder_DebtForgiveness_Pardon>
+  <LawAndOrder_DebtForgiveness_Partial>{0} had {1} silver ({2}%) of debt forgiven.</LawAndOrder_DebtForgiveness_Partial>
 
 </LanguageData>

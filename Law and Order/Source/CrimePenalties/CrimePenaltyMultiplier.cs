@@ -115,12 +115,10 @@ namespace LawAndOrder
         RepeatOffender,
         VictimNobility,
         VictimAge,
-        Wartime,
         Premeditated,
         VictimRelationship,
         RaiderWealth,
         ColonyWealth,
-        DifficultySetting,
-        FactionRelations
+        DifficultySetting
     }
 }

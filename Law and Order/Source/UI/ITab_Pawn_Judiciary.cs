@@ -18,6 +18,9 @@ namespace Law_and_Order.Source.UI
         private const float LeftColumnWidth = 0.5f;
         private CrimeCategoryUIHelper categoryHelper = new CrimeCategoryUIHelper();
 
+        // Track debt forgiveness percentage per pawn (persists across UI redraws)
+        private static Dictionary<Pawn, float> forgivenessPercentages = new Dictionary<Pawn, float>();
+
         public ITab_Pawn_Judiciary()
         {
             this.size = new Vector2(630f, 450f);
@@ -162,6 +165,14 @@ namespace Law_and_Order.Source.UI
                 Text.Anchor = TextAnchor.UpperRight;
                 GUI.color = new Color(0.9f, 0.6f, 0.2f);
                 Widgets.Label(debtRect, $"{crimeDebt:F0}§");
+
+                // Add penalty breakdown tooltip
+                string penaltyTooltip = CrimeUtils.GetPenaltyBreakdownTooltip(crime);
+                if (!string.IsNullOrEmpty(penaltyTooltip))
+                {
+                    TooltipHandler.TipRegion(debtRect, penaltyTooltip);
+                }
+
                 GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
             }
@@ -206,10 +217,87 @@ namespace Law_and_Order.Source.UI
                 GUI.color = Color.white;
                 debtInfo += "LawAndOrder_ITab_DebtTotalOwed".Translate(debtRecord.TotalDebtOwed.ToString("F0")) + "\n";
                 debtInfo += "LawAndOrder_ITab_DebtTotalPaid".Translate(debtRecord.TotalDebtPaid.ToString("F0")) + "\n";
+
+                // Calculate percent paid
+                float totalDebt = debtRecord.TotalDebtOwed;
+                float paidDebt = debtRecord.TotalDebtPaid;
+                float percentPaid = totalDebt > 0 ? (paidDebt / totalDebt) * 100f : 0f;
+                debtInfo += string.Format("LawAndOrder_ITab_DebtPercentPaid".Translate(), percentPaid.ToString("F1")) + "\n";
                 debtInfo += "LawAndOrder_ITab_EstLabor".Translate(debtRecord.EstimatedDaysOfLabor());
 
                 Widgets.Label(debtInfoRect, debtInfo);
-                yPos += 90f;
+                yPos += 100f;
+
+                // Debt forgiveness section
+                {
+                    // Get or initialize forgiveness percentage for this pawn
+                    if (!forgivenessPercentages.ContainsKey(this.SelPawn))
+                    {
+                        forgivenessPercentages[this.SelPawn] = 100f; // Default to 100% (full pardon)
+                    }
+
+                    // Label
+                    Text.Font = GameFont.Small;
+                    Rect forgiveHeaderRect = new Rect(rect.x, rect.y + yPos, rect.width, 22f);
+                    Widgets.Label(forgiveHeaderRect, "LawAndOrder_ITab_ForgiveDebt_Header".Translate());
+                    yPos += 25f;
+
+                    // Slider
+                    Rect sliderRect = new Rect(rect.x, rect.y + yPos, rect.width - 80f, 22f);
+                    Rect sliderLabelRect = new Rect(rect.x + rect.width - 75f, rect.y + yPos, 75f, 22f);
+
+                    float percentage = forgivenessPercentages[this.SelPawn];
+                    float newPercentage = Widgets.HorizontalSlider(sliderRect, percentage, 0f, 100f, false,
+                        percentage.ToString("F0") + "%", "0%", "100%", 1f);
+
+                    // Update if changed
+                    if (newPercentage != percentage)
+                    {
+                        forgivenessPercentages[this.SelPawn] = newPercentage;
+                    }
+
+                    // Show amount that will be forgiven
+                    float amountToForgive = debtRecord.CurrentDebt * (newPercentage / 100f);
+                    Text.Anchor = TextAnchor.MiddleRight;
+                    GUI.color = new Color(0.9f, 0.6f, 0.2f);
+                    Widgets.Label(sliderLabelRect, amountToForgive.ToString("F0") + "§");
+                    GUI.color = Color.white;
+                    Text.Anchor = TextAnchor.UpperLeft;
+                    yPos += 27f;
+
+                    // Confirm button
+                    Rect confirmButtonRect = new Rect(rect.x, rect.y + yPos, rect.width, 30f);
+                    string buttonLabel = newPercentage >= 100f
+                        ? "LawAndOrder_ITab_ForgiveDebt_Pardon".Translate()
+                        : "LawAndOrder_ITab_ForgiveDebt_Confirm".Translate();
+
+                    if (Widgets.ButtonText(confirmButtonRect, buttonLabel))
+                    {
+                        string failReason;
+                        if (DebtUtils.TryForgiveDebt(this.SelPawn, newPercentage, out failReason))
+                        {
+                            if (newPercentage >= 100f)
+                            {
+                                Messages.Message(string.Format("LawAndOrder_DebtForgiveness_Pardon".Translate(), this.SelPawn.LabelShort), MessageTypeDefOf.PositiveEvent);
+                            }
+                            else
+                            {
+                                Messages.Message(string.Format("LawAndOrder_DebtForgiveness_Partial".Translate(),
+                                    this.SelPawn.LabelShort, amountToForgive.ToString("F0"), newPercentage.ToString("F0")),
+                                    MessageTypeDefOf.PositiveEvent);
+                            }
+
+                            // Reset slider to 100% after forgiving
+                            forgivenessPercentages[this.SelPawn] = 100f;
+                        }
+                        else
+                        {
+                            Messages.Message(failReason, MessageTypeDefOf.RejectInput);
+                        }
+                    }
+
+                    yPos += 35f;
+                }
             }
             else if (debtRecord != null && debtRecord.TotalDebtOwed > 0)
             {
@@ -281,6 +369,13 @@ namespace Law_and_Order.Source.UI
                 if (justiceTab != null)
                 {
                     justiceTab.Worker.Activate();
+
+                    // Select this criminal in the Justice tab
+                    var justiceWindow = justiceTab.TabWindow as MainTabWindow_Justice;
+                    if (justiceWindow != null)
+                    {
+                        justiceWindow.SelectCriminal(this.SelPawn);
+                    }
                 }
             }
         }
@@ -289,6 +384,57 @@ namespace Law_and_Order.Source.UI
         {
             base.UpdateSize();
             this.size = new Vector2(630f, 450f);
+        }
+
+        /// <summary>
+        /// Map a Crime object to its corresponding crime definition name
+        /// </summary>
+        private string GetCrimeDefinitionName(Crime crime)
+        {
+            // For Assault crimes, use the damageType if available (e.g., "GunshotWound", "StabWound")
+            if (crime.crimeType == CrimeType.Assault && !string.IsNullOrEmpty(crime.damageType))
+            {
+                // Remove spaces from damage type to match crime definition names
+                return crime.damageType.Replace(" ", "");
+            }
+
+            // Map CrimeType enum to crime definition names
+            switch (crime.crimeType)
+            {
+                case CrimeType.Murder:
+                    return "Murder";
+
+                case CrimeType.Kidnapping:
+                    return "Kidnapping";
+
+                case CrimeType.Arson:
+                    return "Arson";
+
+                case CrimeType.Trespassing:
+                    return "Trespassing";
+
+                case CrimeType.PropertyDestruction:
+                    // Could be various types like DoorDestruction, BuildingDestruction, etc.
+                    // Default to BuildingDestruction as the most common
+                    return "BuildingDestruction";
+
+                case CrimeType.Theft:
+                    // Could be PettyTheft, Theft, or GrandTheft depending on value
+                    // Default to Theft as mid-range
+                    return "Theft";
+
+                case CrimeType.Vandalism:
+                    return "BuildingDestruction"; // Vandalism uses same penalty calculation
+
+                case CrimeType.AnimalAbuse:
+                    return "Assault"; // Animal abuse uses assault-like penalties
+
+                case CrimeType.ContrabandPossession:
+                    return "Theft"; // Contraband uses theft-like penalties
+
+                default:
+                    return "SuperficialWound"; // Fallback for unknown types
+            }
         }
     }
 }
