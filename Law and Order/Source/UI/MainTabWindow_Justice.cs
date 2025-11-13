@@ -478,6 +478,14 @@ namespace Law_and_Order.Source.UI
                 Text.Anchor = TextAnchor.UpperRight;
                 GUI.color = new Color(0.9f, 0.6f, 0.2f);
                 Widgets.Label(debtRect, $"{crimeDebt:F0} silver");
+
+                // Add penalty breakdown tooltip
+                string penaltyTooltip = CrimeUtils.GetPenaltyBreakdownTooltip(crime);
+                if (!string.IsNullOrEmpty(penaltyTooltip))
+                {
+                    TooltipHandler.TipRegion(debtRect, penaltyTooltip);
+                }
+
                 GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
             }
