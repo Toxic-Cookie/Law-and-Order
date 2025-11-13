@@ -396,52 +396,73 @@ namespace Law_and_Order.Source.UI
                 return null;
             }
 
-            // Get the crime penalty manager
-            var manager = LawAndOrder.WorldComponent_CrimePenaltyManager.Instance;
-            if (manager == null)
+            // Check if we have a penalty breakdown stored
+            if (crime.penaltyBreakdown == null)
             {
-                return "LawAndOrder_PenaltyBreakdown_NotAvailable".Translate();
+                // Fallback for old crimes without breakdown data
+                return "LawAndOrder_PenaltyBreakdown_Simple".Translate(crime.debtAmount);
             }
 
-            // Determine crime definition name based on crime type and damage type
-            string crimeDefName = GetCrimeDefinitionName(crime);
-            var crimeDef = manager.GetCrimeDefinition(crimeDefName);
-
-            if (crimeDef == null)
-            {
-                // Fallback tooltip without base penalty info
-                return string.Format("LawAndOrder_PenaltyBreakdown_Simple".Translate(), crime.debtAmount);
-            }
-
-            // Build detailed breakdown
+            var breakdown = crime.penaltyBreakdown;
             System.Text.StringBuilder tooltip = new System.Text.StringBuilder();
+
             tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Header".Translate());
             tooltip.AppendLine();
-            tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Crime".Translate(), crimeDef.label));
-            tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_BaseRange".Translate(), crimeDef.minPenalty, crimeDef.maxPenalty));
+
+            // Crime type
+            tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Crime".Translate(breakdown.crimeDefName));
+
+            // Different display for victim vs non-victim crimes
+            if (breakdown.isNonVictimCrime)
+            {
+                // Non-victim crime (property, theft, etc.)
+                tooltip.AppendLine();
+                tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Calculation".Translate(breakdown.calculationMethod));
+
+                if (breakdown.minPenalty > 0 || breakdown.maxPenalty > 0)
+                {
+                    tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_BaseRange".Translate(breakdown.minPenalty, breakdown.maxPenalty));
+                }
+            }
+            else
+            {
+                // Victim crime (assault, murder, etc.)
+                tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_BaseRange".Translate(breakdown.minPenalty, breakdown.maxPenalty));
+                tooltip.AppendLine();
+
+                // Severity calculation
+                tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_SeverityFactors".Translate());
+                tooltip.AppendLine("  • " + "LawAndOrder_PenaltyBreakdown_BodyPartImportance".Translate((breakdown.bodyPartImportance * 100).ToString("F0")));
+                tooltip.AppendLine("  • " + "LawAndOrder_PenaltyBreakdown_DamageRatio".Translate((breakdown.damageRatio * 100).ToString("F0")));
+                tooltip.AppendLine("  • " + "LawAndOrder_PenaltyBreakdown_PermanentEffect".Translate(breakdown.hasPermanentEffect ? "Yes" : "No"));
+                tooltip.AppendLine("  • " + "LawAndOrder_PenaltyBreakdown_SeverityScore".Translate((breakdown.severityScore * 100).ToString("F0")));
+                tooltip.AppendLine();
+
+                // Base penalty (after severity interpolation)
+                tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_BasePenalty".Translate(breakdown.basePenalty.ToString("F0")));
+            }
+
+            // Multipliers (if any)
+            if (breakdown.appliedMultipliers != null && breakdown.appliedMultipliers.Count > 0)
+            {
+                tooltip.AppendLine();
+                tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Multipliers".Translate());
+                foreach (var mult in breakdown.appliedMultipliers)
+                {
+                    tooltip.AppendLine(string.Format("  • {0}: {1}x", mult.name, mult.value.ToString("F2")));
+                }
+            }
+
+            // Global penalty scale
+            if (breakdown.globalPenaltyScale != 1.0f)
+            {
+                tooltip.AppendLine();
+                tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_GlobalScale".Translate((breakdown.globalPenaltyScale * 100).ToString("F0")));
+            }
+
+            // Final penalty
             tooltip.AppendLine();
-
-            // Show victim if applicable
-            if (crime.victim != null)
-            {
-                tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Victim".Translate(), crime.victim.LabelShort));
-            }
-
-            // Show damage if applicable
-            if (crime.damageDealt > 0)
-            {
-                tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Damage".Translate(), crime.damageDealt.ToString("F1")));
-            }
-
-            tooltip.AppendLine();
-            tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_Final".Translate(), crime.debtAmount));
-
-            // Show global penalty scale if it's not 1.0
-            var globalScale = Law_and_Order.Source.Settings.LawAndOrderSettings.GlobalPenaltyScale?.Value ?? 1.0f;
-            if (globalScale != 1.0f)
-            {
-                tooltip.AppendLine(string.Format("LawAndOrder_PenaltyBreakdown_GlobalScale".Translate(), (globalScale * 100).ToString("F0")));
-            }
+            tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Final".Translate(breakdown.finalPenalty.ToString("F0")));
 
             return tooltip.ToString();
         }

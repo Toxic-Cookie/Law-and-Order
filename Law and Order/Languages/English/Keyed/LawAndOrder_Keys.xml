@@ -421,6 +421,14 @@
   <LawAndOrder_PenaltyBreakdown_GlobalScale>Global Scale: {0}%</LawAndOrder_PenaltyBreakdown_GlobalScale>
   <LawAndOrder_PenaltyBreakdown_NotAvailable>Penalty breakdown not available</LawAndOrder_PenaltyBreakdown_NotAvailable>
   <LawAndOrder_PenaltyBreakdown_Simple>Penalty: {0} silver</LawAndOrder_PenaltyBreakdown_Simple>
+  <LawAndOrder_PenaltyBreakdown_Calculation>Calculation: {0}</LawAndOrder_PenaltyBreakdown_Calculation>
+  <LawAndOrder_PenaltyBreakdown_SeverityFactors>Severity Factors:</LawAndOrder_PenaltyBreakdown_SeverityFactors>
+  <LawAndOrder_PenaltyBreakdown_BodyPartImportance>Body Part Importance: {0}%</LawAndOrder_PenaltyBreakdown_BodyPartImportance>
+  <LawAndOrder_PenaltyBreakdown_DamageRatio>Damage Ratio (% Health Lost): {0}%</LawAndOrder_PenaltyBreakdown_DamageRatio>
+  <LawAndOrder_PenaltyBreakdown_PermanentEffect>Permanent Effect: {0}</LawAndOrder_PenaltyBreakdown_PermanentEffect>
+  <LawAndOrder_PenaltyBreakdown_SeverityScore>Combined Severity Score: {0}%</LawAndOrder_PenaltyBreakdown_SeverityScore>
+  <LawAndOrder_PenaltyBreakdown_BasePenalty>Base Penalty (after severity): {0} silver</LawAndOrder_PenaltyBreakdown_BasePenalty>
+  <LawAndOrder_PenaltyBreakdown_Multipliers>Applied Multipliers:</LawAndOrder_PenaltyBreakdown_Multipliers>
 
   <!-- Debt Forgiveness UI -->
   <LawAndOrder_ITab_DebtPercentPaid>Paid: {0}%</LawAndOrder_ITab_DebtPercentPaid>

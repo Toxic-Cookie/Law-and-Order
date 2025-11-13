@@ -61,6 +61,7 @@ namespace Law_and_Order.Source.Utils
             try
             {
                 float debtAmount = 0f;
+                Hediffs.PenaltyBreakdown breakdown = null;
 
                 // Calculate penalty using the penalty management system
                 if (damageInfo.HasValue && victim != null)
@@ -70,6 +71,7 @@ namespace Law_and_Order.Source.Utils
                         criminal: criminal,
                         victim: victim,
                         damageInfo: damageInfo,
+                        breakdown: out breakdown,
                         crimeDefName: null  // Auto-detect based on damage
                     );
                 }
@@ -80,7 +82,7 @@ namespace Law_and_Order.Source.Utils
                 {
                     // Crimes without direct damage calculation (property crimes, trespassing, kidnapping, etc.)
                     // These crimes use fixed or value-based penalties instead of damage-based penalties
-                    debtAmount = DebtUtils.CalculateDebtForNonVictimCrime(criminal, crimeType, targetThing);
+                    debtAmount = DebtUtils.CalculateDebtForNonVictimCrime(criminal, crimeType, out breakdown, targetThing);
                 }
                 else
                 {
@@ -96,8 +98,8 @@ namespace Law_and_Order.Source.Utils
                     damageType = damageInfo.Value.Def?.label;
                 }
 
-                // Create the crime with the calculated debt amount stored
-                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount, damageType);
+                // Create the crime with the calculated debt amount and breakdown stored
+                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount, damageType, breakdown);
 
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
                 criminalRecord?.AddCrime(crime);
