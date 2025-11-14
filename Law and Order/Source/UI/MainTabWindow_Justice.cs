@@ -179,22 +179,28 @@ namespace Law_and_Order.Source.UI
 
             Rect contentRect = rect.ContractedBy(5f);
 
-            // Case number and accused name - truncate to fit
+            // Save text state
+            var oldFont = Text.Font;
+            var oldAnchor = Text.Anchor;
+
+            // Case number and accused name at top
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
             string label = $"#{caseItem.caseId} - {caseItem.accused?.NameShortColored ?? "Unknown"}";
-            Rect nameRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 18f);
+            Rect nameRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 15f);
             Widgets.Label(nameRect, label.Truncate(nameRect.width));
 
-            // Crime count and days open
+            // Crime count and days open at bottom
             Text.Font = GameFont.Tiny;
-            Text.Anchor = TextAnchor.LowerLeft;
+            Text.Anchor = TextAnchor.UpperLeft;
             var crimes = caseItem.GetAssociatedCrimes();
             string info = $"{crimes.Count} {"LawAndOrder_Crimes".Translate()} - {caseItem.DaysOpen}d";
-            Rect infoRect = new Rect(contentRect.x, contentRect.y, contentRect.width, contentRect.height);
+            Rect infoRect = new Rect(contentRect.x, contentRect.y + 15f, contentRect.width, 12f);
             Widgets.Label(infoRect, info.Truncate(infoRect.width));
-            Text.Anchor = TextAnchor.UpperLeft;
-            Text.Font = GameFont.Small;
+
+            // Restore text state
+            Text.Anchor = oldAnchor;
+            Text.Font = oldFont;
         }
 
         private void DrawCaseDetails(Rect rect, CriminalCase caseItem)
@@ -209,20 +215,20 @@ namespace Law_and_Order.Source.UI
 
             yPos += PADDING;
 
-            // Crimes section
-            Rect crimesHeaderRect = new Rect(innerRect.x, yPos, innerRect.width, 25f);
+            // Crimes section header - position relative to innerRect
+            Rect crimesHeaderRect = new Rect(innerRect.x, innerRect.y + yPos, innerRect.width, 25f);
             Text.Font = GameFont.Small;
             var crimes = caseItem.GetAssociatedCrimes();
             Widgets.Label(crimesHeaderRect, $"{"LawAndOrder_CrimesCommitted".Translate()} ({crimes.Count})");
             yPos += 25f;
 
-            // Crime list with checkboxes
-            Rect crimeListRect = new Rect(innerRect.x, yPos, innerRect.width, innerRect.height - yPos - BUTTON_HEIGHT - PADDING * 2);
+            // Crime list with checkboxes - position relative to innerRect
+            Rect crimeListRect = new Rect(innerRect.x, innerRect.y + yPos, innerRect.width, innerRect.height - yPos - BUTTON_HEIGHT - PADDING * 2);
             DrawCrimeList(crimeListRect, crimes);
             yPos += crimeListRect.height + PADDING;
 
-            // Action buttons
-            DrawActionButtons(new Rect(innerRect.x, yPos, innerRect.width, BUTTON_HEIGHT));
+            // Action buttons - position relative to innerRect
+            DrawActionButtons(new Rect(innerRect.x, innerRect.y + yPos, innerRect.width, BUTTON_HEIGHT));
         }
 
         private float DrawAccusedInfo(Rect rect, CriminalCase caseItem, float yPos)
@@ -230,16 +236,16 @@ namespace Law_and_Order.Source.UI
             Pawn accused = caseItem.accused;
             if (accused == null)
             {
-                Widgets.Label(new Rect(rect.x, yPos, rect.width, 25f), "Unknown Accused");
+                Widgets.Label(new Rect(rect.x, rect.y + yPos, rect.width, 25f), "Unknown Accused");
                 return yPos + 25f;
             }
 
-            // Portrait (left)
-            Rect portraitRect = new Rect(rect.x, yPos, 80f, 80f);
+            // Portrait (left) - position relative to rect
+            Rect portraitRect = new Rect(rect.x, rect.y + yPos, 80f, 80f);
             Widgets.ThingIcon(portraitRect, accused);
 
-            // Info (right of portrait)
-            Rect infoRect = new Rect(rect.x + 90f, yPos, rect.width - 90f, 80f);
+            // Info (right of portrait) - position relative to rect
+            Rect infoRect = new Rect(rect.x + 90f, rect.y + yPos, rect.width - 90f, 80f);
 
             // Save text state
             var oldFont = Text.Font;
