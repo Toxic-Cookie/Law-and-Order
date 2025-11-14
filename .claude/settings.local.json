@@ -55,7 +55,8 @@
       "Bash(cmd /c copy:*)",
       "WebFetch(domain:dwarffortresswiki.org)",
       "Bash(cat:*)",
-      "Bash(del /Q \"Hediffs\\Hediff_Debt.cs\" \"Components\\WorldComponent_DebtManager.cs\" \"Utils\\DebtUtils.cs\" \"CrimeDetection\\DebtSystemPatches.cs\" \"Patches\\SlaveEmancipation_Patch.cs\")"
+      "Bash(del /Q \"Hediffs\\Hediff_Debt.cs\" \"Components\\WorldComponent_DebtManager.cs\" \"Utils\\DebtUtils.cs\" \"CrimeDetection\\DebtSystemPatches.cs\" \"Patches\\SlaveEmancipation_Patch.cs\")",
+      "Bash(del \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\CourtroomChairComp_Patch.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")"
     ],
     "deny": [],
     "ask": []
