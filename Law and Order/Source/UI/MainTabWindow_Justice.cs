@@ -39,7 +39,6 @@ namespace Law_and_Order.Source.UI
         private int statuteOfLimitationsDays = 60;
 
         // UI Constants
-        private const float TAB_HEIGHT = 50f;
         private const float CASE_LIST_WIDTH = 300f;
         private const float PADDING = 10f;
         private const float ROW_HEIGHT = 30f;
@@ -50,18 +49,16 @@ namespace Law_and_Order.Source.UI
 
         public override void DoWindowContents(Rect inRect)
         {
-            // Title
-            Text.Font = GameFont.Medium;
-            Rect titleRect = new Rect(0f, 0f, inRect.width, 40f);
-            Widgets.Label(titleRect, "Law and Order - Justice System");
-            Text.Font = GameFont.Small;
+            // Reserve space at the top for tabs (TabDrawer.DrawTabs draws ABOVE the rect you pass it)
+            // Following RimWorld's pattern from MainTabWindow_Quests
+            Rect mainRect = inRect;
+            mainRect.yMin += 32f; // Reserve space for tabs
 
-            // Tab buttons
-            Rect tabRect = new Rect(0f, 40f, inRect.width, TAB_HEIGHT);
-            DrawTabs(tabRect);
+            // Draw tabs - TabDrawer will draw them above mainRect
+            DrawTabs(mainRect);
 
-            // Content area
-            Rect contentRect = new Rect(0f, 40f + TAB_HEIGHT + PADDING, inRect.width, inRect.height - 40f - TAB_HEIGHT - PADDING);
+            // Content area - starts after the tabs
+            Rect contentRect = new Rect(0f, mainRect.yMin + PADDING, inRect.width, inRect.height - mainRect.yMin - PADDING);
 
             switch (currentTab)
             {
@@ -182,17 +179,20 @@ namespace Law_and_Order.Source.UI
 
             Rect contentRect = rect.ContractedBy(5f);
 
-            // Case number and accused name
+            // Case number and accused name - truncate to fit
             Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
             string label = $"#{caseItem.caseId} - {caseItem.accused?.NameShortColored ?? "Unknown"}";
-            Widgets.Label(contentRect, label);
+            Rect nameRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 18f);
+            Widgets.Label(nameRect, label.Truncate(nameRect.width));
 
             // Crime count and days open
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.LowerLeft;
             var crimes = caseItem.GetAssociatedCrimes();
             string info = $"{crimes.Count} {"LawAndOrder_Crimes".Translate()} - {caseItem.DaysOpen}d";
-            Widgets.Label(contentRect, info);
+            Rect infoRect = new Rect(contentRect.x, contentRect.y, contentRect.width, contentRect.height);
+            Widgets.Label(infoRect, info.Truncate(infoRect.width));
             Text.Anchor = TextAnchor.UpperLeft;
             Text.Font = GameFont.Small;
         }
@@ -241,17 +241,27 @@ namespace Law_and_Order.Source.UI
             // Info (right of portrait)
             Rect infoRect = new Rect(rect.x + 90f, yPos, rect.width - 90f, 80f);
 
+            // Save text state
+            var oldFont = Text.Font;
+            var oldAnchor = Text.Anchor;
+
             Text.Font = GameFont.Medium;
+            Text.Anchor = TextAnchor.UpperLeft;
             Rect nameRect = new Rect(infoRect.x, infoRect.y, infoRect.width, 30f);
-            Widgets.Label(nameRect, accused.NameFullColored);
+            Widgets.Label(nameRect, accused.NameFullColored.Truncate(nameRect.width));
 
             Text.Font = GameFont.Small;
             Rect statusRect = new Rect(infoRect.x, infoRect.y + 30f, infoRect.width, 20f);
             string status = GetPawnStatusLabel(accused);
-            Widgets.Label(statusRect, status);
+            Widgets.Label(statusRect, status.Truncate(statusRect.width));
 
             Rect caseInfoRect = new Rect(infoRect.x, infoRect.y + 50f, infoRect.width, 20f);
-            Widgets.Label(caseInfoRect, $"{"LawAndOrder_CaseOpenedDaysAgo".Translate(caseItem.DaysOpen)}");
+            string caseInfo = "LawAndOrder_CaseOpenedDaysAgo".Translate(caseItem.DaysOpen);
+            Widgets.Label(caseInfoRect, caseInfo.Truncate(caseInfoRect.width));
+
+            // Restore text state
+            Text.Font = oldFont;
+            Text.Anchor = oldAnchor;
 
             return yPos + 80f;
         }
@@ -308,16 +318,21 @@ namespace Law_and_Order.Source.UI
             Rect stateLabelRect = new Rect(contentRect.x + 30f, contentRect.y, 100f, 20f);
             DrawStateLabel(stateLabelRect, crime.visibilityState);
 
-            // Crime type and details
-            Rect crimeInfoRect = new Rect(contentRect.x + 140f, contentRect.y, contentRect.width - 200f, contentRect.height);
+            // Crime type and details - ensure proper bounds
+            float crimeInfoX = contentRect.x + 140f;
+            float crimeInfoWidth = Mathf.Max(0f, contentRect.width - 140f);
+            Rect crimeInfoRect = new Rect(crimeInfoX, contentRect.y, crimeInfoWidth, contentRect.height);
 
             Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
             string crimeLabel = crime.GetCrimeLabel();
-            Widgets.Label(new Rect(crimeInfoRect.x, crimeInfoRect.y, crimeInfoRect.width, 20f), crimeLabel);
+            Rect crimeLabelRect = new Rect(crimeInfoRect.x, crimeInfoRect.y, crimeInfoRect.width, 20f);
+            Widgets.Label(crimeLabelRect, crimeLabel.Truncate(crimeLabelRect.width));
 
             Text.Font = GameFont.Tiny;
             string details = GetCrimeDetailsString(crime);
-            Widgets.Label(new Rect(crimeInfoRect.x, crimeInfoRect.y + 20f, crimeInfoRect.width, 20f), details);
+            Rect detailsRect = new Rect(crimeInfoRect.x, crimeInfoRect.y + 20f, crimeInfoRect.width, 20f);
+            Widgets.Label(detailsRect, details.Truncate(detailsRect.width));
 
             // Evidence strength bar
             if (crime.evidenceStrength > 0f)
@@ -330,6 +345,7 @@ namespace Law_and_Order.Source.UI
             }
 
             Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private void DrawStateLabel(Rect rect, CrimeVisibilityState state)
@@ -350,13 +366,20 @@ namespace Law_and_Order.Source.UI
                 _ => "Unknown"
             };
 
+            // Save current state
+            var oldColor = GUI.color;
+            var oldFont = Text.Font;
+            var oldAnchor = Text.Anchor;
+
             GUI.color = labelColor;
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleLeft;
-            Widgets.Label(rect, $"[{label}]");
-            Text.Anchor = TextAnchor.UpperLeft;
-            Text.Font = GameFont.Small;
-            GUI.color = Color.white;
+            Widgets.Label(rect, $"[{label.Truncate(rect.width)}]");
+
+            // Restore state
+            Text.Anchor = oldAnchor;
+            Text.Font = oldFont;
+            GUI.color = oldColor;
         }
 
         private void DrawActionButtons(Rect rect)
