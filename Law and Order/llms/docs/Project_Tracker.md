@@ -1,9 +1,10 @@
 # Law and Order - Project Tracker
 
-**Last Updated:** November 12, 2025
-**Current Status:** ✅ Production Ready - Crimes Tab Phase 3 FULLY Complete (Integration + Legacy Cleanup)
+**Last Updated:** November 13, 2025
+**Current Status:** 🔄 Phase 0 Cleanup Complete - Preparing for New Architecture
 
 **Recent Updates:**
+- ✅ **Phase 0 Cleanup (Nov 13, 2025):** Removed incompatible systems (debt, penalty, hearing ritual) - 37 files deleted, ~10,217 lines removed
 - ✅ **Property Damage Penalty Fix (Nov 12, 2025):** Fixed bug where destroyed buildings (e.g., walls destroyed by grenades) used fallback penalties instead of actual market value
 - ✅ **Justice Tab UI Enhancement #1 (Nov 12, 2025):** Added double-click to pan camera to criminals in the justice tab list
 - ✅ **Justice Tab UI Enhancement #2 (Nov 12, 2025):** "Open Justice Tab" button in Judiciary tab now selects and views the criminal's crimes
@@ -22,6 +23,36 @@
 - ✅ **Crime Detection - Phase 2: Kidnapping (Nov 9, 2025):** Added automatic detection for hostile pawns kidnapping downed colonists (patches JobGiver_Kidnap)
 - ✅ **Crime Detection - Phase 3: Trespassing (Nov 9, 2025):** Added automatic detection for hostile pawns entering player home area (MapComponent periodic checking) - TESTED AND VERIFIED
 - ✅ **Crime Detection - Phase 4: Vandalism (Nov 9, 2025):** Added distinction between Vandalism (>50% HP) and PropertyDestruction (<50% HP) with duplicate prevention system - TESTED AND VERIFIED
+
+---
+
+## Phase 0: Foundation Cleanup (November 13, 2025) ✅ COMPLETE
+
+**BREAKING CHANGE: Requires new game save**
+
+### Cleanup Summary
+
+Removed all incompatible systems in preparation for Dwarf Fortress-inspired crime detection architecture with Hidden/Suspected/Convicted states using Fog of War witness detection.
+
+**Systems Removed (37 files, ~10,217 lines):**
+- Debt system (Hediff_Debt, DebtUtils, WorldComponent_DebtManager, 3 debt thoughts)
+- Penalty calculation system (CrimeDefinition, PenaltyBreakdown, multipliers, category tree)
+- Court hearing ritual system (12 ritual files, courtroom components, role-based seating)
+- Related thoughts, alerts, and UI dialogs (6 additional files)
+- Debug and utility files (DebugActions, CourtroomChairDebug, CourtroomUtils)
+
+**Systems Preserved and Adapted:**
+- Crime tracking (Hediff_Crimes) - removed debt/hearing refs, kept crime archival
+- Contraband detection - removed auto-debt, added Phase 1 TODOs
+- Crime recording (CrimeUtils) - simplified, removed penalty calculations
+- UI stubs (MainTabWindow_Justice, ITab_Pawn_Judiciary) - minimal placeholders
+
+**Build Status:**
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ Committed to branch `phase-0-foundation`
+- ✅ 47 files changed (37 deleted, 7 modified, 3 new stubs)
+
+**Next Step:** Phase 1 - Implement state-based crime detection system
 
 ---
 

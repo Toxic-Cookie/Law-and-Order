@@ -1,8 +1,8 @@
 # Law and Order - Project Notepad
 
-**Current Phase:** Phase 0 - Foundation & Preparation (Complete)
+**Current Phase:** Phase 1 - Core State System (In Progress)
 **Date:** November 13, 2025
-**Strategy:** HYBRID APPROACH - Extend existing systems, don't replace
+**Strategy:** New architecture - Dwarf Fortress-inspired crime detection with FoW
 
 ---
 
@@ -245,3 +245,60 @@ Phase 0 is **COMPLETE**. All foundation work done:
 ✅ More features from day 1
 ✅ Faster development
 
+
+---
+
+## Phase 0 COMPLETE ? (November 13, 2025)
+
+### Summary
+Successfully removed all incompatible systems and prepared foundation for new architecture.
+
+**What Was Removed:**
+- 37 files deleted (~10,217 lines of code)
+- Debt system (5 files)
+- Penalty calculation system (5 files)
+- Court hearing ritual system (12 files)
+- Related thoughts, alerts, UI dialogs (10 files)
+- Courtroom/bench systems (5 files)
+
+**What Was Kept:**
+- Crime tracking (Hediff_Crimes) - simplified
+- Contraband detection - adapted
+- Crime recording infrastructure
+- Basic UI framework (stubs)
+- FogOfWarUtils.cs - complete FoW integration
+
+**Build Status:**
+- ? 0 errors, 0 warnings
+- ? Committed to phase-0-foundation branch
+- ? Ready for Phase 1
+
+**Breaking Changes:**
+- ?? Requires new game save
+- Old debt/hearing data will not migrate
+
+---
+
+## Phase 1: Core State System (STARTING NOW)
+
+### Goal
+Implement the three-state crime visibility system (Hidden/Suspected/Convicted) with witness detection.
+
+### Key Tasks (2-3 weeks estimated)
+
+1. Add CrimeVisibilityState enum
+2. Extend Crime class with state fields
+3. Create CriminalCase class
+4. Create JusticeManager WorldComponent
+5. Update CrimeUtils.RecordCrime()
+6. Update UI stubs
+
+### Phase 1 Success Criteria
+
+? Crimes have three distinct states
+? Witness detection using FoW works
+? Cases created for Suspected crimes
+? State transitions work correctly
+? UI shows correct crimes based on state
+? Save/load works
+? Build successful with 0 errors

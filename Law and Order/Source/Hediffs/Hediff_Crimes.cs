@@ -20,11 +20,11 @@ namespace Law_and_Order.Source.Hediffs
         public bool wasVictimKilled; // Was the victim killed by this crime?
         public string damageType; // Type of damage dealt (e.g., "Gunshot", "Stab", "Burn")
 
-        // TODO Phase 1: Add state system fields
-        // public CrimeVisibilityState visibilityState = CrimeVisibilityState.Hidden;
-        // public List<Pawn> witnesses = new List<Pawn>();
-        // public float evidenceStrength = 0f;
-        // public bool isConfessed = false;
+        // Phase 1: State system fields
+        public CrimeVisibilityState visibilityState = CrimeVisibilityState.Hidden;
+        public List<Pawn> witnesses = new List<Pawn>();
+        public float evidenceStrength = 0f;
+        public int caseId = -1; // ID of associated criminal case (-1 = no case)
 
         public Crime()
         {
@@ -55,11 +55,11 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_Values.Look(ref wasVictimKilled, "wasVictimKilled", false);
             Scribe_Values.Look(ref damageType, "damageType");
 
-            // TODO Phase 1: Add state system ExposeData
-            // Scribe_Values.Look(ref visibilityState, "visibilityState", CrimeVisibilityState.Hidden);
-            // Scribe_Collections.Look(ref witnesses, "witnesses", LookMode.Reference);
-            // Scribe_Values.Look(ref evidenceStrength, "evidenceStrength", 0f);
-            // Scribe_Values.Look(ref isConfessed, "isConfessed", false);
+            // Phase 1: State system ExposeData
+            Scribe_Values.Look(ref visibilityState, "visibilityState", CrimeVisibilityState.Hidden);
+            Scribe_Collections.Look(ref witnesses, "witnesses", LookMode.Reference);
+            Scribe_Values.Look(ref evidenceStrength, "evidenceStrength", 0f);
+            Scribe_Values.Look(ref caseId, "caseId", -1);
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCommitted) / GenDate.TicksPerDay;
@@ -164,6 +164,44 @@ namespace Law_and_Order.Source.Hediffs
             }
             return result;
         }
+
+        /// <summary>
+        /// Transition this crime from Hidden to Suspected state.
+        /// Creates a criminal case if one doesn't exist.
+        /// </summary>
+        public void TransitionToSuspected(List<Pawn> newWitnesses, float evidence)
+        {
+            if (visibilityState == CrimeVisibilityState.Hidden)
+            {
+                visibilityState = CrimeVisibilityState.Suspected;
+                witnesses = newWitnesses ?? new List<Pawn>();
+                evidenceStrength = evidence;
+
+                Mod.Log?.Message($"Crime {crimeType} transitioned to Suspected (evidence: {evidence:F2}, witnesses: {witnesses.Count})");
+            }
+        }
+
+        /// <summary>
+        /// Transition this crime to Convicted state.
+        /// Called when player formally convicts the criminal.
+        /// </summary>
+        public void TransitionToConvicted()
+        {
+            if (visibilityState != CrimeVisibilityState.Convicted)
+            {
+                visibilityState = CrimeVisibilityState.Convicted;
+                Mod.Log?.Message($"Crime {crimeType} convicted");
+            }
+        }
+
+        /// <summary>
+        /// Check if this crime should be visible in the Justice UI based on its state.
+        /// </summary>
+        public bool IsVisibleInUI()
+        {
+            return visibilityState == CrimeVisibilityState.Suspected ||
+                   visibilityState == CrimeVisibilityState.Convicted;
+        }
     }
 
     /// <summary>
@@ -259,10 +297,11 @@ namespace Law_and_Order.Source.Hediffs
         public int ArchivedCrimeCount => archivedCrimes?.Sum(a => a.archivedCount) ?? 0;
         public int TotalCrimeCountIncludingArchived => TotalCrimeCount + ArchivedCrimeCount;
 
-        // TODO Phase 1: Add state query methods
-        // public List<Crime> GetSuspectedCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Suspected).ToList();
-        // public List<Crime> GetConvictedCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Convicted).ToList();
-        // public List<Crime> GetHiddenCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Hidden).ToList();
+        // Phase 1: State query methods
+        public List<Crime> GetSuspectedCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Suspected).ToList() ?? new List<Crime>();
+        public List<Crime> GetConvictedCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Convicted).ToList() ?? new List<Crime>();
+        public List<Crime> GetHiddenCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Hidden).ToList() ?? new List<Crime>();
+        public List<Crime> GetVisibleCrimes() => crimes?.Where(c => c.IsVisibleInUI()).ToList() ?? new List<Crime>();
 
         /// <summary>
         /// Add a new crime to this pawn's record

@@ -1,5 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using Verse;
+using RimWorld;
 using Law_and_Order.Source.Hediffs;
+using LawAndOrder.Utils;
 
 namespace Law_and_Order.Source.Utils
 {
@@ -69,7 +73,34 @@ namespace Law_and_Order.Source.Utils
 
             try
             {
-                // TODO Phase 1: Add witness detection using FogOfWarUtils here
+                // Phase 1: Witness detection using Fog of War
+                IntVec3 crimeLocation = criminal.Position;
+                Map crimeMap = criminal.Map;
+                List<Pawn> witnesses = new List<Pawn>();
+                float evidenceStrength = 0f;
+
+                if (crimeMap != null && FogOfWarUtils.IsFoWActive())
+                {
+                    witnesses = FogOfWarUtils.GetWitnessesAtLocation(crimeLocation, crimeMap, includeAnimals: false);
+                    evidenceStrength = FogOfWarUtils.CalculateEvidenceStrength(crimeLocation, crimeMap, witnesses);
+
+                    Mod.Log?.Message($"Crime at {crimeLocation}: {witnesses.Count} witnesses, evidence: {evidenceStrength:F2}");
+                }
+                else
+                {
+                    // Fallback if FoW not active: check for nearby colonists manually
+                    if (crimeMap != null)
+                    {
+                        var nearbyColonists = crimeMap.mapPawns.FreeColonists.Where(p =>
+                            p.Spawned &&
+                            p.Position.InHorDistOf(crimeLocation, 15f) && // 15 tile radius
+                            p.health.capacities.CapableOf(PawnCapacityDefOf.Sight)
+                        ).ToList();
+
+                        witnesses = nearbyColonists;
+                        evidenceStrength = witnesses.Count > 0 ? 0.5f : 0f; // Simple fallback
+                    }
+                }
 
                 // Extract damage type from DamageInfo if available
                 if (damageType == null && damageInfo.HasValue)
@@ -77,14 +108,33 @@ namespace Law_and_Order.Source.Utils
                     damageType = damageInfo.Value.Def?.label;
                 }
 
-                // Create the crime (simplified for Phase 0)
+                // Create the crime with state system
                 var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, damageType);
 
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
                 criminalRecord?.AddCrime(crime);
 
-                // TODO Phase 1: Determine visibility state based on witnesses
-                // TODO Phase 1: Create/update case if Suspected
+                // Phase 1: Determine visibility state based on witnesses
+                if (witnesses.Count > 0 && evidenceStrength >= 0.3f)
+                {
+                    // Crime was witnessed - transition to Suspected
+                    crime.TransitionToSuspected(witnesses, evidenceStrength);
+
+                    // Create or update criminal case
+                    var justiceManager = Components.WorldComponent_JusticeManager.Instance;
+                    if (justiceManager != null)
+                    {
+                        var criminalCase = justiceManager.GetOrCreateCase(criminal);
+                        criminalCase.AddCrime(crime);
+
+                        Mod.Log?.Message($"Crime {crimeType} witnessed - added to case #{criminalCase.caseId}");
+                    }
+                }
+                else
+                {
+                    // No witnesses - crime remains Hidden
+                    Mod.Log?.Message($"Crime {crimeType} committed with no witnesses (Hidden)");
+                }
 
                 // Optional: Debug logging
                 if (Prefs.DevMode)
@@ -93,7 +143,8 @@ namespace Law_and_Order.Source.Utils
                     string damageInfoStr = damageDealt > 0 ? $" ({damageDealt:F1} damage)" : "";
                     string downedInfo = wasVictimDowned ? " [DOWNED]" : "";
                     string killedInfo = wasVictimKilled ? " [KILLED]" : "";
-                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo}");
+                    string stateInfo = $" [{crime.visibilityState}]";
+                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo}{stateInfo}");
                 }
             }
             catch (System.Exception e)
