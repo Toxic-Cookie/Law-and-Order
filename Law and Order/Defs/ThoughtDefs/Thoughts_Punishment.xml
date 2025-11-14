@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- ========== Criminal Punishment Thoughts ========== -->
+
+  <!-- Imprisoned for Crime -->
+  <ThoughtDef>
+    <defName>LawAndOrder_ImprisonedForCrime</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>999</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackedEffectMultiplier>1</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>imprisoned for crimes</label>
+        <description>I'm being held prisoner for my crimes. I deserve this, but it's still terrible.</description>
+        <baseMoodEffect>-8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Beaten for Crime -->
+  <ThoughtDef>
+    <defName>LawAndOrder_BeatenForCrime</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>15</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackedEffectMultiplier>1</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>beaten as punishment</label>
+        <description>I was beaten as punishment for my crimes. The pain and humiliation are overwhelming.</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Exiled -->
+  <ThoughtDef>
+    <defName>LawAndOrder_Exiled</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>30</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackedEffectMultiplier>1</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>exiled from colony</label>
+        <description>I was banished from the colony. I have nowhere to go now.</description>
+        <baseMoodEffect>-15</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ========== Victim Satisfaction Thoughts ========== -->
+
+  <!-- Justice Served - Victim -->
+  <ThoughtDef>
+    <defName>LawAndOrder_JusticeServed_Victim</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>10</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>justice served (minor)</label>
+        <description>The one who wronged me has been punished appropriately.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>LawAndOrder_JusticeServed_Victim_Major</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>15</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>justice served (major)</label>
+        <description>The criminal who hurt me has been properly punished. Justice has been done.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- No Justice - Victim -->
+  <ThoughtDef>
+    <defName>LawAndOrder_NoJustice_Victim</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>20</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>1.0</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>no justice</label>
+        <description>The one who wronged me walks free. This isn't right.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ========== Witness Thoughts ========== -->
+
+  <!-- Witnessed Harsh Punishment -->
+  <ThoughtDef>
+    <defName>LawAndOrder_WitnessedHarshPunishment</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>8</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.9</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>witnessed harsh punishment</label>
+        <description>I saw someone being brutally punished. That was hard to watch.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Witnessed Execution -->
+  <ThoughtDef>
+    <defName>LawAndOrder_WitnessedExecution</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>12</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.9</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>witnessed execution</label>
+        <description>I watched someone be executed. It was disturbing, even if they deserved it.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Witnessed Justice -->
+  <ThoughtDef>
+    <defName>LawAndOrder_WitnessedJustice</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>6</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.7</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>justice served</label>
+        <description>I saw a criminal get what they deserved. The law is working.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ========== Colony-Wide Thoughts ========== -->
+
+  <!-- Criminal Unpunished (colony mood) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_CriminalUnpunished</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>15</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>1.0</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>criminal unpunished</label>
+        <description>There's a known criminal among us who hasn't been punished. This is unjust.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Law and Order (positive colony mood) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_LawAndOrder</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>10</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>law and order</label>
+        <description>Justice is being upheld in our colony. We have law and order.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ========== Relationship Thoughts ========== -->
+
+  <!-- Friend Punished Harshly -->
+  <ThoughtDef>
+    <defName>LawAndOrder_FriendPunishedHarshly</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <durationDays>20</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackedEffectMultiplier>1</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>friend punished harshly</label>
+        <description>My friend was punished too harshly for their crimes.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+        <baseOpinionOffset>-10</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Enemy Punished -->
+  <ThoughtDef>
+    <defName>LawAndOrder_EnemyPunished</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <durationDays>15</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>enemy got what they deserved</label>
+        <description>Someone I dislike was punished. Good riddance.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+        <baseOpinionOffset>5</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

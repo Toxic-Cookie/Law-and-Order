@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Imprisonment -->
+  <Law_and_Order.Source.Justice.PunishmentDef>
+    <defName>LawAndOrder_Punishment_Imprisonment</defName>
+    <punishmentType>Imprisonment</punishmentType>
+    <punishmentLabel>Imprisonment</punishmentLabel>
+    <description>Imprison the criminal for a specified duration. They will be held in prison until their sentence is complete, then automatically released.</description>
+    <severityRating>3</severityRating>
+    <requiresAlive>true</requiresAlive>
+    <requiresOnMap>true</requiresOnMap>
+    <requiresImprisoned>false</requiresImprisoned>
+    <minimumCrimeSeverity>10</minimumCrimeSeverity>
+    <defaultDurationDays>15</defaultDurationDays>
+    <victimMoodImpact>2</victimMoodImpact>
+    <criminalMoodImpact>-3</criminalMoodImpact>
+    <witnessMoodImpact>1</witnessMoodImpact>
+    <allowMultiple>false</allowMultiple>
+  </Law_and_Order.Source.Justice.PunishmentDef>
+
+  <!-- Fine -->
+  <Law_and_Order.Source.Justice.PunishmentDef>
+    <defName>LawAndOrder_Punishment_Fine</defName>
+    <punishmentType>Fine</punishmentType>
+    <punishmentLabel>Fine</punishmentLabel>
+    <description>Impose a monetary fine that must be paid in silver. The criminal will experience mood penalties until the fine is paid.</description>
+    <severityRating>2</severityRating>
+    <requiresAlive>true</requiresAlive>
+    <requiresOnMap>false</requiresOnMap>
+    <requiresImprisoned>false</requiresImprisoned>
+    <minimumCrimeSeverity>5</minimumCrimeSeverity>
+    <defaultFineAmount>500</defaultFineAmount>
+    <victimMoodImpact>1</victimMoodImpact>
+    <criminalMoodImpact>-2</criminalMoodImpact>
+    <witnessMoodImpact>0</witnessMoodImpact>
+    <allowMultiple>true</allowMultiple>
+  </Law_and_Order.Source.Justice.PunishmentDef>
+
+  <!-- Beating -->
+  <Law_and_Order.Source.Justice.PunishmentDef>
+    <defName>LawAndOrder_Punishment_Beating</defName>
+    <punishmentType>Beating</punishmentType>
+    <punishmentLabel>Beating</punishmentLabel>
+    <description>Have a colonist administer a physical beating. This will cause pain and injuries but is not intended to be lethal.</description>
+    <severityRating>5</severityRating>
+    <requiresAlive>true</requiresAlive>
+    <requiresOnMap>true</requiresOnMap>
+    <requiresImprisoned>true</requiresImprisoned>
+    <minimumCrimeSeverity>30</minimumCrimeSeverity>
+    <victimMoodImpact>3</victimMoodImpact>
+    <criminalMoodImpact>-5</criminalMoodImpact>
+    <witnessMoodImpact>-1</witnessMoodImpact>
+    <allowMultiple>false</allowMultiple>
+  </Law_and_Order.Source.Justice.PunishmentDef>
+
+  <!-- Execution -->
+  <Law_and_Order.Source.Justice.PunishmentDef>
+    <defName>LawAndOrder_Punishment_Execution</defName>
+    <punishmentType>Execution</punishmentType>
+    <punishmentLabel>Execution</punishmentLabel>
+    <description>Execute the criminal. This is the ultimate punishment for the most severe crimes. A colonist will be assigned to carry out the execution.</description>
+    <severityRating>10</severityRating>
+    <requiresAlive>true</requiresAlive>
+    <requiresOnMap>true</requiresOnMap>
+    <requiresImprisoned>true</requiresImprisoned>
+    <minimumCrimeSeverity>80</minimumCrimeSeverity>
+    <victimMoodImpact>5</victimMoodImpact>
+    <criminalMoodImpact>0</criminalMoodImpact>
+    <witnessMoodImpact>-2</witnessMoodImpact>
+    <allowMultiple>false</allowMultiple>
+  </Law_and_Order.Source.Justice.PunishmentDef>
+
+  <!-- Exile -->
+  <Law_and_Order.Source.Justice.PunishmentDef>
+    <defName>LawAndOrder_Punishment_Exile</defName>
+    <punishmentType>Exile</punishmentType>
+    <punishmentLabel>Exile</punishmentLabel>
+    <description>Permanently banish the criminal from the colony. They will be forced to leave the map immediately and cannot return.</description>
+    <severityRating>7</severityRating>
+    <requiresAlive>true</requiresAlive>
+    <requiresOnMap>true</requiresOnMap>
+    <requiresImprisoned>false</requiresImprisoned>
+    <minimumCrimeSeverity>40</minimumCrimeSeverity>
+    <victimMoodImpact>2</victimMoodImpact>
+    <criminalMoodImpact>0</criminalMoodImpact>
+    <witnessMoodImpact>0</witnessMoodImpact>
+    <allowMultiple>false</allowMultiple>
+  </Law_and_Order.Source.Justice.PunishmentDef>
+
+</Defs>

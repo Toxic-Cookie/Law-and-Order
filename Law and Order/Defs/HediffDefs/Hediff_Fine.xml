@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Fine Hediff -->
+  <HediffDef>
+    <defName>LawAndOrder_Fine</defName>
+    <hediffClass>Law_and_Order.Source.Hediffs.Hediff_Fine</hediffClass>
+    <label>unpaid fine</label>
+    <description>This pawn owes a monetary fine for their crimes. They will experience mood penalties until the fine is paid.</description>
+    <defaultLabelColor>(0.8, 0.8, 0.3)</defaultLabelColor>
+    <isBad>true</isBad>
+    <makesAlert>true</makesAlert>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <initialSeverity>1.0</initialSeverity>
+
+    <!-- Stages for mood penalties based on fine amount -->
+    <stages>
+      <!-- Small fine (< 500 silver) -->
+      <li>
+        <minSeverity>0</minSeverity>
+        <label>small fine</label>
+        <statOffsets>
+          <MentalBreakThreshold>0.02</MentalBreakThreshold>
+        </statOffsets>
+      </li>
+      <!-- Medium fine (500-1500 silver) -->
+      <li>
+        <minSeverity>1</minSeverity>
+        <label>fine</label>
+        <statOffsets>
+          <MentalBreakThreshold>0.05</MentalBreakThreshold>
+        </statOffsets>
+      </li>
+      <!-- Large fine (1500+ silver) -->
+      <li>
+        <minSeverity>2</minSeverity>
+        <label>large fine</label>
+        <statOffsets>
+          <MentalBreakThreshold>0.10</MentalBreakThreshold>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>

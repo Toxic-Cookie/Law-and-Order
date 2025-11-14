@@ -1,5 +1,6 @@
 using RimWorld;
 using Verse;
+using Law_and_Order.Source.Justice;
 
 namespace Law_and_Order.Source
 {
@@ -18,7 +19,22 @@ namespace Law_and_Order.Source
         }
     }
 
-    // TODO Phase 2+: Add new DefOf classes for state-based system
-    // - CaseStatusDef (if we create custom defs for case statuses)
-    // - PunishmentDef (for Phase 4 punishment system)
+    /// <summary>
+    /// DefOf class for Law and Order mod - Punishments
+    /// Phase 4: Conviction & Punishment System
+    /// </summary>
+    [DefOf]
+    public static class LawAndOrder_PunishmentDefOf
+    {
+        public static PunishmentDef LawAndOrder_Punishment_Imprisonment;
+        public static PunishmentDef LawAndOrder_Punishment_Fine;
+        public static PunishmentDef LawAndOrder_Punishment_Beating;
+        public static PunishmentDef LawAndOrder_Punishment_Execution;
+        public static PunishmentDef LawAndOrder_Punishment_Exile;
+
+        static LawAndOrder_PunishmentDefOf()
+        {
+            DefOfHelper.EnsureInitializedInCtor(typeof(LawAndOrder_PunishmentDefOf));
+        }
+    }
 }

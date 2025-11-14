@@ -132,11 +132,80 @@ namespace Law_and_Order.Source.Components
         {
             base.WorldComponentTick();
 
+            int currentTick = Find.TickManager.TicksGame;
+
             // Archive old cases once per day
-            if (Find.TickManager.TicksGame % GenDate.TicksPerDay == 0)
+            if (currentTick % GenDate.TicksPerDay == 0)
             {
                 ArchiveOldCases();
             }
+
+            // Check for auto-conviction once per hour
+            if (currentTick % 2500 == 0)
+            {
+                CheckAutoConviction();
+            }
+        }
+
+        /// <summary>
+        /// Auto-convict crimes caught red-handed (high evidence) if setting is enabled.
+        /// Phase 4: Auto-Convict Feature
+        /// </summary>
+        private void CheckAutoConviction()
+        {
+            // Get auto-convict setting from MainTabWindow_Justice
+            // We'll access this via a static property
+            bool autoConvictEnabled = GetAutoConvictSetting();
+
+            if (!autoConvictEnabled)
+                return;
+
+            // Find all open cases with high-evidence crimes
+            var openCases = GetOpenCases();
+
+            foreach (var caseItem in openCases)
+            {
+                var crimes = caseItem.GetAssociatedCrimes();
+                var highEvidenceCrimes = crimes.Where(c =>
+                    c.visibilityState == CrimeVisibilityState.Suspected &&
+                    c.evidenceStrength >= 0.7f // Caught red-handed threshold
+                ).ToList();
+
+                if (highEvidenceCrimes.Count > 0)
+                {
+                    // Auto-convict these crimes
+                    foreach (var crime in highEvidenceCrimes)
+                    {
+                        crime.TransitionToConvicted();
+                    }
+
+                    // If all crimes in case are now convicted, mark case as convicted
+                    var allCrimes = caseItem.GetAssociatedCrimes();
+                    if (allCrimes.All(c => c.visibilityState == CrimeVisibilityState.Convicted))
+                    {
+                        caseItem.Convict();
+                    }
+
+                    // Notify player (but don't spam - just log)
+                    Mod.Log?.Message($"Auto-convicted {highEvidenceCrimes.Count} crimes for {caseItem.accused?.NameShortColored} (evidence >= 0.7)");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get the auto-convict setting value.
+        /// We'll store this as a static field that MainTabWindow_Justice can set.
+        /// </summary>
+        private static bool autoConvictRedHanded = false;
+
+        public static void SetAutoConvictSetting(bool enabled)
+        {
+            autoConvictRedHanded = enabled;
+        }
+
+        private bool GetAutoConvictSetting()
+        {
+            return autoConvictRedHanded;
         }
 
         public override void ExposeData()

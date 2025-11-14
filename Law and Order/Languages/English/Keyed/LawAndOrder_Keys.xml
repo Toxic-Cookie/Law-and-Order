@@ -507,4 +507,78 @@
   <LawAndOrder_Committed>Committed</LawAndOrder_Committed>
   <LawAndOrder_CaseNumber>Case</LawAndOrder_CaseNumber>
 
+  <!-- Phase 4: Punishment System -->
+
+  <!-- Punishment Dialog -->
+  <LawAndOrder_SelectPunishment>Select Punishment</LawAndOrder_SelectPunishment>
+  <LawAndOrder_AvailablePunishments>Available Punishments</LawAndOrder_AvailablePunishments>
+  <LawAndOrder_ConvictedOf>Convicted of {0} crime(s)</LawAndOrder_ConvictedOf>
+  <LawAndOrder_TotalSeverity>Total Severity</LawAndOrder_TotalSeverity>
+  <LawAndOrder_AssignPunishment>Assign Punishment</LawAndOrder_AssignPunishment>
+  <LawAndOrder_Recommended>(Recommended)</LawAndOrder_Recommended>
+  <LawAndOrder_Severity>Severity</LawAndOrder_Severity>
+  <LawAndOrder_ImprisonmentDuration>Imprisonment Duration</LawAndOrder_ImprisonmentDuration>
+  <LawAndOrder_FineAmount>Fine Amount</LawAndOrder_FineAmount>
+
+  <!-- Punishment Types -->
+  <LawAndOrder_Punishment_Imprisonment>Imprisonment</LawAndOrder_Punishment_Imprisonment>
+  <LawAndOrder_Punishment_Fine>Fine</LawAndOrder_Punishment_Fine>
+  <LawAndOrder_Punishment_Beating>Beating</LawAndOrder_Punishment_Beating>
+  <LawAndOrder_Punishment_Execution>Execution</LawAndOrder_Punishment_Execution>
+  <LawAndOrder_Punishment_Exile>Exile</LawAndOrder_Punishment_Exile>
+
+  <!-- Punishment Status -->
+  <LawAndOrder_Status_Pending>Pending</LawAndOrder_Status_Pending>
+  <LawAndOrder_Status_Active>Active</LawAndOrder_Status_Active>
+  <LawAndOrder_Status_Completed>Completed</LawAndOrder_Status_Completed>
+  <LawAndOrder_Status_Failed>Failed</LawAndOrder_Status_Failed>
+
+  <!-- Punishment Messages -->
+  <LawAndOrder_PunishmentAssigned>Punishment assigned: {0} for {1}</LawAndOrder_PunishmentAssigned>
+  <LawAndOrder_PunishmentCompleted>{0}'s {1} punishment has been completed</LawAndOrder_PunishmentCompleted>
+  <LawAndOrder_ImprisonmentComplete>{0} has completed their imprisonment sentence and has been released</LawAndOrder_ImprisonmentComplete>
+  <LawAndOrder_FinePaid>{0} has fully paid their fine of {1} silver</LawAndOrder_FinePaid>
+  <LawAndOrder_BeatingAdministered>{0} has administered a beating to {1}</LawAndOrder_BeatingAdministered>
+  <LawAndOrder_Executed>{0} has executed {1}</LawAndOrder_Executed>
+  <LawAndOrder_Exiled>{0} has been exiled from the colony</LawAndOrder_Exiled>
+  <LawAndOrder_NoExecutionerAvailable>No colonist available to execute {0}. Punishment will be attempted later.</LawAndOrder_NoExecutionerAvailable>
+  <LawAndOrder_NoBeaterAvailable>No colonist available to administer beating to {0}. Punishment will be attempted later.</LawAndOrder_NoBeaterAvailable>
+  <LawAndOrder_ExecutionOrdered>{0} has been ordered to execute {1}</LawAndOrder_ExecutionOrdered>
+
+  <!-- Punishment Unavailable Reasons -->
+  <LawAndOrder_CriminalDead>Criminal is dead</LawAndOrder_CriminalDead>
+  <LawAndOrder_CriminalNotOnMap>Criminal must be on the map</LawAndOrder_CriminalNotOnMap>
+  <LawAndOrder_CriminalNotImprisoned>Criminal must be imprisoned first</LawAndOrder_CriminalNotImprisoned>
+  <LawAndOrder_CrimeSeverityTooLow>Crime severity too low (need {0}, have {1})</LawAndOrder_CrimeSeverityTooLow>
+
+  <!-- Convictions Tab -->
+  <LawAndOrder_Tab_OpenCases>Open Cases</LawAndOrder_Tab_OpenCases>
+  <LawAndOrder_Tab_Convictions>Convictions</LawAndOrder_Tab_Convictions>
+  <LawAndOrder_Tab_Settings>Settings</LawAndOrder_Tab_Settings>
+  <LawAndOrder_NoConvictions>No convicted cases</LawAndOrder_NoConvictions>
+  <LawAndOrder_CrimesConvicted>crime(s) convicted</LawAndOrder_CrimesConvicted>
+  <LawAndOrder_ConvictedDaysAgo>Convicted {0} days ago</LawAndOrder_ConvictedDaysAgo>
+  <LawAndOrder_PunishmentPending>Punishment: Pending</LawAndOrder_PunishmentPending>
+  <LawAndOrder_PunishmentStatus>Punishment: {0}</LawAndOrder_PunishmentStatus>
+
+  <!-- Action Buttons Phase 4 -->
+  <LawAndOrder_ConvictSelected>Convict Selected</LawAndOrder_ConvictSelected>
+  <LawAndOrder_DismissSelected>Dismiss Selected</LawAndOrder_DismissSelected>
+  <LawAndOrder_Investigate>Investigate</LawAndOrder_Investigate>
+  <LawAndOrder_InvestigateNotImplemented>Investigation system coming in Phase 5</LawAndOrder_InvestigateNotImplemented>
+
+  <!-- Settings Phase 4 -->
+  <LawAndOrder_DebugSettings>Debug Settings (God Mode Only)</LawAndOrder_DebugSettings>
+  <LawAndOrder_Setting_ShowHiddenCrimes>Show Hidden Crimes</LawAndOrder_Setting_ShowHiddenCrimes>
+  <LawAndOrder_Setting_ShowHiddenCrimes_Desc>Display crimes that have not been witnessed (debug mode)</LawAndOrder_Setting_ShowHiddenCrimes_Desc>
+  <LawAndOrder_Setting_AutoConvictRedHanded>Auto-Convict Red-Handed</LawAndOrder_Setting_AutoConvictRedHanded>
+  <LawAndOrder_Setting_AutoConvictRedHanded_Desc>Automatically convict crimes with strong evidence (≥70%). You will still select punishments.</LawAndOrder_Setting_AutoConvictRedHanded_Desc>
+  <LawAndOrder_Setting_EnableFalseAccusations>Enable False Accusations</LawAndOrder_Setting_EnableFalseAccusations>
+  <LawAndOrder_Setting_EnableFalseAccusations_Desc>Allow colonists to falsely accuse others based on relationships (Phase 5+)</LawAndOrder_Setting_EnableFalseAccusations_Desc>
+
+  <!-- Crime Visibility States -->
+  <LawAndOrder_State_Hidden>Hidden</LawAndOrder_State_Hidden>
+  <LawAndOrder_State_Suspected>Suspected</LawAndOrder_State_Suspected>
+  <LawAndOrder_State_Convicted>Convicted</LawAndOrder_State_Convicted>
+
 </LanguageData>

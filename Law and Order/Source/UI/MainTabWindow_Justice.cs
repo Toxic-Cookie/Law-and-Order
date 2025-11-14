@@ -494,10 +494,66 @@ namespace Law_and_Order.Source.UI
             int daysAgo = (Find.TickManager.TicksGame - caseItem.tickClosed) / GenDate.TicksPerDay;
             Widgets.Label(dateRect, $"{"LawAndOrder_ConvictedDaysAgo".Translate(daysAgo)}");
 
-            // Punishment status (placeholder for Phase 4)
+            // Punishment status (Phase 4)
             Text.Font = GameFont.Tiny;
             Rect punishmentRect = new Rect(innerRect.x + innerRect.width / 2f, innerRect.y + 25f, innerRect.width / 2f, 40f);
-            Widgets.Label(punishmentRect, "LawAndOrder_PunishmentPending".Translate());
+
+            // Get punishments for this case
+            var punishmentManager = Components.WorldComponent_PunishmentManager.Instance;
+            if (punishmentManager != null)
+            {
+                var punishments = punishmentManager.GetPunishmentsForCase(caseItem.caseId);
+
+                if (punishments.Count > 0)
+                {
+                    string punishmentText = "";
+
+                    foreach (var punishment in punishments.Take(3))
+                    {
+                        string statusStr = punishment.status switch
+                        {
+                            Justice.PunishmentStatus.Pending => "LawAndOrder_Status_Pending".Translate(),
+                            Justice.PunishmentStatus.Active => "LawAndOrder_Status_Active".Translate(),
+                            Justice.PunishmentStatus.Completed => "LawAndOrder_Status_Completed".Translate(),
+                            Justice.PunishmentStatus.Failed => "LawAndOrder_Status_Failed".Translate(),
+                            _ => "Unknown"
+                        };
+
+                        string typeStr = punishment.type.ToString();
+
+                        // Add additional info for some punishment types
+                        string additionalInfo = "";
+                        if (punishment.type == Justice.PunishmentType.Imprisonment && punishment.status == Justice.PunishmentStatus.Active)
+                        {
+                            int remainingDays = punishment.GetRemainingDays();
+                            additionalInfo = $" ({remainingDays}d left)";
+                        }
+                        else if (punishment.type == Justice.PunishmentType.Fine && punishment.status == Justice.PunishmentStatus.Active)
+                        {
+                            int remainingFine = punishment.GetRemainingFine();
+                            additionalInfo = $" ({remainingFine}$ left)";
+                        }
+
+                        punishmentText += $"{typeStr}: {statusStr}{additionalInfo}\n";
+                    }
+
+                    if (punishments.Count > 3)
+                    {
+                        punishmentText += $"+{punishments.Count - 3} more";
+                    }
+
+                    Widgets.Label(punishmentRect, punishmentText);
+                }
+                else
+                {
+                    Widgets.Label(punishmentRect, "LawAndOrder_PunishmentPending".Translate());
+                }
+            }
+            else
+            {
+                Widgets.Label(punishmentRect, "LawAndOrder_PunishmentPending".Translate());
+            }
+
             Text.Font = GameFont.Small;
         }
 
@@ -534,8 +590,16 @@ namespace Law_and_Order.Source.UI
             listing.Gap();
 
             // Auto-convict caught red-handed
+            bool prevAutoConvict = autoConvictRedHanded;
             listing.CheckboxLabeled("LawAndOrder_Setting_AutoConvictRedHanded".Translate(), ref autoConvictRedHanded,
                 "LawAndOrder_Setting_AutoConvictRedHanded_Desc".Translate());
+
+            // Sync with JusticeManager when changed
+            if (prevAutoConvict != autoConvictRedHanded)
+            {
+                Components.WorldComponent_JusticeManager.SetAutoConvictSetting(autoConvictRedHanded);
+            }
+
             listing.Gap();
 
             // Enable false accusations
@@ -562,14 +626,16 @@ namespace Law_and_Order.Source.UI
             if (selectedCase == null || selectedCrimes.Count == 0)
                 return;
 
-            int convictedCount = 0;
-            foreach (var crime in selectedCrimes.ToList())
+            // Transition selected crimes to Convicted state
+            var crimesToConvict = selectedCrimes.Where(c => c.visibilityState == CrimeVisibilityState.Suspected).ToList();
+
+            if (crimesToConvict.Count == 0)
+                return;
+
+            // Mark crimes as convicted
+            foreach (var crime in crimesToConvict)
             {
-                if (crime.visibilityState == CrimeVisibilityState.Suspected)
-                {
-                    crime.TransitionToConvicted();
-                    convictedCount++;
-                }
+                crime.TransitionToConvicted();
             }
 
             // If all crimes in case are convicted, mark case as convicted
@@ -579,9 +645,11 @@ namespace Law_and_Order.Source.UI
                 selectedCase.Convict();
             }
 
-            selectedCrimes.Clear();
+            // Open punishment selection dialog
+            Dialog_SelectPunishment dialog = new Dialog_SelectPunishment(selectedCase, crimesToConvict);
+            Find.WindowStack.Add(dialog);
 
-            Messages.Message($"{"LawAndOrder_CrimesConvictedMessage".Translate(convictedCount)}", MessageTypeDefOf.TaskCompletion);
+            selectedCrimes.Clear();
         }
 
         private void DismissSelectedCrimes()
@@ -605,6 +673,9 @@ namespace Law_and_Order.Source.UI
             var remainingCrimes = selectedCase.GetAssociatedCrimes();
             if (remainingCrimes.Count == 0)
             {
+                // Apply social impact for unpunished criminal
+                Utils.SocialImpactUtils.ApplyUnpunishedImpact(selectedCase);
+
                 selectedCase.Dismiss();
                 selectedCase = null;
             }
