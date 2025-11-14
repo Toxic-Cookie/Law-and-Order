@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<RimWorldModsPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods</RimWorldModsPath>
 		<ModFolderName>Law and Order</ModFolderName>
@@ -11,6 +11,13 @@
 		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4628-beta" />
 		<PackageReference Include="Lib.Harmony" Version="2.4.1" />
 		<PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="12.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="rimworld-mod-real-fow">
+			<HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3391128917\1.6\Assemblies\rimworld-mod-real-fow.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
