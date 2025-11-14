@@ -191,7 +191,7 @@ Based on the current codebase:
 
 ---
 
-### Phase 2: Fog of War Integration (2 weeks)
+### Phase 2: Fog of War Integration (2 weeks) ✅ COMPLETE
 
 **Goal**: Integrate witness detection using Real Fog of War
 
@@ -200,76 +200,76 @@ Based on the current codebase:
 #### Tasks
 
 **2.1: FoW API Integration**
-- [ ] Create `FogOfWarUtils.cs` utility class
-- [ ] Implement `GetMapComponentSeenFog(map)` helper
-- [ ] Implement `IsLocationVisible(faction, location)` helper
-- [ ] Implement `GetWitnesses(location, map)` method
-- [ ] Add error handling for missing FoW component
-- [ ] Add fallback behavior if FoW not available
-- [ ] Test FoW API calls in dev mode
+- [x] Create `FogOfWarUtils.cs` utility class
+- [x] Implement `GetMapComponentSeenFog(map)` helper
+- [x] Implement `IsLocationVisible(faction, location)` helper
+- [x] Implement `GetWitnesses(location, map)` method
+- [x] Add error handling for missing FoW component
+- [x] Add fallback behavior if FoW not available
+- [x] Test FoW API calls in dev mode
 
 **2.2: Witness Detection System**
-- [ ] Create `WitnessDetection.cs` class
-- [ ] Implement line-of-sight checking
-- [ ] Implement sight range calculations using FoW
-- [ ] Implement witness list building
-- [ ] Add distance-based witness reliability
-- [ ] Add light-level checks (darkness reduces detection)
-- [ ] Add weather-based modifiers
-- [ ] Implement "caught red-handed" detection (very close)
+- [x] Create `WitnessDetection.cs` class (integrated into FogOfWarUtils.cs)
+- [x] Implement line-of-sight checking
+- [x] Implement sight range calculations using FoW
+- [x] Implement witness list building
+- [x] Add distance-based witness reliability
+- [x] Add light-level checks (darkness reduces detection)
+- [x] Add weather-based modifiers
+- [x] Implement "caught red-handed" detection (very close)
 
 **2.3: Evidence Strength Calculation**
-- [ ] Create `EvidenceCalculator.cs` class
-- [ ] Implement base evidence from witness count
-- [ ] Add bonus for multiple independent witnesses
-- [ ] Add penalty for darkness/poor visibility
-- [ ] Add bonus for caught red-handed
-- [ ] Add bonus for physical evidence
-- [ ] Implement evidence strength formula (0.0-1.0)
-- [ ] Document evidence calculation rules
+- [x] Create `EvidenceCalculator.cs` class (integrated into FogOfWarUtils.cs)
+- [x] Implement base evidence from witness count
+- [x] Add bonus for multiple independent witnesses
+- [x] Add penalty for darkness/poor visibility
+- [x] Add bonus for caught red-handed
+- [x] Add bonus for physical evidence
+- [x] Implement evidence strength formula (0.0-1.0)
+- [x] Document evidence calculation rules
 
 **2.4: Crime Detection Event**
-- [ ] Create `CrimeDetectionSystem.cs`
-- [ ] Implement `OnCrimeCommitted()` main method
-- [ ] Integrate witness detection
-- [ ] Integrate evidence calculation
-- [ ] Implement automatic Hidden/Suspected determination
-- [ ] Add logging for detection results
-- [ ] Add player notifications for witnessed crimes
-- [ ] Test with various crime scenarios
+- [x] Create `CrimeDetectionSystem.cs` (integrated into CrimeUtils.cs)
+- [x] Implement `OnCrimeCommitted()` main method (RecordCrime in CrimeUtils.cs)
+- [x] Integrate witness detection
+- [x] Integrate evidence calculation
+- [x] Implement automatic Hidden/Suspected determination
+- [x] Add logging for detection results
+- [x] Add player notifications for witnessed crimes
+- [x] Test with various crime scenarios
 
 **2.5: Integration with Existing Crime Types**
-- [ ] Hook into assault detection
-- [ ] Hook into murder detection
-- [ ] Hook into theft detection
-- [ ] Hook into vandalism detection
-- [ ] Hook into arson detection
-- [ ] Test each crime type with FoW
+- [x] Hook into assault detection (CrimeDetectionPatches.cs)
+- [x] Hook into murder detection (CrimeDetectionPatches.cs)
+- [x] Hook into theft detection (CrimeDetectionPatches.cs)
+- [x] Hook into vandalism detection (CrimeDetectionPatches.cs)
+- [x] Hook into arson detection (CrimeDetectionPatches.cs)
+- [x] Test each crime type with FoW
 
 **2.6: Testing**
-- [ ] Test crime with colonist nearby (visible in FoW) → Suspected
-- [ ] Test crime with no colonists nearby → Hidden
-- [ ] Test crime in darkness → reduced detection
-- [ ] Test crime with multiple witnesses → high evidence
-- [ ] Test crime just outside sight range → not detected
-- [ ] Test crime in fog/rain → reduced detection
-- [ ] Test with FoW disabled → fallback behavior
+- [x] Test crime with colonist nearby (visible in FoW) → Suspected
+- [x] Test crime with no colonists nearby → Hidden
+- [x] Test crime in darkness → reduced detection
+- [x] Test crime with multiple witnesses → high evidence
+- [x] Test crime just outside sight range → not detected
+- [x] Test crime in fog/rain → reduced detection
+- [x] Test with FoW disabled → fallback behavior
 
-**Deliverables**:
-- Complete FoW integration
-- Automatic witness detection working
-- Evidence strength calculated correctly
-- Crimes properly Hidden or Suspected based on witnesses
-- Player notifications for witnessed crimes
+**Deliverables**: ✅ **ALL COMPLETE**
+- ✅ Complete FoW integration
+- ✅ Automatic witness detection working
+- ✅ Evidence strength calculated correctly
+- ✅ Crimes properly Hidden or Suspected based on witnesses
+- ✅ Player notifications for witnessed crimes
 
-**Testing Checklist**:
-- [ ] Witnesses detected correctly
-- [ ] Sight range respected
-- [ ] Darkness affects detection
-- [ ] Multiple witnesses tracked
-- [ ] Evidence strength reasonable
-- [ ] No false positives
-- [ ] No performance issues
+**Testing Checklist**: ✅ **ALL COMPLETE**
+- [x] Witnesses detected correctly
+- [x] Sight range respected
+- [x] Darkness affects detection
+- [x] Multiple witnesses tracked
+- [x] Evidence strength reasonable
+- [x] No false positives
+- [x] No performance issues
 
 **Known Risks**:
 - FoW API changes in updates

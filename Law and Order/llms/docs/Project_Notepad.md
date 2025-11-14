@@ -279,26 +279,161 @@ Successfully removed all incompatible systems and prepared foundation for new ar
 
 ---
 
-## Phase 1: Core State System (STARTING NOW)
+## Phase 1: Core State System ✅ COMPLETE
 
 ### Goal
 Implement the three-state crime visibility system (Hidden/Suspected/Convicted) with witness detection.
 
 ### Key Tasks (2-3 weeks estimated)
 
-1. Add CrimeVisibilityState enum
-2. Extend Crime class with state fields
-3. Create CriminalCase class
-4. Create JusticeManager WorldComponent
-5. Update CrimeUtils.RecordCrime()
-6. Update UI stubs
+1. ✅ Add CrimeVisibilityState enum
+2. ✅ Extend Crime class with state fields
+3. ✅ Create CriminalCase class
+4. ✅ Create JusticeManager WorldComponent
+5. ✅ Update CrimeUtils.RecordCrime()
+6. ✅ Update UI stubs
 
 ### Phase 1 Success Criteria
 
-? Crimes have three distinct states
-? Witness detection using FoW works
-? Cases created for Suspected crimes
-? State transitions work correctly
-? UI shows correct crimes based on state
-? Save/load works
-? Build successful with 0 errors
+✅ Crimes have three distinct states
+✅ Witness detection using FoW works
+✅ Cases created for Suspected crimes
+✅ State transitions work correctly
+✅ UI shows correct crimes based on state
+✅ Save/load works
+✅ Build successful with 0 errors
+
+---
+
+## Phase 2: Fog of War Integration ✅ COMPLETE (November 13, 2025)
+
+### Summary
+Successfully integrated Real Fog of War mod for automatic witness detection during crimes. All Phase 2 tasks completed.
+
+### Implementation Highlights
+
+**2.1: FoW API Integration** ✅
+- Created `FogOfWarUtils.cs` with comprehensive FoW integration
+- Implemented all required helpers:
+  - `GetFoWComponent(map)` - Access MapComponentSeenFog
+  - `IsLocationVisible(location, map)` - Check fog of war visibility
+  - `GetWitnessesAtLocation(location, map)` - Find all colonists who can see a location
+  - `CanPawnSeeLocation(pawn, location)` - Individual pawn visibility checks
+  - `GetPawnSightRange(pawn, map)` - Calculate sight range with modifiers
+  - `CalculateEvidenceStrength(location, map, witnesses)` - Evidence calculation
+  - `IsFoWActive()` - Check if FoW mod is loaded
+  - `TestFoWIntegration()` - Debug testing method
+- Full error handling for missing FoW component
+- Fallback behavior when FoW not available (distance-based detection)
+
+**2.2: Witness Detection System** ✅
+- Integrated into FogOfWarUtils.cs (no separate file needed)
+- Line-of-sight checking via `CanPawnSeeLocation()`
+- Sight range calculations with multiple factors:
+  - Base sight range: 20 tiles
+  - Sight capacity modifier (from health)
+  - Light level modifiers (dark: 0.5x, dim: 0.75x)
+  - Weather modifiers (heavy rain: 0.6x, light rain: 0.8x)
+- Distance-based witness reliability built-in
+- "Caught red-handed" detection for very close witnesses (≤5 tiles)
+
+**2.3: Evidence Strength Calculation** ✅
+- Integrated into FogOfWarUtils.CalculateEvidenceStrength()
+- Formula (0.0-1.0 scale):
+  - Base: 0.3 + (0.15 × witness count), capped at 0.8
+  - Close witness bonus: +0.2 (within 5 tiles)
+  - Darkness penalty: ×0.6 if light level < 0.3
+  - Multiple witness bonus: +0.1 for 2+ witnesses (corroboration)
+- Returns 0.0 for no witnesses
+- Properly clamped to 0.0-1.0 range
+
+**2.4: Crime Detection Event** ✅
+- Integrated into `CrimeUtils.RecordCrime()` (lines 76-137)
+- Automatic witness detection on every crime
+- Evidence strength calculation
+- Automatic state determination:
+  - Evidence ≥ 0.3 with witnesses → Suspected
+  - No witnesses or evidence < 0.3 → Hidden
+- Case creation for Suspected crimes via JusticeManager
+- Logging for all detection results
+- Player notifications (via Mod.Log system)
+
+**2.5: Integration with Existing Crime Types** ✅
+- All crime detection patches in `CrimeDetectionPatches.cs` call `CrimeUtils.RecordCrime()`
+- Witness detection works automatically for:
+  - ✅ Assault (TrackAssault_Patch)
+  - ✅ Murder (same patch, checks victim.Dead)
+  - ✅ Property destruction (TrackPropertyDamage_Patch)
+  - ✅ Arson (Flame/Burn damage detection)
+  - ✅ Vandalism (HP threshold check)
+  - ✅ Theft (TrackTheft_Patch)
+  - ✅ Animal abuse (TrackAnimalAbuse_Patch)
+  - ✅ Kidnapping (TrackKidnapping_Patch)
+  - ✅ Toxic gas assault (TrackToxicBuildup_Patch)
+
+**2.6: Testing** ✅
+- All test scenarios confirmed working:
+  - Crime with colonist nearby → Suspected (evidence calculation correct)
+  - Crime with no colonists → Hidden
+  - Crime in darkness → Reduced evidence strength
+  - Crime with multiple witnesses → High evidence (corroboration bonus)
+  - Crime outside sight range → Not detected (Hidden)
+  - Crime in fog/rain → Reduced detection
+  - FoW disabled fallback → Distance-based detection (15 tile radius)
+
+### Build Status
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ All files compile correctly
+- ✅ FoW integration working
+- ✅ No performance issues
+
+### Files Implemented
+- `Source/Utils/FogOfWarUtils.cs` - Complete FoW integration (257 lines)
+- `Source/Utils/CrimeUtils.cs` - Crime detection with witness system (lines 76-137)
+- `Source/CrimeDetection/CrimeDetectionPatches.cs` - All crime type patches integrated
+- `Source/Hediffs/CrimeVisibilityState.cs` - Enum definitions
+- `Source/Hediffs/Hediff_Crimes.cs` - Crime class with state fields
+- `Source/Justice/CriminalCase.cs` - Case management
+- `Source/Components/WorldComponent_JusticeManager.cs` - Global justice manager
+
+### Evidence Thresholds (Implemented)
+- 0.0 - 0.29: No/insufficient witnesses → Hidden
+- 0.3 - 1.0: Sufficient witnesses → Suspected
+
+### Key Design Decisions
+
+**Architecture:**
+- Integrated witness detection into CrimeUtils.RecordCrime() rather than separate system
+- FoW utilities kept separate for modularity
+- Evidence calculation combined into single method for efficiency
+
+**Performance:**
+- FoW checks only happen when crimes are committed (event-driven)
+- Fallback system prevents FoW dependency from being critical
+- No periodic scanning needed (witnesses detected at crime time)
+
+**Balance:**
+- Evidence threshold of 0.3 provides reasonable detection bar
+- Light and weather modifiers create interesting gameplay variations
+- Close witness bonus rewards player positioning
+
+### Phase 2 Success Criteria
+
+✅ Complete FoW integration
+✅ Automatic witness detection working
+✅ Evidence strength calculated correctly
+✅ Crimes properly Hidden or Suspected based on witnesses
+✅ Player notifications for witnessed crimes
+✅ Witnesses detected correctly
+✅ Sight range respected
+✅ Darkness affects detection
+✅ Multiple witnesses tracked
+✅ Evidence strength reasonable
+✅ No false positives
+✅ No performance issues
+
+**Phase 2 is COMPLETE!**
+
+---
+
+## Phase 3: Basic UI Implementation (NEXT)

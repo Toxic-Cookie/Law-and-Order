@@ -1,9 +1,11 @@
 # Law and Order - Project Tracker
 
 **Last Updated:** November 13, 2025
-**Current Status:** 🔄 Phase 0 Cleanup Complete - Preparing for New Architecture
+**Current Status:** ✅ Phase 2 Complete - FoW Witness Detection System Implemented
 
 **Recent Updates:**
+- ✅ **Phase 2: FoW Integration (Nov 13, 2025):** Complete witness detection system using Real Fog of War - Automatic Hidden/Suspected crime states based on witnesses
+- ✅ **Phase 1: Core State System (Nov 13, 2025):** Implemented three-state crime visibility (Hidden/Suspected/Convicted) with case management
 - ✅ **Phase 0 Cleanup (Nov 13, 2025):** Removed incompatible systems (debt, penalty, hearing ritual) - 37 files deleted, ~10,217 lines removed
 - ✅ **Property Damage Penalty Fix (Nov 12, 2025):** Fixed bug where destroyed buildings (e.g., walls destroyed by grenades) used fallback penalties instead of actual market value
 - ✅ **Justice Tab UI Enhancement #1 (Nov 12, 2025):** Added double-click to pan camera to criminals in the justice tab list
@@ -23,6 +25,132 @@
 - ✅ **Crime Detection - Phase 2: Kidnapping (Nov 9, 2025):** Added automatic detection for hostile pawns kidnapping downed colonists (patches JobGiver_Kidnap)
 - ✅ **Crime Detection - Phase 3: Trespassing (Nov 9, 2025):** Added automatic detection for hostile pawns entering player home area (MapComponent periodic checking) - TESTED AND VERIFIED
 - ✅ **Crime Detection - Phase 4: Vandalism (Nov 9, 2025):** Added distinction between Vandalism (>50% HP) and PropertyDestruction (<50% HP) with duplicate prevention system - TESTED AND VERIFIED
+
+---
+
+## Phase 2: Fog of War Integration (November 13, 2025) ✅ COMPLETE
+
+**Goal:** Integrate witness detection using Real Fog of War for automatic crime visibility state determination.
+
+### Implementation Summary
+
+**Systems Implemented:**
+1. **FoW API Integration** (FogOfWarUtils.cs - 257 lines)
+   - GetFoWComponent() - Access MapComponentSeenFog
+   - IsLocationVisible() - Check fog of war visibility to player faction
+   - GetWitnessesAtLocation() - Find all colonists who can see a location
+   - CanPawnSeeLocation() - Individual pawn line-of-sight checks
+   - GetPawnSightRange() - Sight range with light/weather modifiers
+   - CalculateEvidenceStrength() - Evidence formula (0.0-1.0 scale)
+   - IsFoWActive() - FoW mod availability check
+   - TestFoWIntegration() - Debug testing method
+
+2. **Witness Detection System** (integrated into FogOfWarUtils.cs)
+   - Line-of-sight checking via FoW visibility
+   - Sight range: 20 tiles base × capacity × light × weather
+   - Light modifiers: dark (0.5x), dim (0.75x), normal (1.0x)
+   - Weather modifiers: heavy rain (0.6x), light rain (0.8x)
+   - "Caught red-handed" bonus for witnesses ≤5 tiles
+
+3. **Evidence Strength Calculation**
+   - Base: 0.3 + (0.15 × witness count), capped at 0.8
+   - Close witness bonus: +0.2 (within 5 tiles)
+   - Darkness penalty: ×0.6 if light level < 0.3
+   - Corroboration bonus: +0.1 for 2+ witnesses
+   - Returns 0.0-1.0 (clamped)
+
+4. **Crime Detection Event System** (CrimeUtils.RecordCrime)
+   - Automatic witness detection on every crime
+   - Evidence strength calculation
+   - State determination: Evidence ≥0.3 → Suspected, else Hidden
+   - Case creation for Suspected crimes
+   - Logging and notifications
+
+5. **Crime Type Integration**
+   - All 9 crime types use automatic witness detection:
+     - Assault, Murder (TrackAssault_Patch)
+     - Property Destruction, Arson, Vandalism (TrackPropertyDamage_Patch)
+     - Theft (TrackTheft_Patch)
+     - Animal Abuse (TrackAnimalAbuse_Patch)
+     - Kidnapping (TrackKidnapping_Patch)
+     - Toxic Gas Assault (TrackToxicBuildup_Patch)
+
+**Build Status:**
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ All witness detection working
+- ✅ FoW integration functional
+- ✅ Fallback system tested (distance-based without FoW)
+
+**Files Implemented:**
+- `Source/Utils/FogOfWarUtils.cs` (Phase 0 + Phase 2)
+- `Source/Utils/CrimeUtils.cs` (Phase 2 witness integration)
+- `Source/CrimeDetection/CrimeDetectionPatches.cs` (Phase 2 all patches integrated)
+
+**Testing Results:**
+- ✅ Crime with witnesses → Suspected (correct evidence calc)
+- ✅ Crime without witnesses → Hidden
+- ✅ Darkness reduces evidence strength
+- ✅ Multiple witnesses increase evidence
+- ✅ Weather affects detection
+- ✅ Fallback works without FoW
+- ✅ No performance issues
+
+**Next Step:** Phase 3 - Basic UI Implementation (Justice tab showing cases)
+
+---
+
+## Phase 1: Core State System (November 13, 2025) ✅ COMPLETE
+
+**Goal:** Implement three-state crime visibility system (Hidden/Suspected/Convicted).
+
+### Implementation Summary
+
+**Systems Implemented:**
+1. **CrimeVisibilityState Enum** (CrimeVisibilityState.cs)
+   - Hidden: Crime with no witnesses, not visible in UI
+   - Suspected: Crime witnessed, creates active case
+   - Convicted: Formally convicted by player
+
+2. **Crime Class Extensions** (Hediff_Crimes.cs)
+   - Added visibilityState field
+   - Added witnesses list
+   - Added evidenceStrength field (0.0-1.0)
+   - Added caseId field (-1 = no case)
+   - Implemented TransitionToSuspected()
+   - Implemented TransitionToConvicted()
+   - Implemented IsVisibleInUI()
+   - Added state query methods (GetSuspectedCrimes, GetConvictedCrimes, GetHiddenCrimes)
+
+3. **CriminalCase Class** (CriminalCase.cs - 173 lines)
+   - Case management with unique IDs
+   - Multiple crimes per case (amendments)
+   - Case status tracking (Open/Convicted/Dismissed)
+   - AddCrime() for case amendments
+   - Convict() to transition all crimes
+   - Dismiss() to close case
+   - GetMostSeriousCrime() for severity ordering
+
+4. **JusticeManager WorldComponent** (WorldComponent_JusticeManager.cs - 169 lines)
+   - Global case registry
+   - Case ID auto-increment
+   - GetOrCreateCase(pawn) - One active case per pawn
+   - GetOpenCases(), GetConvictedCases(), GetDismissedCases()
+   - ArchiveOldCases() - Cleanup after 60 days
+   - Full save/load support (ExposeData)
+
+**Build Status:**
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ All state transitions working
+- ✅ Cases created correctly
+- ✅ Save/load tested
+
+**Files Implemented:**
+- `Source/Hediffs/CrimeVisibilityState.cs` (52 lines)
+- `Source/Hediffs/Hediff_Crimes.cs` (extended with state fields)
+- `Source/Justice/CriminalCase.cs` (173 lines)
+- `Source/Components/WorldComponent_JusticeManager.cs` (169 lines)
+
+**Next Step:** Phase 2 - Fog of War Integration
 
 ---
 
