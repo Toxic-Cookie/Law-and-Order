@@ -69,37 +69,7 @@ namespace Law_and_Order.Source.Utils
 
             try
             {
-                float debtAmount = 0f;
-                Hediffs.PenaltyBreakdown breakdown = null;
-
-                // Calculate penalty using the penalty management system
-                if (damageInfo.HasValue && victim != null)
-                {
-                    // Crimes with direct damage (Assault, Murder, Animal Abuse)
-                    debtAmount = DebtUtils.CalculateDebtForCrimeNew(
-                        criminal: criminal,
-                        victim: victim,
-                        damageInfo: damageInfo,
-                        breakdown: out breakdown,
-                        crimeDefName: null  // Auto-detect based on damage
-                    );
-                }
-                else if (crimeType == CrimeType.Theft || crimeType == CrimeType.PropertyDestruction ||
-                         crimeType == CrimeType.Vandalism || crimeType == CrimeType.Trespassing ||
-                         crimeType == CrimeType.ContrabandPossession || crimeType == CrimeType.Kidnapping ||
-                         crimeType == CrimeType.Arson)
-                {
-                    // Crimes without direct damage calculation (property crimes, trespassing, kidnapping, etc.)
-                    // These crimes use fixed or value-based penalties instead of damage-based penalties
-                    debtAmount = DebtUtils.CalculateDebtForNonVictimCrime(criminal, crimeType, out breakdown, targetThing);
-                }
-                else
-                {
-                    // Invalid crime configuration - log error and skip
-                    Mod.Log?.Error($"Crime recording failed for {criminal.NameShortColored}: Invalid crime configuration. " +
-                                  $"Crime type {crimeType} requires DamageInfo for penalty calculation.");
-                    return;
-                }
+                // TODO Phase 1: Add witness detection using FogOfWarUtils here
 
                 // Extract damage type from DamageInfo if available
                 if (damageType == null && damageInfo.HasValue)
@@ -107,14 +77,14 @@ namespace Law_and_Order.Source.Utils
                     damageType = damageInfo.Value.Def?.label;
                 }
 
-                // Create the crime with the calculated debt amount and breakdown stored
-                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, debtAmount, damageType, breakdown);
+                // Create the crime (simplified for Phase 0)
+                var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, damageType);
 
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
                 criminalRecord?.AddCrime(crime);
 
-                // Automatically add debt for this crime
-                DebtUtils.AddDebtForCrime(criminal, crime);
+                // TODO Phase 1: Determine visibility state based on witnesses
+                // TODO Phase 1: Create/update case if Suspected
 
                 // Optional: Debug logging
                 if (Prefs.DevMode)
@@ -123,7 +93,7 @@ namespace Law_and_Order.Source.Utils
                     string damageInfoStr = damageDealt > 0 ? $" ({damageDealt:F1} damage)" : "";
                     string downedInfo = wasVictimDowned ? " [DOWNED]" : "";
                     string killedInfo = wasVictimKilled ? " [KILLED]" : "";
-                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo} - Debt: {debtAmount:F0} silver");
+                    Mod.Log?.Message($"Recorded {crimeType} by {criminal.NameShortColored}{victimInfo}{damageInfoStr}{downedInfo}{killedInfo}");
                 }
             }
             catch (System.Exception e)
@@ -162,8 +132,12 @@ namespace Law_and_Order.Source.Utils
         /// <summary>
         /// Get a penalty breakdown tooltip showing how the penalty was calculated
         /// </summary>
+        // TODO Phase 1: Replace with evidence/witness tooltip
         public static string GetPenaltyBreakdownTooltip(Crime crime)
         {
+            return null; // Penalty system removed in Phase 0 cleanup
+
+            /* OLD CODE - REMOVED
             if (crime == null || crime.debtAmount <= 0)
             {
                 return null;
@@ -238,6 +212,7 @@ namespace Law_and_Order.Source.Utils
             tooltip.AppendLine("LawAndOrder_PenaltyBreakdown_Final".Translate(breakdown.finalPenalty.ToString("F0")));
 
             return tooltip.ToString();
+            */
         }
     }
 }

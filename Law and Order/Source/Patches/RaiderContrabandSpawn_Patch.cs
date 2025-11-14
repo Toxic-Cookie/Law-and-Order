@@ -121,8 +121,8 @@ namespace Law_and_Order.Source.Patches
                         wasVictimKilled: false
                     );
 
-                    // Add contraband debt using the proper utility method
-                    DebtUtils.AddDebtForContraband(__instance, totalContrabandValue, contrabandItems);
+                    // TODO Phase 1: Instead of auto-debt, create crime with Suspected state
+                    // DebtUtils.AddDebtForContraband(__instance, totalContrabandValue, contrabandItems);
 
                     #if DEBUG
                     Mod.Log?.Message($"Raider {__instance.LabelShort} spawned with {totalContrabandValue} silver worth of contraband: {itemList}");

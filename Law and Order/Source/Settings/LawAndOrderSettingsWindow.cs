@@ -211,15 +211,8 @@ namespace Law_and_Order.Source.Settings
                 {
                     totalCriminals++;
 
-                    // Remove existing debt hediff
-                    var existingDebt = DebtUtils.TryGetDebtRecord(pawn);
-                    if (existingDebt != null)
-                    {
-                        pawn.health.RemoveHediff(existingDebt);
-                    }
-
-                    // Reapply debt using pre-calculated amounts
-                    DebtUtils.ApplyDebtForAllCrimes(pawn);
+                    // TODO Phase 1: Replace with state/case recalculation
+                    // Old debt system removed - will be replaced with case-based punishment system
                     count++;
                 }
             }

@@ -30,9 +30,7 @@ namespace LawAndOrder
 
             if (totalPenalty > 0 && contrabandItems.Count > 0)
             {
-                // Add debt for contraband
-                DebtUtils.GetOrCreateDebtRecord(pawn);
-                DebtUtils.AddDebtForContraband(pawn, totalPenalty, contrabandItems);
+                // TODO Phase 1: Create Suspected contraband crime with evidence
 
                 // Record contraband crime
                 RecordContrabandCrime(pawn, contrabandItems, totalPenalty);
@@ -59,8 +57,8 @@ namespace LawAndOrder
                 victim = null,
                 damageDealt = 0f,
                 tickCommitted = Find.TickManager.TicksGame,
-                debtAmount = totalPenalty,
-                additionalInfo = $"Items: {itemList}"
+                additionalInfo = $"Items: {itemList} (Penalty: {totalPenalty} silver)"
+                // TODO Phase 1: Add visibilityState = Suspected, evidence, witnesses
             };
 
             criminalRecord.AddCrime(crime);

@@ -2,7 +2,6 @@
 using System.Linq;
 using Verse;
 using RimWorld;
-using Law_and_Order.Source.Hearings;
 
 namespace Law_and_Order.Source.Hediffs
 {
@@ -19,15 +18,19 @@ namespace Law_and_Order.Source.Hediffs
         public string additionalInfo;
         public bool wasVictimDowned; // Was the victim downed by this crime?
         public bool wasVictimKilled; // Was the victim killed by this crime?
-        public float debtAmount; // Actual debt incurred by this crime (stored at time of crime)
         public string damageType; // Type of damage dealt (e.g., "Gunshot", "Stab", "Burn")
-        public PenaltyBreakdown penaltyBreakdown; // Detailed breakdown of how the penalty was calculated
+
+        // TODO Phase 1: Add state system fields
+        // public CrimeVisibilityState visibilityState = CrimeVisibilityState.Hidden;
+        // public List<Pawn> witnesses = new List<Pawn>();
+        // public float evidenceStrength = 0f;
+        // public bool isConfessed = false;
 
         public Crime()
         {
         }
 
-        public Crime(CrimeType type, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, float debtAmount = 0f, string damageType = null, PenaltyBreakdown penaltyBreakdown = null)
+        public Crime(CrimeType type, Pawn victim = null, Thing targetThing = null, float damageDealt = 0f, string additionalInfo = null, bool wasVictimDowned = false, bool wasVictimKilled = false, string damageType = null)
         {
             this.crimeType = type;
             this.tickCommitted = Find.TickManager.TicksGame;
@@ -37,9 +40,7 @@ namespace Law_and_Order.Source.Hediffs
             this.additionalInfo = additionalInfo;
             this.wasVictimDowned = wasVictimDowned;
             this.wasVictimKilled = wasVictimKilled;
-            this.debtAmount = debtAmount;
             this.damageType = damageType;
-            this.penaltyBreakdown = penaltyBreakdown;
         }
 
         public void ExposeData()
@@ -52,9 +53,13 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_Values.Look(ref additionalInfo, "additionalInfo");
             Scribe_Values.Look(ref wasVictimDowned, "wasVictimDowned", false);
             Scribe_Values.Look(ref wasVictimKilled, "wasVictimKilled", false);
-            Scribe_Values.Look(ref debtAmount, "debtAmount", 0f);
             Scribe_Values.Look(ref damageType, "damageType");
-            Scribe_Deep.Look(ref penaltyBreakdown, "penaltyBreakdown");
+
+            // TODO Phase 1: Add state system ExposeData
+            // Scribe_Values.Look(ref visibilityState, "visibilityState", CrimeVisibilityState.Hidden);
+            // Scribe_Collections.Look(ref witnesses, "witnesses", LookMode.Reference);
+            // Scribe_Values.Look(ref evidenceStrength, "evidenceStrength", 0f);
+            // Scribe_Values.Look(ref isConfessed, "isConfessed", false);
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCommitted) / GenDate.TicksPerDay;
@@ -185,7 +190,6 @@ namespace Law_and_Order.Source.Hediffs
     public class CrimeSummary : IExposable
     {
         public int archivedCount;           // Number of crimes archived
-        public float totalDebt;             // Total debt from archived crimes
         public int mostRecentTick;          // Most recent crime tick in this archive
         public int oldestTick;              // Oldest crime tick in this archive
         public Dictionary<CrimeType, int> crimeTypeCounts; // Count by type
@@ -203,7 +207,6 @@ namespace Law_and_Order.Source.Hediffs
                 return;
 
             archivedCount = crimesToArchive.Count;
-            totalDebt = crimesToArchive.Sum(c => c.debtAmount);
             mostRecentTick = crimesToArchive.Max(c => c.tickCommitted);
             oldestTick = crimesToArchive.Min(c => c.tickCommitted);
 
@@ -221,7 +224,6 @@ namespace Law_and_Order.Source.Hediffs
         public void ExposeData()
         {
             Scribe_Values.Look(ref archivedCount, "archivedCount", 0);
-            Scribe_Values.Look(ref totalDebt, "totalDebt", 0f);
             Scribe_Values.Look(ref mostRecentTick, "mostRecentTick", 0);
             Scribe_Values.Look(ref oldestTick, "oldestTick", 0);
             Scribe_Collections.Look(ref crimeTypeCounts, "crimeTypeCounts", LookMode.Value, LookMode.Value);
@@ -248,7 +250,6 @@ namespace Law_and_Order.Source.Hediffs
         private const int DEFAULT_ARCHIVE_AGE_DAYS = 60; // Archive crimes older than 60 days (1 quadrum)
 
         private List<Crime> crimes = new List<Crime>();
-        private HearingRecord hearingRecord = new HearingRecord();
         private List<CrimeSummary> archivedCrimes = new List<CrimeSummary>();
 
         public IReadOnlyList<Crime> Crimes => crimes.AsReadOnly();
@@ -258,7 +259,10 @@ namespace Law_and_Order.Source.Hediffs
         public int ArchivedCrimeCount => archivedCrimes?.Sum(a => a.archivedCount) ?? 0;
         public int TotalCrimeCountIncludingArchived => TotalCrimeCount + ArchivedCrimeCount;
 
-        public HearingRecord Hearing => hearingRecord;
+        // TODO Phase 1: Add state query methods
+        // public List<Crime> GetSuspectedCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Suspected).ToList();
+        // public List<Crime> GetConvictedCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Convicted).ToList();
+        // public List<Crime> GetHiddenCrimes() => crimes?.Where(c => c.visibilityState == CrimeVisibilityState.Hidden).ToList();
 
         /// <summary>
         /// Add a new crime to this pawn's record
@@ -354,7 +358,6 @@ namespace Law_and_Order.Source.Hediffs
         {
             base.ExposeData();
             Scribe_Collections.Look(ref crimes, "crimes", LookMode.Deep);
-            Scribe_Deep.Look(ref hearingRecord, "hearingRecord");
             Scribe_Collections.Look(ref archivedCrimes, "archivedCrimes", LookMode.Deep);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
@@ -362,10 +365,6 @@ namespace Law_and_Order.Source.Hediffs
                 if (crimes == null)
                 {
                     crimes = new List<Crime>();
-                }
-                if (hearingRecord == null)
-                {
-                    hearingRecord = new HearingRecord();
                 }
                 if (archivedCrimes == null)
                 {
