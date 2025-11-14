@@ -1,9 +1,10 @@
 # Law and Order - Project Tracker
 
 **Last Updated:** November 13, 2025
-**Current Status:** ✅ Phase 2 Complete - FoW Witness Detection System Implemented
+**Current Status:** ✅ Phase 3 Complete - Basic Justice UI Implemented
 
 **Recent Updates:**
+- ✅ **Phase 3: Basic UI Implementation (Nov 13, 2025):** Complete Justice tab with Open Cases, Convictions, and Settings tabs - Multi-select crime conviction/dismissal system
 - ✅ **Phase 2: FoW Integration (Nov 13, 2025):** Complete witness detection system using Real Fog of War - Automatic Hidden/Suspected crime states based on witnesses
 - ✅ **Phase 1: Core State System (Nov 13, 2025):** Implemented three-state crime visibility (Hidden/Suspected/Convicted) with case management
 - ✅ **Phase 0 Cleanup (Nov 13, 2025):** Removed incompatible systems (debt, penalty, hearing ritual) - 37 files deleted, ~10,217 lines removed
@@ -95,7 +96,124 @@
 - ✅ Fallback works without FoW
 - ✅ No performance issues
 
-**Next Step:** Phase 3 - Basic UI Implementation (Justice tab showing cases)
+**Next Step:** ~~Phase 3 - Basic UI Implementation~~ ✅ **COMPLETE**
+
+---
+
+## Phase 3: Basic UI Implementation (November 13, 2025) ✅ COMPLETE
+
+**Goal:** Create Justice tab showing Open Cases, Convictions, and Settings.
+
+### Implementation Summary
+
+**Systems Implemented:**
+
+1. **MainTabWindow_Justice** (MainTabWindow_Justice.cs - 645 lines)
+   - Three-tab system: Open Cases, Convictions, Settings
+   - Hotkey: J (default)
+   - Window size: 1000x700px
+
+2. **Open Cases Tab**
+   - Left panel: Case list sorted by severity (most serious crimes first)
+   - Right panel: Case details with accused info and crime list
+   - Multi-select crime system with checkboxes
+   - Action buttons: "Convict Selected", "Dismiss Selected", "Investigate" (placeholder)
+   - Evidence strength bars showing witness reliability
+   - [SUSPECTED]/[CONVICTED] state labels with color coding
+
+3. **Case Details Display**
+   - Accused pawn portrait and full name
+   - Status display (Deceased, Imprisoned, Colonist, Faction member)
+   - Case age in days
+   - Scrollable crime list with state labels
+   - Crime entries show:
+     - Checkbox for multi-select
+     - Visibility state label ([SUSPECTED] or [CONVICTED])
+     - Crime type (translated label)
+     - Victim name (if applicable)
+     - Evidence strength (percentage bar)
+     - Witness count
+     - Days ago committed
+
+4. **Convictions Tab**
+   - List of all convicted cases
+   - Sorted by conviction date (most recent first)
+   - Shows crime count and conviction date
+   - Placeholder for punishment status (Phase 4)
+   - "No convictions" message when empty
+
+5. **Settings Tab (God Mode Only)**
+   - Restricted to god mode/dev mode
+   - "Settings only available in god mode" message otherwise
+   - Four debug settings implemented:
+     - Show Hidden Crimes (toggle)
+     - Auto-Convict Caught Red-Handed (toggle) - placeholder for Phase 4
+     - Enable False Accusations (toggle) - placeholder for Phase 6
+     - Statute of Limitations (slider: 0-120 days)
+
+6. **ITab_Pawn_Judiciary Rebuild** (ITab_Pawn_Judiciary.cs - 305 lines)
+   - Complete rewrite for state-based crime display
+   - Pawn-specific criminal record view
+   - Active case information (if any)
+   - Crimes grouped by state:
+     - Suspected (yellow/orange color)
+     - Convicted (red color)
+     - Hidden (gray color, god mode only)
+   - Each crime entry shows:
+     - Crime label
+     - Victim name
+     - Evidence percentage
+     - Days ago
+   - Detailed tooltips with:
+     - Crime state
+     - Full victim information
+     - Witness list (up to 3 shown, "+ X more" if more)
+     - Evidence strength
+     - Case number
+     - Additional info
+
+7. **Localization** (LawAndOrder_Keys.xml)
+   - Added 35+ new translation keys for Phase 3
+   - Tab names, state labels, action buttons
+   - Settings descriptions
+   - UI messages and tooltips
+
+**Build Status:**
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ All UI components compile correctly
+- ✅ Localization file updated and deployed
+
+**Files Created/Modified:**
+- `Source/UI/MainTabWindow_Justice.cs` (complete rewrite - 645 lines)
+- `Source/UI/ITab_Pawn_Judiciary.cs` (complete rewrite - 305 lines)
+- `Languages/English/Keyed/LawAndOrder_Keys.xml` (added 35+ keys)
+- `Defs/MainButtonDefs/MainButtons.xml` (already existed, verified correct)
+
+**Key Features:**
+- **Multi-Select System:** Players can select multiple crimes in a case to convict/dismiss in batches
+- **Severity Sorting:** Cases sorted by most serious crime (Murder > Kidnapping > Assault > etc.)
+- **State-Based Display:** Crimes grouped and color-coded by visibility state
+- **God Mode Debug:** Hidden crimes and debug settings only visible with dev mode enabled
+- **Evidence Visualization:** Evidence strength shown as percentage bars
+- **Case Management:** One active case per pawn with multiple crimes per case
+
+**Testing Checklist:**
+- ✅ Build succeeds without errors
+- ⏳ UI opens without exceptions (requires in-game testing)
+- ⏳ Case list displays correctly
+- ⏳ Multi-select works
+- ⏳ Convict/Dismiss actions work
+- ⏳ Settings persist (god mode only)
+- ⏳ ITab shows state-grouped crimes
+- ⏳ All translations display correctly
+
+**Known Limitations (To be addressed in Phase 4):**
+- Investigate button shows "Not Yet Implemented" message
+- Punishment system not yet implemented
+- Auto-convict red-handed setting has no effect
+- False accusations setting has no effect
+
+**Next Step:** Phase 4 - Conviction & Punishment System (implement actual punishments)
 
 ---
 

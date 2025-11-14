@@ -442,4 +442,69 @@
   <LawAndOrder_DebtForgiveness_Pardon>{0} has been pardoned. All debt forgiven.</LawAndOrder_DebtForgiveness_Pardon>
   <LawAndOrder_DebtForgiveness_Partial>{0} had {1} silver ({2}%) of debt forgiven.</LawAndOrder_DebtForgiveness_Partial>
 
+  <!-- Phase 3: Justice UI -->
+  <!-- Tab Names -->
+  <LawAndOrder_Tab_OpenCases>Open Cases</LawAndOrder_Tab_OpenCases>
+  <LawAndOrder_Tab_Convictions>Convictions</LawAndOrder_Tab_Convictions>
+  <LawAndOrder_Tab_Settings>Settings</LawAndOrder_Tab_Settings>
+
+  <!-- Open Cases Tab -->
+  <LawAndOrder_SelectCase>Select a case to view details</LawAndOrder_SelectCase>
+  <LawAndOrder_OpenCases>Open Cases</LawAndOrder_OpenCases>
+  <LawAndOrder_CaseOpenedDaysAgo>Case opened {0} days ago</LawAndOrder_CaseOpenedDaysAgo>
+
+  <!-- Crime Visibility States -->
+  <LawAndOrder_State_Hidden>HIDDEN</LawAndOrder_State_Hidden>
+  <LawAndOrder_State_Suspected>SUSPECTED</LawAndOrder_State_Suspected>
+  <LawAndOrder_State_Convicted>CONVICTED</LawAndOrder_State_Convicted>
+
+  <!-- Evidence and Witnesses -->
+  <LawAndOrder_Witnesses>witnesses</LawAndOrder_Witnesses>
+  <LawAndOrder_Evidence>Evidence</LawAndOrder_Evidence>
+  <LawAndOrder_EvidenceStrength>Evidence Strength</LawAndOrder_EvidenceStrength>
+
+  <!-- Action Buttons -->
+  <LawAndOrder_ConvictSelected>Convict Selected</LawAndOrder_ConvictSelected>
+  <LawAndOrder_DismissSelected>Dismiss Selected</LawAndOrder_DismissSelected>
+  <LawAndOrder_Investigate>Investigate</LawAndOrder_Investigate>
+  <LawAndOrder_InvestigateNotImplemented>Investigation system will be implemented in Phase 5</LawAndOrder_InvestigateNotImplemented>
+
+  <!-- Convictions Tab -->
+  <LawAndOrder_NoConvictions>No convicted cases</LawAndOrder_NoConvictions>
+  <LawAndOrder_CrimesConvicted>crimes convicted</LawAndOrder_CrimesConvicted>
+  <LawAndOrder_ConvictedDaysAgo>Convicted {0} days ago</LawAndOrder_ConvictedDaysAgo>
+  <LawAndOrder_PunishmentPending>Punishment: Pending (Phase 4)</LawAndOrder_PunishmentPending>
+
+  <!-- Settings Tab -->
+  <LawAndOrder_SettingsGodModeOnly>Settings are only available in god mode (enable Dev Mode)</LawAndOrder_SettingsGodModeOnly>
+  <LawAndOrder_DebugSettings>Debug Settings</LawAndOrder_DebugSettings>
+
+  <!-- Debug Settings -->
+  <LawAndOrder_Setting_ShowHiddenCrimes>Show Hidden Crimes</LawAndOrder_Setting_ShowHiddenCrimes>
+  <LawAndOrder_Setting_ShowHiddenCrimes_Desc>Display crimes that were committed without witnesses. Normally these are invisible to the player.</LawAndOrder_Setting_ShowHiddenCrimes_Desc>
+
+  <LawAndOrder_Setting_AutoConvictRedHanded>Auto-Convict Caught Red-Handed</LawAndOrder_Setting_AutoConvictRedHanded>
+  <LawAndOrder_Setting_AutoConvictRedHanded_Desc>Automatically convict crimes with very high evidence strength (caught in the act). Requires Phase 4 implementation.</LawAndOrder_Setting_AutoConvictRedHanded_Desc>
+
+  <LawAndOrder_Setting_EnableFalseAccusations>Enable False Accusations</LawAndOrder_Setting_EnableFalseAccusations>
+  <LawAndOrder_Setting_EnableFalseAccusations_Desc>Allow grudge-based false accusations and vampire frame-ups. Requires Phase 6 implementation.</LawAndOrder_Setting_EnableFalseAccusations_Desc>
+
+  <LawAndOrder_Setting_StatuteOfLimitations>Statute of Limitations</LawAndOrder_Setting_StatuteOfLimitations>
+  <LawAndOrder_Setting_StatuteOfLimitations_Desc>Old crimes will be automatically dismissed after this many days. Set to 0 to disable.</LawAndOrder_Setting_StatuteOfLimitations_Desc>
+
+  <!-- General UI -->
+  <LawAndOrder_Days>days</LawAndOrder_Days>
+
+  <!-- Messages -->
+  <LawAndOrder_CrimesConvictedMessage>{0} crime(s) convicted</LawAndOrder_CrimesConvictedMessage>
+  <LawAndOrder_CrimesDismissedMessage>{0} crime(s) dismissed</LawAndOrder_CrimesDismissedMessage>
+
+  <!-- ITab Additional Labels -->
+  <LawAndOrder_ActiveCase>Active Case</LawAndOrder_ActiveCase>
+  <LawAndOrder_MostSerious>Most Serious</LawAndOrder_MostSerious>
+  <LawAndOrder_State>State</LawAndOrder_State>
+  <LawAndOrder_AndMore>and {0} more</LawAndOrder_AndMore>
+  <LawAndOrder_Committed>Committed</LawAndOrder_Committed>
+  <LawAndOrder_CaseNumber>Case</LawAndOrder_CaseNumber>
+
 </LanguageData>

@@ -1,24 +1,645 @@
-// TODO Phase 1: Rebuild this UI with Open Cases, Convictions, Settings tabs
-// This is a minimal stub to allow the mod to compile
-// The old debt/ritual/penalty UI has been removed
-
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using Verse;
 using RimWorld;
+using Law_and_Order.Source.Hediffs;
+using Law_and_Order.Source.Justice;
+using Law_and_Order.Source.Components;
+using Law_and_Order.Source.Utils;
 
 namespace Law_and_Order.Source.UI
 {
-    // Minimal stub - will be rebuilt in Phase 1
+    /// <summary>
+    /// Main tab window for the Law and Order justice system.
+    /// Shows open cases, convicted cases, and settings.
+    /// Phase 3: Basic UI Implementation
+    /// </summary>
     public class MainTabWindow_Justice : MainTabWindow
     {
-        public override void DoWindowContents(UnityEngine.Rect inRect)
+        private enum JusticeTab
         {
+            OpenCases,
+            Convictions,
+            Settings
+        }
+
+        // UI State
+        private JusticeTab currentTab = JusticeTab.OpenCases;
+        private CriminalCase selectedCase = null;
+        private HashSet<Crime> selectedCrimes = new HashSet<Crime>();
+        private Vector2 caseListScrollPos = Vector2.zero;
+        private Vector2 crimeListScrollPos = Vector2.zero;
+        private Vector2 convictionsScrollPos = Vector2.zero;
+
+        // Settings state (god mode only)
+        private bool showHiddenCrimes = false;
+        private bool autoConvictRedHanded = false;
+        private bool enableFalseAccusations = false;
+        private int statuteOfLimitationsDays = 60;
+
+        // UI Constants
+        private const float TAB_HEIGHT = 50f;
+        private const float CASE_LIST_WIDTH = 300f;
+        private const float PADDING = 10f;
+        private const float ROW_HEIGHT = 30f;
+        private const float CRIME_ROW_HEIGHT = 50f;
+        private const float BUTTON_HEIGHT = 35f;
+
+        public override Vector2 InitialSize => new Vector2(1000f, 700f);
+
+        public override void DoWindowContents(Rect inRect)
+        {
+            // Title
             Text.Font = GameFont.Medium;
-            Widgets.Label(inRect, "Law and Order - Phase 0 Cleanup");
+            Rect titleRect = new Rect(0f, 0f, inRect.width, 40f);
+            Widgets.Label(titleRect, "Law and Order - Justice System");
             Text.Font = GameFont.Small;
 
-            UnityEngine.Rect textRect = inRect;
-            textRect.y += 40f;
-            Widgets.Label(textRect, "The Justice UI is being rebuilt.\n\nPhase 0: Cleanup complete\nPhase 1: New state-based system (in progress)\n\nThis tab will show Open Cases and Convictions once Phase 1 is complete.");
+            // Tab buttons
+            Rect tabRect = new Rect(0f, 40f, inRect.width, TAB_HEIGHT);
+            DrawTabs(tabRect);
+
+            // Content area
+            Rect contentRect = new Rect(0f, 40f + TAB_HEIGHT + PADDING, inRect.width, inRect.height - 40f - TAB_HEIGHT - PADDING);
+
+            switch (currentTab)
+            {
+                case JusticeTab.OpenCases:
+                    DrawOpenCasesTab(contentRect);
+                    break;
+                case JusticeTab.Convictions:
+                    DrawConvictionsTab(contentRect);
+                    break;
+                case JusticeTab.Settings:
+                    DrawSettingsTab(contentRect);
+                    break;
+            }
         }
+
+        private void DrawTabs(Rect rect)
+        {
+            float tabWidth = rect.width / 3f;
+
+            List<TabRecord> tabs = new List<TabRecord>
+            {
+                new TabRecord("LawAndOrder_Tab_OpenCases".Translate(),
+                    () => { currentTab = JusticeTab.OpenCases; selectedCase = null; selectedCrimes.Clear(); },
+                    currentTab == JusticeTab.OpenCases),
+                new TabRecord("LawAndOrder_Tab_Convictions".Translate(),
+                    () => { currentTab = JusticeTab.Convictions; selectedCase = null; selectedCrimes.Clear(); },
+                    currentTab == JusticeTab.Convictions),
+                new TabRecord("LawAndOrder_Tab_Settings".Translate(),
+                    () => { currentTab = JusticeTab.Settings; },
+                    currentTab == JusticeTab.Settings)
+            };
+
+            TabDrawer.DrawTabs(rect, tabs);
+        }
+
+        #region Open Cases Tab
+
+        private void DrawOpenCasesTab(Rect rect)
+        {
+            var justiceManager = WorldComponent_JusticeManager.Instance;
+            if (justiceManager == null)
+            {
+                Widgets.Label(rect, "Error: Justice Manager not found");
+                return;
+            }
+
+            var openCases = justiceManager.GetOpenCases();
+
+            // Sort by severity (most serious crime first)
+            openCases = openCases.OrderByDescending(c => GetCaseSeverity(c)).ToList();
+
+            // Split into case list (left) and details (right)
+            Rect caseListRect = new Rect(rect.x, rect.y, CASE_LIST_WIDTH, rect.height);
+            Rect detailsRect = new Rect(rect.x + CASE_LIST_WIDTH + PADDING, rect.y,
+                rect.width - CASE_LIST_WIDTH - PADDING, rect.height);
+
+            // Draw case list
+            DrawCaseList(caseListRect, openCases);
+
+            // Draw case details
+            if (selectedCase != null)
+            {
+                DrawCaseDetails(detailsRect, selectedCase);
+            }
+            else
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(detailsRect, "LawAndOrder_SelectCase".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+            }
+        }
+
+        private void DrawCaseList(Rect rect, List<CriminalCase> cases)
+        {
+            // Header
+            Rect headerRect = new Rect(rect.x, rect.y, rect.width, 30f);
+            Widgets.DrawBoxSolid(headerRect, new Color(0.2f, 0.2f, 0.2f, 0.5f));
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(headerRect.ContractedBy(5f), $"{"LawAndOrder_OpenCases".Translate()} ({cases.Count})");
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            // Case list
+            Rect listRect = new Rect(rect.x, rect.y + 30f, rect.width, rect.height - 30f);
+            Rect viewRect = new Rect(0f, 0f, listRect.width - 16f, cases.Count * ROW_HEIGHT);
+
+            Widgets.BeginScrollView(listRect, ref caseListScrollPos, viewRect);
+
+            float yPos = 0f;
+            foreach (var caseItem in cases)
+            {
+                Rect rowRect = new Rect(0f, yPos, viewRect.width, ROW_HEIGHT);
+                DrawCaseListEntry(rowRect, caseItem);
+                yPos += ROW_HEIGHT;
+            }
+
+            Widgets.EndScrollView();
+        }
+
+        private void DrawCaseListEntry(Rect rect, CriminalCase caseItem)
+        {
+            bool isSelected = selectedCase == caseItem;
+
+            if (isSelected)
+            {
+                Widgets.DrawBoxSolid(rect, new Color(0.5f, 0.5f, 0.2f, 0.3f));
+            }
+            else if (Mouse.IsOver(rect))
+            {
+                Widgets.DrawHighlight(rect);
+            }
+
+            if (Widgets.ButtonInvisible(rect))
+            {
+                selectedCase = caseItem;
+                selectedCrimes.Clear();
+            }
+
+            Rect contentRect = rect.ContractedBy(5f);
+
+            // Case number and accused name
+            Text.Font = GameFont.Small;
+            string label = $"#{caseItem.caseId} - {caseItem.accused?.NameShortColored ?? "Unknown"}";
+            Widgets.Label(contentRect, label);
+
+            // Crime count and days open
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.LowerLeft;
+            var crimes = caseItem.GetAssociatedCrimes();
+            string info = $"{crimes.Count} {"LawAndOrder_Crimes".Translate()} - {caseItem.DaysOpen}d";
+            Widgets.Label(contentRect, info);
+            Text.Anchor = TextAnchor.UpperLeft;
+            Text.Font = GameFont.Small;
+        }
+
+        private void DrawCaseDetails(Rect rect, CriminalCase caseItem)
+        {
+            Widgets.DrawMenuSection(rect);
+            Rect innerRect = rect.ContractedBy(PADDING);
+
+            float yPos = 0f;
+
+            // Accused info section
+            yPos = DrawAccusedInfo(innerRect, caseItem, yPos);
+
+            yPos += PADDING;
+
+            // Crimes section
+            Rect crimesHeaderRect = new Rect(innerRect.x, yPos, innerRect.width, 25f);
+            Text.Font = GameFont.Small;
+            var crimes = caseItem.GetAssociatedCrimes();
+            Widgets.Label(crimesHeaderRect, $"{"LawAndOrder_CrimesCommitted".Translate()} ({crimes.Count})");
+            yPos += 25f;
+
+            // Crime list with checkboxes
+            Rect crimeListRect = new Rect(innerRect.x, yPos, innerRect.width, innerRect.height - yPos - BUTTON_HEIGHT - PADDING * 2);
+            DrawCrimeList(crimeListRect, crimes);
+            yPos += crimeListRect.height + PADDING;
+
+            // Action buttons
+            DrawActionButtons(new Rect(innerRect.x, yPos, innerRect.width, BUTTON_HEIGHT));
+        }
+
+        private float DrawAccusedInfo(Rect rect, CriminalCase caseItem, float yPos)
+        {
+            Pawn accused = caseItem.accused;
+            if (accused == null)
+            {
+                Widgets.Label(new Rect(rect.x, yPos, rect.width, 25f), "Unknown Accused");
+                return yPos + 25f;
+            }
+
+            // Portrait (left)
+            Rect portraitRect = new Rect(rect.x, yPos, 80f, 80f);
+            Widgets.ThingIcon(portraitRect, accused);
+
+            // Info (right of portrait)
+            Rect infoRect = new Rect(rect.x + 90f, yPos, rect.width - 90f, 80f);
+
+            Text.Font = GameFont.Medium;
+            Rect nameRect = new Rect(infoRect.x, infoRect.y, infoRect.width, 30f);
+            Widgets.Label(nameRect, accused.NameFullColored);
+
+            Text.Font = GameFont.Small;
+            Rect statusRect = new Rect(infoRect.x, infoRect.y + 30f, infoRect.width, 20f);
+            string status = GetPawnStatusLabel(accused);
+            Widgets.Label(statusRect, status);
+
+            Rect caseInfoRect = new Rect(infoRect.x, infoRect.y + 50f, infoRect.width, 20f);
+            Widgets.Label(caseInfoRect, $"{"LawAndOrder_CaseOpenedDaysAgo".Translate(caseItem.DaysOpen)}");
+
+            return yPos + 80f;
+        }
+
+        private void DrawCrimeList(Rect rect, List<Crime> crimes)
+        {
+            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, crimes.Count * CRIME_ROW_HEIGHT);
+
+            Widgets.BeginScrollView(rect, ref crimeListScrollPos, viewRect);
+
+            float yPos = 0f;
+            foreach (var crime in crimes)
+            {
+                Rect rowRect = new Rect(0f, yPos, viewRect.width, CRIME_ROW_HEIGHT);
+                DrawCrimeEntry(rowRect, crime);
+                yPos += CRIME_ROW_HEIGHT;
+            }
+
+            Widgets.EndScrollView();
+        }
+
+        private void DrawCrimeEntry(Rect rect, Crime crime)
+        {
+            bool isSelected = selectedCrimes.Contains(crime);
+
+            // Background
+            if (isSelected)
+            {
+                Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.4f, 0.6f, 0.3f));
+            }
+            else if (Mouse.IsOver(rect))
+            {
+                Widgets.DrawHighlight(rect);
+            }
+
+            Widgets.DrawBox(rect);
+
+            Rect contentRect = rect.ContractedBy(5f);
+
+            // Checkbox (left)
+            Rect checkboxRect = new Rect(contentRect.x, contentRect.y + (contentRect.height - 24f) / 2f, 24f, 24f);
+            bool wasSelected = isSelected;
+            Widgets.Checkbox(checkboxRect.position, ref isSelected, 24f);
+
+            if (isSelected != wasSelected)
+            {
+                if (isSelected)
+                    selectedCrimes.Add(crime);
+                else
+                    selectedCrimes.Remove(crime);
+            }
+
+            // State label
+            Rect stateLabelRect = new Rect(contentRect.x + 30f, contentRect.y, 100f, 20f);
+            DrawStateLabel(stateLabelRect, crime.visibilityState);
+
+            // Crime type and details
+            Rect crimeInfoRect = new Rect(contentRect.x + 140f, contentRect.y, contentRect.width - 200f, contentRect.height);
+
+            Text.Font = GameFont.Small;
+            string crimeLabel = crime.GetCrimeLabel();
+            Widgets.Label(new Rect(crimeInfoRect.x, crimeInfoRect.y, crimeInfoRect.width, 20f), crimeLabel);
+
+            Text.Font = GameFont.Tiny;
+            string details = GetCrimeDetailsString(crime);
+            Widgets.Label(new Rect(crimeInfoRect.x, crimeInfoRect.y + 20f, crimeInfoRect.width, 20f), details);
+
+            // Evidence strength bar
+            if (crime.evidenceStrength > 0f)
+            {
+                Rect evidenceRect = new Rect(contentRect.x + 30f, contentRect.y + 25f, 100f, 10f);
+                Widgets.FillableBar(evidenceRect, crime.evidenceStrength, Texture2D.linearGrayTexture, null, false);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(evidenceRect, $"{crime.evidenceStrength:P0}");
+                Text.Anchor = TextAnchor.UpperLeft;
+            }
+
+            Text.Font = GameFont.Small;
+        }
+
+        private void DrawStateLabel(Rect rect, CrimeVisibilityState state)
+        {
+            Color labelColor = state switch
+            {
+                CrimeVisibilityState.Hidden => Color.gray,
+                CrimeVisibilityState.Suspected => new Color(1f, 0.8f, 0f), // Yellow/orange
+                CrimeVisibilityState.Convicted => new Color(1f, 0.3f, 0.3f), // Red
+                _ => Color.white
+            };
+
+            string label = state switch
+            {
+                CrimeVisibilityState.Hidden => "LawAndOrder_State_Hidden".Translate(),
+                CrimeVisibilityState.Suspected => "LawAndOrder_State_Suspected".Translate(),
+                CrimeVisibilityState.Convicted => "LawAndOrder_State_Convicted".Translate(),
+                _ => "Unknown"
+            };
+
+            GUI.color = labelColor;
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(rect, $"[{label}]");
+            Text.Anchor = TextAnchor.UpperLeft;
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
+        }
+
+        private void DrawActionButtons(Rect rect)
+        {
+            float buttonWidth = (rect.width - PADDING * 2) / 3f;
+
+            // Convict Selected button
+            Rect convictRect = new Rect(rect.x, rect.y, buttonWidth, rect.height);
+            bool canConvict = selectedCrimes.Any(c => c.visibilityState == CrimeVisibilityState.Suspected);
+
+            if (!canConvict)
+            {
+                GUI.enabled = false;
+            }
+
+            if (Widgets.ButtonText(convictRect, "LawAndOrder_ConvictSelected".Translate()))
+            {
+                ConvictSelectedCrimes();
+            }
+
+            GUI.enabled = true;
+
+            // Dismiss Selected button
+            Rect dismissRect = new Rect(rect.x + buttonWidth + PADDING, rect.y, buttonWidth, rect.height);
+            bool canDismiss = selectedCrimes.Any(c => c.visibilityState == CrimeVisibilityState.Suspected);
+
+            if (!canDismiss)
+            {
+                GUI.enabled = false;
+            }
+
+            if (Widgets.ButtonText(dismissRect, "LawAndOrder_DismissSelected".Translate()))
+            {
+                DismissSelectedCrimes();
+            }
+
+            GUI.enabled = true;
+
+            // Investigate button (placeholder for Phase 5)
+            Rect investigateRect = new Rect(rect.x + (buttonWidth + PADDING) * 2, rect.y, buttonWidth, rect.height);
+            if (Widgets.ButtonText(investigateRect, "LawAndOrder_Investigate".Translate()))
+            {
+                Messages.Message("LawAndOrder_InvestigateNotImplemented".Translate(), MessageTypeDefOf.RejectInput);
+            }
+        }
+
+        #endregion
+
+        #region Convictions Tab
+
+        private void DrawConvictionsTab(Rect rect)
+        {
+            var justiceManager = WorldComponent_JusticeManager.Instance;
+            if (justiceManager == null)
+            {
+                Widgets.Label(rect, "Error: Justice Manager not found");
+                return;
+            }
+
+            var convictedCases = justiceManager.GetConvictedCases();
+
+            // Sort by conviction date (most recent first)
+            convictedCases = convictedCases.OrderByDescending(c => c.tickClosed).ToList();
+
+            if (convictedCases.Count == 0)
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(rect, "LawAndOrder_NoConvictions".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+
+            // Scrollable list of convicted cases
+            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, convictedCases.Count * 100f);
+
+            Widgets.BeginScrollView(rect, ref convictionsScrollPos, viewRect);
+
+            float yPos = 0f;
+            foreach (var caseItem in convictedCases)
+            {
+                Rect entryRect = new Rect(0f, yPos, viewRect.width, 95f);
+                DrawConvictedCaseEntry(entryRect, caseItem);
+                yPos += 100f;
+            }
+
+            Widgets.EndScrollView();
+        }
+
+        private void DrawConvictedCaseEntry(Rect rect, CriminalCase caseItem)
+        {
+            Widgets.DrawMenuSection(rect);
+            Rect innerRect = rect.ContractedBy(5f);
+
+            // Accused name
+            Text.Font = GameFont.Small;
+            Rect nameRect = new Rect(innerRect.x, innerRect.y, innerRect.width, 25f);
+            Widgets.Label(nameRect, $"#{caseItem.caseId} - {caseItem.accused?.NameFullColored ?? "Unknown"}");
+
+            // Crime count
+            var crimes = caseItem.GetAssociatedCrimes();
+            Rect crimeCountRect = new Rect(innerRect.x, innerRect.y + 25f, innerRect.width / 2f, 20f);
+            Widgets.Label(crimeCountRect, $"{crimes.Count} {"LawAndOrder_CrimesConvicted".Translate()}");
+
+            // Conviction date
+            Rect dateRect = new Rect(innerRect.x, innerRect.y + 45f, innerRect.width / 2f, 20f);
+            int daysAgo = (Find.TickManager.TicksGame - caseItem.tickClosed) / GenDate.TicksPerDay;
+            Widgets.Label(dateRect, $"{"LawAndOrder_ConvictedDaysAgo".Translate(daysAgo)}");
+
+            // Punishment status (placeholder for Phase 4)
+            Text.Font = GameFont.Tiny;
+            Rect punishmentRect = new Rect(innerRect.x + innerRect.width / 2f, innerRect.y + 25f, innerRect.width / 2f, 40f);
+            Widgets.Label(punishmentRect, "LawAndOrder_PunishmentPending".Translate());
+            Text.Font = GameFont.Small;
+        }
+
+        #endregion
+
+        #region Settings Tab
+
+        private void DrawSettingsTab(Rect rect)
+        {
+            // Only show in god mode
+            if (!DebugSettings.godMode)
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(rect, "LawAndOrder_SettingsGodModeOnly".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+
+            Widgets.DrawMenuSection(rect);
+            Rect innerRect = rect.ContractedBy(PADDING);
+
+            Listing_Standard listing = new Listing_Standard();
+            listing.Begin(innerRect);
+
+            // Header
+            Text.Font = GameFont.Medium;
+            listing.Label("LawAndOrder_DebugSettings".Translate());
+            Text.Font = GameFont.Small;
+            listing.Gap();
+
+            // Show hidden crimes
+            listing.CheckboxLabeled("LawAndOrder_Setting_ShowHiddenCrimes".Translate(), ref showHiddenCrimes,
+                "LawAndOrder_Setting_ShowHiddenCrimes_Desc".Translate());
+            listing.Gap();
+
+            // Auto-convict caught red-handed
+            listing.CheckboxLabeled("LawAndOrder_Setting_AutoConvictRedHanded".Translate(), ref autoConvictRedHanded,
+                "LawAndOrder_Setting_AutoConvictRedHanded_Desc".Translate());
+            listing.Gap();
+
+            // Enable false accusations
+            listing.CheckboxLabeled("LawAndOrder_Setting_EnableFalseAccusations".Translate(), ref enableFalseAccusations,
+                "LawAndOrder_Setting_EnableFalseAccusations_Desc".Translate());
+            listing.Gap();
+
+            // Statute of limitations
+            listing.Label($"{"LawAndOrder_Setting_StatuteOfLimitations".Translate()}: {statuteOfLimitationsDays} {"LawAndOrder_Days".Translate()}");
+            statuteOfLimitationsDays = (int)listing.Slider(statuteOfLimitationsDays, 0, 120);
+            Text.Font = GameFont.Tiny;
+            listing.Label("LawAndOrder_Setting_StatuteOfLimitations_Desc".Translate());
+            Text.Font = GameFont.Small;
+
+            listing.End();
+        }
+
+        #endregion
+
+        #region Action Methods
+
+        private void ConvictSelectedCrimes()
+        {
+            if (selectedCase == null || selectedCrimes.Count == 0)
+                return;
+
+            int convictedCount = 0;
+            foreach (var crime in selectedCrimes.ToList())
+            {
+                if (crime.visibilityState == CrimeVisibilityState.Suspected)
+                {
+                    crime.TransitionToConvicted();
+                    convictedCount++;
+                }
+            }
+
+            // If all crimes in case are convicted, mark case as convicted
+            var allCrimes = selectedCase.GetAssociatedCrimes();
+            if (allCrimes.All(c => c.visibilityState == CrimeVisibilityState.Convicted))
+            {
+                selectedCase.Convict();
+            }
+
+            selectedCrimes.Clear();
+
+            Messages.Message($"{"LawAndOrder_CrimesConvictedMessage".Translate(convictedCount)}", MessageTypeDefOf.TaskCompletion);
+        }
+
+        private void DismissSelectedCrimes()
+        {
+            if (selectedCase == null || selectedCrimes.Count == 0)
+                return;
+
+            int dismissedCount = 0;
+            foreach (var crime in selectedCrimes.ToList())
+            {
+                if (crime.visibilityState == CrimeVisibilityState.Suspected)
+                {
+                    // Remove crime from case (but keep on record)
+                    selectedCase.crimeTicksCommitted.Remove(crime.tickCommitted);
+                    crime.caseId = -1;
+                    dismissedCount++;
+                }
+            }
+
+            // If all crimes dismissed, dismiss the case
+            var remainingCrimes = selectedCase.GetAssociatedCrimes();
+            if (remainingCrimes.Count == 0)
+            {
+                selectedCase.Dismiss();
+                selectedCase = null;
+            }
+
+            selectedCrimes.Clear();
+
+            Messages.Message($"{"LawAndOrder_CrimesDismissedMessage".Translate(dismissedCount)}", MessageTypeDefOf.TaskCompletion);
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private int GetCaseSeverity(CriminalCase caseItem)
+        {
+            var mostSerious = caseItem.GetMostSeriousCrime();
+            return mostSerious switch
+            {
+                CrimeType.Murder => 100,
+                CrimeType.Kidnapping => 90,
+                CrimeType.Assault => 80,
+                CrimeType.AnimalAbuse => 70,
+                CrimeType.Arson => 60,
+                CrimeType.PropertyDestruction => 50,
+                CrimeType.Theft => 40,
+                CrimeType.Vandalism => 30,
+                CrimeType.Trespassing => 20,
+                CrimeType.ContrabandPossession => 10,
+                _ => 0
+            };
+        }
+
+        private string GetPawnStatusLabel(Pawn pawn)
+        {
+            if (pawn.Dead)
+                return "LawAndOrder_StatusDead".Translate();
+            if (pawn.IsPrisonerOfColony)
+                return "LawAndOrder_StatusImprisoned".Translate();
+            if (pawn.IsColonist)
+                return "LawAndOrder_StatusColonist".Translate();
+            if (pawn.Faction != null)
+                return "LawAndOrder_StatusFaction".Translate(pawn.Faction.Name);
+            return "LawAndOrder_StatusUnknown".Translate();
+        }
+
+        private string GetCrimeDetailsString(Crime crime)
+        {
+            List<string> parts = new List<string>();
+
+            if (crime.victim != null)
+            {
+                parts.Add($"{"LawAndOrder_Victim".Translate()}: {crime.victim.NameShortColored}");
+            }
+
+            if (crime.witnesses.Count > 0)
+            {
+                parts.Add($"{crime.witnesses.Count} {"LawAndOrder_Witnesses".Translate()}");
+            }
+
+            parts.Add($"{crime.DaysAgo} {"LawAndOrder_DaysAgo".Translate()}");
+
+            return string.Join(" • ", parts);
+        }
+
+        #endregion
     }
 }
