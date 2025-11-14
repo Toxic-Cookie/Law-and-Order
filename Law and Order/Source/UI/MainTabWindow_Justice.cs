@@ -41,7 +41,7 @@ namespace Law_and_Order.Source.UI
         // UI Constants
         private const float CASE_LIST_WIDTH = 300f;
         private const float PADDING = 10f;
-        private const float ROW_HEIGHT = 30f;
+        private const float ROW_HEIGHT = 40f;
         private const float CRIME_ROW_HEIGHT = 50f;
         private const float BUTTON_HEIGHT = 35f;
 
@@ -187,7 +187,7 @@ namespace Law_and_Order.Source.UI
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
             string label = $"#{caseItem.caseId} - {caseItem.accused?.NameShortColored ?? "Unknown"}";
-            Rect nameRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 15f);
+            Rect nameRect = new Rect(contentRect.x, contentRect.y, contentRect.width, 18f);
             Widgets.Label(nameRect, label.Truncate(nameRect.width));
 
             // Crime count and days open at bottom
@@ -195,7 +195,7 @@ namespace Law_and_Order.Source.UI
             Text.Anchor = TextAnchor.UpperLeft;
             var crimes = caseItem.GetAssociatedCrimes();
             string info = $"{crimes.Count} {"LawAndOrder_Crimes".Translate()} - {caseItem.DaysOpen}d";
-            Rect infoRect = new Rect(contentRect.x, contentRect.y + 15f, contentRect.width, 12f);
+            Rect infoRect = new Rect(contentRect.x, contentRect.y + 18f, contentRect.width, 15f);
             Widgets.Label(infoRect, info.Truncate(infoRect.width));
 
             // Restore text state
