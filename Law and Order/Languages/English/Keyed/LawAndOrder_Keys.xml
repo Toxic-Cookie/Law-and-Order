@@ -581,4 +581,49 @@
   <LawAndOrder_State_Suspected>Suspected</LawAndOrder_State_Suspected>
   <LawAndOrder_State_Convicted>Convicted</LawAndOrder_State_Convicted>
 
+  <!-- Phase 5: Investigation & Interrogation -->
+
+  <!-- Interrogation Table -->
+  <LawAndOrder_DesignateInterrogationTable>Designate Interrogation Table</LawAndOrder_DesignateInterrogationTable>
+  <LawAndOrder_UndesignateInterrogationTable>Undesignate Interrogation Table</LawAndOrder_UndesignateInterrogationTable>
+  <LawAndOrder_DesignateInterrogationTableDesc>Toggle whether this table serves as an interrogation table for investigating crimes</LawAndOrder_DesignateInterrogationTableDesc>
+  <LawAndOrder_UndesignateInterrogationTableDesc>Remove this table's designation as an interrogation table</LawAndOrder_UndesignateInterrogationTableDesc>
+  <LawAndOrder_InterrogationTableDesignated>{0} has been designated as an interrogation table</LawAndOrder_InterrogationTableDesignated>
+  <LawAndOrder_InterrogationTableUndesignated>{0} is no longer designated as an interrogation table</LawAndOrder_InterrogationTableUndesignated>
+  <LawAndOrder_InterrogationTableStatus>Designated Interrogation Table</LawAndOrder_InterrogationTableStatus>
+
+  <!-- Investigation Button -->
+  <LawAndOrder_Investigate>Investigate</LawAndOrder_Investigate>
+  <LawAndOrder_InvestigateNotImplemented>Investigation system not yet implemented</LawAndOrder_InvestigateNotImplemented>
+  <LawAndOrder_CannotInterrogate>{0} cannot be interrogated at this time</LawAndOrder_CannotInterrogate>
+  <LawAndOrder_NoInterrogationTable>No designated interrogation table available. Right-click a table to designate it.</LawAndOrder_NoInterrogationTable>
+  <LawAndOrder_NoAccessibleTable>No accessible interrogation table found</LawAndOrder_NoAccessibleTable>
+  <LawAndOrder_NoWardenAvailable>No warden available to perform interrogation</LawAndOrder_NoWardenAvailable>
+  <LawAndOrder_InterrogationStarted>{0} will interrogate {1}</LawAndOrder_InterrogationStarted>
+
+  <!-- Interrogation Results -->
+  <LawAndOrder_Interrogation_Success>{0} successfully interrogated {1}. {2} crime(s) confessed: {3}</LawAndOrder_Interrogation_Success>
+  <LawAndOrder_Interrogation_FalseConfession>{0} obtained a confession from {1}, but it may be false</LawAndOrder_Interrogation_FalseConfession>
+  <LawAndOrder_Interrogation_NoHiddenCrimes>{0} has no hidden crimes to confess</LawAndOrder_Interrogation_NoHiddenCrimes>
+  <LawAndOrder_Interrogation_Refused>{0} refused to cooperate with {1}</LawAndOrder_Interrogation_Refused>
+  <LawAndOrder_Interrogation_Uncooperative>{0} was uncooperative during interrogation by {1}</LawAndOrder_Interrogation_Uncooperative>
+  <LawAndOrder_Interrogation_Silent>{0} remained silent during interrogation by {1}</LawAndOrder_Interrogation_Silent>
+  <LawAndOrder_Interrogation_Evasive>{0} gave evasive answers to {1}</LawAndOrder_Interrogation_Evasive>
+
+  <!-- Evidence Types -->
+  <LawAndOrder_Evidence_Physical>Physical Evidence</LawAndOrder_Evidence_Physical>
+  <LawAndOrder_Evidence_Circumstantial>Circumstantial Evidence</LawAndOrder_Evidence_Circumstantial>
+  <LawAndOrder_Evidence_Testimonial>Testimonial Evidence</LawAndOrder_Evidence_Testimonial>
+
+  <!-- Evidence Descriptions -->
+  <LawAndOrder_Evidence_BloodTraces>Blood traces at crime scene</LawAndOrder_Evidence_BloodTraces>
+  <LawAndOrder_Evidence_StolenGoods>Stolen goods recovered</LawAndOrder_Evidence_StolenGoods>
+  <LawAndOrder_Evidence_AccelerantTraces>Accelerant traces found</LawAndOrder_Evidence_AccelerantTraces>
+  <LawAndOrder_Evidence_DamagePattern>Damage patterns analyzed</LawAndOrder_Evidence_DamagePattern>
+  <LawAndOrder_Evidence_Physical_Recovered>Physical evidence recovered</LawAndOrder_Evidence_Physical_Recovered>
+
+  <!-- False Accusations (Phase 5.6) -->
+  <LawAndOrder_FalseAccusation_Filed>{0} has accused {1} of {2}. This may be a false accusation.</LawAndOrder_FalseAccusation_Filed>
+  <LawAndOrder_FalseAccusation_Discovered>Investigation revealed that the accusation against {0} was false!</LawAndOrder_FalseAccusation_Discovered>
+
 </LanguageData>

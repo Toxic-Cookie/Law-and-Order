@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 using RimWorld;
 using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Justice;
@@ -424,12 +425,20 @@ namespace Law_and_Order.Source.UI
 
             GUI.enabled = true;
 
-            // Investigate button (placeholder for Phase 5)
+            // Investigate button - starts interrogation of selected prisoner
             Rect investigateRect = new Rect(rect.x + (buttonWidth + PADDING) * 2, rect.y, buttonWidth, rect.height);
+
+            // Enable only if we have a selected case with an interrogatable prisoner
+            bool canInvestigate = selectedCase != null &&
+                                  selectedCase.accused != null &&
+                                  Investigation.InterrogationSystem.CanInterrogate(selectedCase.accused);
+
+            GUI.enabled = canInvestigate;
             if (Widgets.ButtonText(investigateRect, "LawAndOrder_Investigate".Translate()))
             {
-                Messages.Message("LawAndOrder_InvestigateNotImplemented".Translate(), MessageTypeDefOf.RejectInput);
+                StartInvestigation();
             }
+            GUI.enabled = true;
         }
 
         #endregion
@@ -683,6 +692,90 @@ namespace Law_and_Order.Source.UI
             selectedCrimes.Clear();
 
             Messages.Message($"{"LawAndOrder_CrimesDismissedMessage".Translate(dismissedCount)}", MessageTypeDefOf.TaskCompletion);
+        }
+
+        /// <summary>
+        /// Start an investigation of the selected case by interrogating the prisoner
+        /// </summary>
+        private void StartInvestigation()
+        {
+            if (selectedCase == null || selectedCase.accused == null)
+            {
+                return;
+            }
+
+            Pawn prisoner = selectedCase.accused;
+
+            // Check if prisoner can be interrogated
+            if (!Investigation.InterrogationSystem.CanInterrogate(prisoner))
+            {
+                Messages.Message("LawAndOrder_CannotInterrogate".Translate(prisoner.LabelShort),
+                    MessageTypeDefOf.RejectInput);
+                return;
+            }
+
+            // Find a warden to do the interrogation (need warden first to check accessibility)
+            Pawn warden = FindAvailableWarden(prisoner.Map);
+
+            if (warden == null)
+            {
+                Messages.Message("LawAndOrder_NoWardenAvailable".Translate(),
+                    MessageTypeDefOf.RejectInput);
+                return;
+            }
+
+            // Find interrogation tables on the map
+            var tables = Investigation.Comp_InterrogationTable.GetAllInterrogationTables(prisoner.Map);
+
+            if (tables.Count == 0)
+            {
+                Messages.Message("LawAndOrder_NoInterrogationTable".Translate(),
+                    MessageTypeDefOf.RejectInput);
+                return;
+            }
+
+            // Find nearest table that the WARDEN can reach (not prisoner)
+            Thing table = Investigation.Comp_InterrogationTable.FindNearestInterrogationTable(warden, prisoner);
+
+            if (table == null)
+            {
+                Messages.Message("LawAndOrder_NoAccessibleTable".Translate(),
+                    MessageTypeDefOf.RejectInput);
+                return;
+            }
+
+            // Create and assign interrogation job to warden
+            Job interrogationJob = JobMaker.MakeJob(
+                Investigation.JobDefOf_LawAndOrder.LawAndOrder_InvestigateCase,
+                prisoner,
+                table
+            );
+
+            warden.jobs.TryTakeOrderedJob(interrogationJob, JobTag.Misc);
+
+            Messages.Message("LawAndOrder_InterrogationStarted".Translate(warden.LabelShort, prisoner.LabelShort),
+                prisoner,
+                MessageTypeDefOf.TaskCompletion);
+
+            // Close the justice window (player can reopen to see results)
+            this.Close();
+        }
+
+        /// <summary>
+        /// Find an available warden on the map who can perform interrogation
+        /// </summary>
+        private Pawn FindAvailableWarden(Map map)
+        {
+            // Find colonists with Warden work enabled
+            return map.mapPawns.FreeColonists
+                .Where(p => p.workSettings != null &&
+                           p.workSettings.WorkIsActive(WorkTypeDefOf.Warden) &&
+                           !p.Downed &&
+                           !p.Dead &&
+                           p.health.capacities.CapableOf(PawnCapacityDefOf.Talking) &&
+                           p.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
+                .OrderByDescending(p => p.skills.GetSkill(SkillDefOf.Social).Level)
+                .FirstOrDefault();
         }
 
         #endregion

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+    <!-- Job for wardens to investigate cases by interrogating prisoners -->
+    <JobDef>
+        <defName>LawAndOrder_InvestigateCase</defName>
+        <driverClass>Law_and_Order.Source.Investigation.JobDriver_InvestigateCase</driverClass>
+        <reportString>interrogating TargetA at TargetB.</reportString>
+        <casualInterruptible>false</casualInterruptible>
+        <collideWithPawns>true</collideWithPawns>
+        <suspendable>false</suspendable>
+        <alwaysShowWeapon>false</alwaysShowWeapon>
+        <neverShowWeapon>true</neverShowWeapon>
+    </JobDef>
+
+    <!-- WorkGiver for wardens to automatically interrogate prisoners -->
+    <WorkGiverDef>
+        <defName>LawAndOrder_InvestigateCase_Warden</defName>
+        <label>investigate criminal cases</label>
+        <giverClass>Law_and_Order.Source.Investigation.WorkGiver_Warden_InvestigateCase</giverClass>
+        <workType>Warden</workType>
+        <verb>Interrogate</verb>
+        <gerund>interrogating</gerund>
+        <priorityInType>30</priorityInType>
+        <requiredCapacities>
+            <li>Talking</li>
+            <li>Hearing</li>
+            <li>Moving</li>
+        </requiredCapacities>
+    </WorkGiverDef>
+</Defs>

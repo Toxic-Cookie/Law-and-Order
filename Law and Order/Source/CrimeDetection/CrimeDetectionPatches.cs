@@ -428,7 +428,7 @@ namespace Law_and_Order.Source.CrimeDetection
                 try
                 {
                     // Only track ToxicBuildup on colonists
-                    if (hdDef != HediffDefOf.ToxicBuildup || !pawn.IsColonist || sevOffset <= 0f)
+                    if (hdDef != RimWorld.HediffDefOf.ToxicBuildup || !pawn.IsColonist || sevOffset <= 0f)
                         return;
 
                     // Check if the pawn is standing in toxic gas
