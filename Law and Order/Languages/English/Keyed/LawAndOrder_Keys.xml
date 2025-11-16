@@ -56,7 +56,7 @@
   <LawAndOrder_RequiresJudgesBench>Requires a designated Judge's Bench</LawAndOrder_RequiresJudgesBench>
 
   <!-- ITab -->
-  <TabJudiciary>Judiciary</TabJudiciary>
+  <LawAndOrder_TabJudiciary>Judiciary</LawAndOrder_TabJudiciary>
   <LawAndOrder_ITab_NoCriminalRecord>No criminal record</LawAndOrder_ITab_NoCriminalRecord>
   <LawAndOrder_ITab_CrimesHeader>Crimes ({0})</LawAndOrder_ITab_CrimesHeader>
   <LawAndOrder_ITab_DebtHeader>Debt</LawAndOrder_ITab_DebtHeader>
