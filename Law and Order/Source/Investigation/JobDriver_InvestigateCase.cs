@@ -7,8 +7,9 @@ using Verse.AI;
 namespace Law_and_Order.Source.Investigation
 {
     /// <summary>
-    /// JobDriver for wardens to interrogate prisoners at interrogation tables.
-    /// Requires a designated interrogation table.
+    /// JobDriver for wardens to interrogate prisoners.
+    /// Escorts the prisoner to a designated interrogation table, performs interrogation,
+    /// then returns them to their bed.
     /// </summary>
     public class JobDriver_InvestigateCase : JobDriver
     {
@@ -18,6 +19,8 @@ namespace Law_and_Order.Source.Investigation
         // Job targets
         protected Pawn Prisoner => (Pawn)job.targetA.Thing;
         protected Thing InterrogationTable => job.targetB.Thing;
+
+        private bool returningPrisoner = false;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -39,12 +42,10 @@ namespace Law_and_Order.Source.Investigation
         protected override IEnumerable<Toil> MakeNewToils()
         {
             // Fail conditions
-            this.FailOnDespawnedOrNull(TargetIndex.A); // Prisoner despawned
-            this.FailOnDespawnedOrNull(TargetIndex.B); // Table despawned
-            this.FailOnMentalState(TargetIndex.A); // Prisoner mental break
-            this.FailOnNotAwake(TargetIndex.A); // Prisoner asleep
+            this.FailOnDestroyedOrNull(TargetIndex.A); // Prisoner despawned
+            this.FailOnDestroyedOrNull(TargetIndex.B); // Table despawned
+            this.FailOnAggroMentalStateAndHostile(TargetIndex.A); // Prisoner mental break
             this.FailOn(() => !Prisoner.IsPrisonerOfColony || !Prisoner.guest.PrisonerIsSecure);
-            this.FailOn(() => !InterrogationSystem.CanInterrogate(Prisoner));
 
             // Check if table is still designated
             this.FailOn(() =>
@@ -53,15 +54,40 @@ namespace Law_and_Order.Source.Investigation
                 return comp == null || !comp.IsDesignated;
             });
 
-            // Step 1: Go to interrogation table (simpler - prisoner stays in cell)
-            yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.InteractionCell)
-                .FailOnDespawnedNullOrForbidden(TargetIndex.B);
+            // Handle cleanup if job ends prematurely
+            this.AddFinishAction(delegate
+            {
+                if (pawn.carryTracker.CarriedThing != null)
+                {
+                    pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Direct, out Thing _, null);
+                }
+            });
 
-            // Step 2: Go to prisoner
-            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell)
-                .FailOnDespawnedNullOrForbidden(TargetIndex.A);
+            // Step 1: Go to prisoner
+            Toil goToPrisoner = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch)
+                .FailOnDespawnedNullOrForbidden(TargetIndex.A)
+                .FailOnDespawnedNullOrForbidden(TargetIndex.B)
+                .FailOn(() => !InterrogationSystem.CanInterrogate(Prisoner))
+                .FailOnSomeonePhysicallyInteracting(TargetIndex.A);
 
-            // Step 3: Warm up - warden prepares for interrogation
+            // Skip to returning if already carrying
+            yield return Toils_Jump.JumpIf(goToPrisoner, () => pawn.IsCarryingPawn(Prisoner));
+
+            yield return goToPrisoner;
+
+            // Step 2: Pick up the prisoner
+            Toil startCarrying = Toils_Haul.StartCarryThing(TargetIndex.A);
+            yield return startCarrying;
+
+            // Step 3: Carry prisoner to interrogation table
+            Toil goToTable = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.InteractionCell)
+                .FailOn(() => !pawn.IsCarryingPawn(Prisoner));
+            yield return goToTable;
+
+            // Step 4: Put prisoner down near the table
+            yield return Toils_Haul.PlaceCarriedThingInCellFacing(TargetIndex.B);
+
+            // Step 5: Warm up - warden prepares for interrogation
             Toil warmup = new Toil();
             warmup.initAction = delegate
             {
@@ -71,6 +97,10 @@ namespace Law_and_Order.Source.Investigation
             warmup.tickAction = delegate
             {
                 pawn.rotationTracker.FaceTarget(Prisoner);
+                if (Prisoner.Spawned)
+                {
+                    Prisoner.rotationTracker.FaceTarget(pawn);
+                }
             };
             warmup.defaultCompleteMode = ToilCompleteMode.Delay;
             warmup.defaultDuration = WARMUP_TICKS;
@@ -78,52 +108,28 @@ namespace Law_and_Order.Source.Investigation
             warmup.socialMode = RandomSocialMode.Off;
             yield return warmup;
 
-            // Step 4: Perform interrogation
+            // Step 6: Perform interrogation
             yield return PerformInterrogation();
 
-            // Step 5: Return prisoner to cell (or leave them at table for warden AI to handle)
+            // Step 7: Set last interaction time
             yield return Toils_Interpersonal.SetLastInteractTime(TargetIndex.A);
+
+            // Step 8: Return prisoner to their bed
+            yield return ReturnPrisonerToBed();
         }
 
         /// <summary>
-        /// Toil to escort the prisoner to the interrogation table
+        /// Toil to return the prisoner to their bed after interrogation
         /// </summary>
-        private Toil EscortPrisonerToTable()
+        private Toil ReturnPrisonerToBed()
         {
             Toil toil = new Toil();
             toil.initAction = delegate
             {
-                // Make prisoner follow warden
-                if (Prisoner.CurJob != null && Prisoner.CurJob.def == JobDefOf.Wait_Downed)
-                {
-                    EndJobWith(JobCondition.Incompletable);
-                    return;
-                }
-
-                // Take control of prisoner
-                Job followJob = JobMaker.MakeJob(JobDefOf.FollowClose, pawn);
-                Prisoner.jobs.StartJob(followJob, JobCondition.InterruptForced);
+                // Use the vanilla warden system to return them to bed
+                WorkGiver_Warden_TakeToBed.TryTakePrisonerToBed(Prisoner, pawn);
             };
-
-            toil.AddFinishAction(delegate
-            {
-                // Stop prisoner following
-                if (Prisoner.CurJob != null && Prisoner.CurJob.def == JobDefOf.FollowClose)
-                {
-                    Prisoner.jobs.EndCurrentJob(JobCondition.Succeeded);
-                }
-            });
-
-            toil.defaultCompleteMode = ToilCompleteMode.PatherArrival;
-            toil.FailOnDespawnedOrNull(TargetIndex.A);
-            toil.FailOnDespawnedOrNull(TargetIndex.B);
-
-            // Go to interaction cell near table
-            toil.initAction += delegate
-            {
-                pawn.pather.StartPath(InterrogationTable.InteractionCell, PathEndMode.OnCell);
-            };
-
+            toil.defaultCompleteMode = ToilCompleteMode.Instant;
             return toil;
         }
 

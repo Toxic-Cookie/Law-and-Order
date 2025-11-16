@@ -145,13 +145,15 @@ namespace Law_and_Order.Source.Investigation
                 }
             }
 
-            // Room quality bonus (if using designated table)
+            // Room quality bonus (interrogation table room quality)
             if (interrogationTable != null && interrogationTable.Spawned)
             {
-                Room room = interrogationTable.GetRoom();
-                if (room != null && !room.PsychologicallyOutdoors)
+                Room tableRoom = interrogationTable.GetRoom();
+
+                // Apply room quality bonus - interrogating in a high-quality room is more effective
+                if (tableRoom != null && !tableRoom.PsychologicallyOutdoors)
                 {
-                    float impressiveness = room.GetStat(RoomStatDefOf.Impressiveness);
+                    float impressiveness = tableRoom.GetStat(RoomStatDefOf.Impressiveness);
                     chance += impressiveness * ROOM_QUALITY_FACTOR;
                 }
             }

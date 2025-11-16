@@ -1,9 +1,10 @@
 # Law and Order - Project Tracker
 
-**Last Updated:** November 14, 2025
+**Last Updated:** November 16, 2025
 **Current Status:** ✅ Phase 4 Complete - Conviction & Punishment System Fully Implemented
 
 **Recent Updates:**
+- ✅ **Interrogation Prisoner Escort System (Nov 16, 2025):** Implemented proper prisoner escort mechanics - Wardens now physically carry prisoners to interrogation tables (like EscortPrisonerToBed) - Prisoners are interrogated at the table, then returned to their beds - Room quality of interrogation room affects confession chance
 - ✅ **Phase 4: Conviction & Punishment System (Nov 14, 2025):** Complete punishment system with 5 types (Imprisonment, Fine, Beating, Execution, Exile) - Social impact system with 12 mood effects - Auto-convict red-handed feature - Full UI integration with punishment selection dialog - ~2,455 lines of code
 - ✅ **Phase 3: Basic UI Implementation (Nov 13, 2025):** Complete Justice tab with Open Cases, Convictions, and Settings tabs - Multi-select crime conviction/dismissal system
 - ✅ **Phase 2: FoW Integration (Nov 13, 2025):** Complete witness detection system using Real Fog of War - Automatic Hidden/Suspected crime states based on witnesses
