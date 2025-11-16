@@ -643,4 +643,100 @@
   <LawAndOrder_FalseAccusation_Filed>{0} has accused {1} of {2}. This may be a false accusation.</LawAndOrder_FalseAccusation_Filed>
   <LawAndOrder_FalseAccusation_Discovered>Investigation revealed that the accusation against {0} was false!</LawAndOrder_FalseAccusation_Discovered>
 
+  <!-- Phase 6: False Accusations & Infiltration Settings -->
+  <LawAndOrder_Setting_FalseAccusationRate_Title>False Accusation Rate</LawAndOrder_Setting_FalseAccusationRate_Title>
+  <LawAndOrder_Setting_FalseAccusationRate_Desc>Frequency of false accusations based on grudges or frame-ups. 12% default creates moderate drama. Range: 0-30%</LawAndOrder_Setting_FalseAccusationRate_Desc>
+
+  <LawAndOrder_Setting_InfiltratorSpawnChance_Title>Infiltrator Spawn Chance</LawAndOrder_Setting_InfiltratorSpawnChance_Title>
+  <LawAndOrder_Setting_InfiltratorSpawnChance_Desc>Percentage of visitors or joiners who are secretly infiltrators or sanguophages. 5% default. Range: 0-15%</LawAndOrder_Setting_InfiltratorSpawnChance_Desc>
+
+  <LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title>Max Accomplices per Infiltrator</LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title>
+  <LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc>Maximum number of colonists an infiltrator can manipulate into becoming accomplices. Default: 2. Range: 0-5</LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc>
+
+  <LawAndOrder_Setting_TruthDiscoveryChance_Title>Truth Discovery Chance</LawAndOrder_Setting_TruthDiscoveryChance_Title>
+  <LawAndOrder_Setting_TruthDiscoveryChance_Desc>Base chance for investigation to reveal false accusations. Higher skill increases this chance. Default: 15%. Range: 5-40%</LawAndOrder_Setting_TruthDiscoveryChance_Desc>
+
+  <LawAndOrder_Setting_CluesPerCrime_Min_Title>Minimum Clues per Crime</LawAndOrder_Setting_CluesPerCrime_Min_Title>
+  <LawAndOrder_Setting_CluesPerCrime_Min_Desc>Minimum number of physical clues spawned at crime scenes. Default: 1. Range: 0-5</LawAndOrder_Setting_CluesPerCrime_Min_Desc>
+
+  <LawAndOrder_Setting_CluesPerCrime_Max_Title>Maximum Clues per Crime</LawAndOrder_Setting_CluesPerCrime_Max_Title>
+  <LawAndOrder_Setting_CluesPerCrime_Max_Desc>Maximum number of physical clues spawned at crime scenes. Default: 3. Range: 1-5</LawAndOrder_Setting_CluesPerCrime_Max_Desc>
+
+  <!-- Phase 6: Hidden Identity Revelation -->
+  <LawAndOrder_LetterLabelInfiltratorRevealed>Infiltrator Revealed!</LawAndOrder_LetterLabelInfiltratorRevealed>
+  <LawAndOrder_LetterInfiltratorRevealed>{0} has been exposed as an infiltrator! Their real name is {1}.\n\nYour investigation has uncovered the truth about {INFILTRATOR_pronoun}.</LawAndOrder_LetterInfiltratorRevealed>
+
+  <!-- Phase 6: Clue Types -->
+  <LawAndOrder_ClueType_BloodStain>Blood Stain</LawAndOrder_ClueType_BloodStain>
+  <LawAndOrder_ClueType_Footprint>Footprint</LawAndOrder_ClueType_Footprint>
+  <LawAndOrder_ClueType_ToolMark>Tool Mark</LawAndOrder_ClueType_ToolMark>
+  <LawAndOrder_ClueType_DroppedItem>Dropped Item</LawAndOrder_ClueType_DroppedItem>
+  <LawAndOrder_ClueType_FabricScrap>Fabric Scrap</LawAndOrder_ClueType_FabricScrap>
+  <LawAndOrder_ClueType_FingerprintTrace>Fingerprint Trace</LawAndOrder_ClueType_FingerprintTrace>
+  <LawAndOrder_ClueType_WitnessReport>Witness Report</LawAndOrder_ClueType_WitnessReport>
+
+  <!-- Phase 6: Clue Analysis -->
+  <LawAndOrder_ClueAnalysis_Header>Clue Analysis</LawAndOrder_ClueAnalysis_Header>
+  <LawAndOrder_ClueAnalysis_InProgress>Analyzing clue...</LawAndOrder_ClueAnalysis_InProgress>
+  <LawAndOrder_ClueAnalysis_Complete>Analysis complete</LawAndOrder_ClueAnalysis_Complete>
+  <LawAndOrder_ClueAnalysis_Progress>Analysis Progress</LawAndOrder_ClueAnalysis_Progress>
+  <LawAndOrder_ClueRevelation>{0} analyzed {1} and discovered: {2}</LawAndOrder_ClueRevelation>
+
+  <!-- Phase 6: Witness Reliability -->
+  <LawAndOrder_WitnessReliability_Header>Witness Credibility</LawAndOrder_WitnessReliability_Header>
+  <LawAndOrder_WitnessReliability_HighlyReliable>Highly Reliable</LawAndOrder_WitnessReliability_HighlyReliable>
+  <LawAndOrder_WitnessReliability_Reliable>Reliable</LawAndOrder_WitnessReliability_Reliable>
+  <LawAndOrder_WitnessReliability_Questionable>Questionable</LawAndOrder_WitnessReliability_Questionable>
+  <LawAndOrder_WitnessReliability_Unreliable>Unreliable</LawAndOrder_WitnessReliability_Unreliable>
+  <LawAndOrder_WitnessReliability_VeryUnreliable>Very Unreliable</LawAndOrder_WitnessReliability_VeryUnreliable>
+
+  <!-- Phase 6: Truth Discovery -->
+  <LawAndOrder_LetterLabelTruthRevealed>Truth Revealed</LawAndOrder_LetterLabelTruthRevealed>
+  <LawAndOrder_LetterTruthRevealed>Investigation has revealed the truth: {0} was falsely accused!\n\nThe real criminal is {1}.\n\nThe false accusation has been dismissed.</LawAndOrder_LetterTruthRevealed>
+
+  <!-- Phase 6: False Accusation Indicators -->
+  <LawAndOrder_FalseAccusation_Indicator>⚠ Possible False Accusation</LawAndOrder_FalseAccusation_Indicator>
+  <LawAndOrder_FalseAccusation_Warning>This case may be based on false testimony or planted evidence.</LawAndOrder_FalseAccusation_Warning>
+
+  <!-- Phase 6: Infiltrator Reactions -->
+  <LawAndOrder_InfiltratorReaction_FleeMap>fled the map</LawAndOrder_InfiltratorReaction_FleeMap>
+  <LawAndOrder_InfiltratorReaction_FightToTheEnd>is fighting to the death</LawAndOrder_InfiltratorReaction_FightToTheEnd>
+  <LawAndOrder_InfiltratorReaction_FakeInnocence>is protesting their innocence</LawAndOrder_InfiltratorReaction_FakeInnocence>
+  <LawAndOrder_InfiltratorReaction_AttemptBribery>is offering to reveal secrets</LawAndOrder_InfiltratorReaction_AttemptBribery>
+  <LawAndOrder_InfiltratorReaction_ActivateAccomplices>has activated accomplices!</LawAndOrder_InfiltratorReaction_ActivateAccomplices>
+  <LawAndOrder_InfiltratorReaction_TransmitIntelNow>is transmitting intelligence!</LawAndOrder_InfiltratorReaction_TransmitIntelNow>
+
+  <!-- Phase 6: Intelligence Gathering -->
+  <LawAndOrder_IntelTransmitted_Low>An infiltrator has left the colony with minor intelligence about your defenses.</LawAndOrder_IntelTransmitted_Low>
+  <LawAndOrder_IntelTransmitted_Moderate>An infiltrator has transmitted significant intelligence to their faction. Expect smarter raids.</LawAndOrder_IntelTransmitted_Moderate>
+  <LawAndOrder_IntelTransmitted_High>SEVERE THREAT: An infiltrator has gathered extensive intelligence. Your colony's defenses and valuables are now known to hostile factions!</LawAndOrder_IntelTransmitted_High>
+
+  <!-- Phase 6: Accomplice System -->
+  <LawAndOrder_AccompliceRecruited>{0} has been manipulated by {1} into becoming an accomplice</LawAndOrder_AccompliceRecruited>
+  <LawAndOrder_AccompliceSabotage>{0} is sabotaging the colony!</LawAndOrder_AccompliceSabotage>
+  <LawAndOrder_LetterLabelAccompliceRevealed>Accomplice Discovered</LawAndOrder_LetterLabelAccompliceRevealed>
+  <LawAndOrder_LetterAccompliceRevealed>{0} has been exposed as an accomplice of infiltrator {1}!\n\nThey were sabotaging the colony from within.</LawAndOrder_LetterAccompliceRevealed>
+
+  <!-- Phase 6: Social Impact Thoughts -->
+  <LawAndOrder_Thought_VictimOfCrime>victimized by someone</LawAndOrder_Thought_VictimOfCrime>
+  <LawAndOrder_Thought_WitnessedCrime>saw someone commit a crime</LawAndOrder_Thought_WitnessedCrime>
+  <LawAndOrder_Thought_FriendVictimized>hurt my friend</LawAndOrder_Thought_FriendVictimized>
+  <LawAndOrder_Thought_FriendAccused>accused my friend</LawAndOrder_Thought_FriendAccused>
+  <LawAndOrder_Thought_UnjustConviction>unjust conviction</LawAndOrder_Thought_UnjustConviction>
+  <LawAndOrder_Thought_UnjustConviction_Desc>I witnessed an innocent person being convicted. This colony's justice system is broken.</LawAndOrder_Thought_UnjustConviction_Desc>
+  <LawAndOrder_Thought_InnocentlyAccused>falsely accused</LawAndOrder_Thought_InnocentlyAccused>
+  <LawAndOrder_Thought_ExecutedInnocent>innocent executed</LawAndOrder_Thought_ExecutedInnocent>
+  <LawAndOrder_Thought_ExecutedInnocent_Desc>We executed an innocent person. I can't believe this happened.</LawAndOrder_Thought_ExecutedInnocent_Desc>
+  <LawAndOrder_Thought_JusticeServed>justice was served</LawAndOrder_Thought_JusticeServed>
+  <LawAndOrder_Thought_FramedInnocent>framed an innocent person</LawAndOrder_Thought_FramedInnocent>
+  <LawAndOrder_Thought_BetrayedByAccomplice>betrayed by accomplice</LawAndOrder_Thought_BetrayedByAccomplice>
+  <LawAndOrder_Thought_InfiltratorManipulated>manipulated by infiltrator</LawAndOrder_Thought_InfiltratorManipulated>
+
+  <!-- Phase 6: Sanguophage Frame-Ups -->
+  <LawAndOrder_SanguophageFrameUp>{0} has framed {1} for the murder of {2}</LawAndOrder_SanguophageFrameUp>
+
+  <!-- Phase 6: Intel-Based Raids -->
+  <LawAndOrder_RaidTargetingValuables>Raiders are targeting your valuables!</LawAndOrder_RaidTargetingValuables>
+  <LawAndOrder_MultiProngedAssault>Multi-pronged assault detected! Raiders have detailed colony layout information.</LawAndOrder_MultiProngedAssault>
+
 </LanguageData>

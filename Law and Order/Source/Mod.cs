@@ -6,6 +6,27 @@ using Law_and_Order.Source.Settings;
 
 namespace Law_and_Order.Source
 {
+    /// <summary>
+    /// Convenience class for accessing mod settings
+    /// </summary>
+    public static class LawAndOrderMod
+    {
+        public static LawAndOrderSettingsAccessor Settings => new LawAndOrderSettingsAccessor();
+    }
+
+    /// <summary>
+    /// Accessor for mod settings with properties
+    /// </summary>
+    public class LawAndOrderSettingsAccessor
+    {
+        public float falseAccusationRate => LawAndOrderSettings.FalseAccusationRate?.Value ?? 0.12f;
+        public float infiltratorSpawnChance => LawAndOrderSettings.InfiltratorSpawnChance?.Value ?? 0.05f;
+        public int maxAccomplicesPerInfiltrator => LawAndOrderSettings.MaxAccomplicesPerInfiltrator?.Value ?? 2;
+        public float truthDiscoveryChance => LawAndOrderSettings.TruthDiscoveryChance?.Value ?? 0.15f;
+        public int cluesPerCrime_Min => LawAndOrderSettings.CluesPerCrime_Min?.Value ?? 1;
+        public int cluesPerCrime_Max => LawAndOrderSettings.CluesPerCrime_Max?.Value ?? 3;
+    }
+
     public class Mod : ModBase
     {
         public override string ModIdentifier => "Law_and_Order";

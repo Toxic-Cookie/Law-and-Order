@@ -49,6 +49,10 @@ namespace Law_and_Order.Source.Investigation
         public Pawn witness; // For Testimonial evidence
         public string additionalInfo; // Any extra context
 
+        // Phase 6: Evidence planting support
+        public bool isPlanted = false; // Was this evidence fabricated?
+        public Pawn plantedBy; // Who planted this false evidence?
+
         public Evidence()
         {
         }
@@ -82,6 +86,10 @@ namespace Law_and_Order.Source.Investigation
             Scribe_References.Look(ref physicalItem, "physicalItem");
             Scribe_References.Look(ref witness, "witness");
             Scribe_Values.Look(ref additionalInfo, "additionalInfo");
+
+            // Phase 6: Evidence planting ExposeData
+            Scribe_Values.Look(ref isPlanted, "isPlanted", false);
+            Scribe_References.Look(ref plantedBy, "plantedBy");
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCollected) / GenDate.TicksPerDay;

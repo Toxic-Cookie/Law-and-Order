@@ -21,6 +21,14 @@ namespace Law_and_Order.Source.Settings
         // Debug/Logging settings
         public static SettingHandle<LogLevel> LogLevel;
 
+        // Phase 6: False Accusations & Infiltration settings
+        public static SettingHandle<float> FalseAccusationRate;
+        public static SettingHandle<float> InfiltratorSpawnChance;
+        public static SettingHandle<int> MaxAccomplicesPerInfiltrator;
+        public static SettingHandle<float> TruthDiscoveryChance;
+        public static SettingHandle<int> CluesPerCrime_Min;
+        public static SettingHandle<int> CluesPerCrime_Max;
+
         /// <summary>
         /// Initialize all settings with default values
         /// </summary>
@@ -78,6 +86,55 @@ namespace Law_and_Order.Source.Settings
 
             // Initialize ModLog with current setting
             ModLog.CurrentLogLevel = LogLevel.Value;
+
+            // Phase 6: False Accusations & Infiltration settings
+            FalseAccusationRate = settings.GetHandle(
+                "FalseAccusationRate",
+                "LawAndOrder_Setting_FalseAccusationRate_Title".Translate(),
+                "LawAndOrder_Setting_FalseAccusationRate_Desc".Translate(),
+                0.12f, // 12% default (moderate drama)
+                Validators.FloatRangeValidator(0f, 0.30f)
+            );
+
+            InfiltratorSpawnChance = settings.GetHandle(
+                "InfiltratorSpawnChance",
+                "LawAndOrder_Setting_InfiltratorSpawnChance_Title".Translate(),
+                "LawAndOrder_Setting_InfiltratorSpawnChance_Desc".Translate(),
+                0.05f, // 5% of visitors
+                Validators.FloatRangeValidator(0f, 0.15f)
+            );
+
+            MaxAccomplicesPerInfiltrator = settings.GetHandle(
+                "MaxAccomplicesPerInfiltrator",
+                "LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title".Translate(),
+                "LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc".Translate(),
+                2,
+                Validators.IntRangeValidator(0, 5)
+            );
+
+            TruthDiscoveryChance = settings.GetHandle(
+                "TruthDiscoveryChance",
+                "LawAndOrder_Setting_TruthDiscoveryChance_Title".Translate(),
+                "LawAndOrder_Setting_TruthDiscoveryChance_Desc".Translate(),
+                0.15f, // 15% base chance
+                Validators.FloatRangeValidator(0.05f, 0.40f)
+            );
+
+            CluesPerCrime_Min = settings.GetHandle(
+                "CluesPerCrime_Min",
+                "LawAndOrder_Setting_CluesPerCrime_Min_Title".Translate(),
+                "LawAndOrder_Setting_CluesPerCrime_Min_Desc".Translate(),
+                1,
+                Validators.IntRangeValidator(0, 5)
+            );
+
+            CluesPerCrime_Max = settings.GetHandle(
+                "CluesPerCrime_Max",
+                "LawAndOrder_Setting_CluesPerCrime_Max_Title".Translate(),
+                "LawAndOrder_Setting_CluesPerCrime_Max_Desc".Translate(),
+                3,
+                Validators.IntRangeValidator(1, 5)
+            );
         }
 
         /// <summary>
@@ -87,6 +144,14 @@ namespace Law_and_Order.Source.Settings
         {
             DefaultSilverPerDay.Value = 35f;
             GlobalPenaltyScale.Value = 1.0f;
+
+            // Phase 6 defaults
+            FalseAccusationRate.Value = 0.12f;
+            InfiltratorSpawnChance.Value = 0.05f;
+            MaxAccomplicesPerInfiltrator.Value = 2;
+            TruthDiscoveryChance.Value = 0.15f;
+            CluesPerCrime_Min.Value = 1;
+            CluesPerCrime_Max.Value = 3;
         }
 
         /// <summary>
@@ -102,6 +167,11 @@ namespace Law_and_Order.Source.Settings
 
             // Penalty settings
             hadInvalidValues |= ClampSetting(ref GlobalPenaltyScale, 0.25f, 3.0f, 1.0f, "GlobalPenaltyScale");
+
+            // Phase 6 settings validation
+            hadInvalidValues |= ClampSetting(ref FalseAccusationRate, 0f, 0.30f, 0.12f, "FalseAccusationRate");
+            hadInvalidValues |= ClampSetting(ref InfiltratorSpawnChance, 0f, 0.15f, 0.05f, "InfiltratorSpawnChance");
+            hadInvalidValues |= ClampSetting(ref TruthDiscoveryChance, 0.05f, 0.40f, 0.15f, "TruthDiscoveryChance");
 
             if (hadInvalidValues)
             {

@@ -26,6 +26,12 @@ namespace Law_and_Order.Source.Hediffs
         public float evidenceStrength = 0f;
         public int caseId = -1; // ID of associated criminal case (-1 = no case)
 
+        // Phase 6: False Accusation fields
+        public bool isFalseAccusation = false;       // Is this crime a false accusation?
+        public Pawn actualPerpetrator;               // If false, who really did it?
+        public Pawn falselyAccused;                  // If false, who was blamed?
+        public IntVec3 location;                     // Where crime occurred (for clue spawning)
+
         public Crime()
         {
         }
@@ -60,6 +66,12 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_Collections.Look(ref witnesses, "witnesses", LookMode.Reference);
             Scribe_Values.Look(ref evidenceStrength, "evidenceStrength", 0f);
             Scribe_Values.Look(ref caseId, "caseId", -1);
+
+            // Phase 6: False Accusation ExposeData
+            Scribe_Values.Look(ref isFalseAccusation, "isFalseAccusation", false);
+            Scribe_References.Look(ref actualPerpetrator, "actualPerpetrator");
+            Scribe_References.Look(ref falselyAccused, "falselyAccused");
+            Scribe_Values.Look(ref location, "location");
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCommitted) / GenDate.TicksPerDay;
