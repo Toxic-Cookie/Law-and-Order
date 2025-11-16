@@ -82,15 +82,99 @@ namespace Law_and_Order.Source.Investigation
         }
 
         /// <summary>
-        /// Adds inspection string showing designation status
+        /// Adds inspection string showing designation status and effectiveness breakdown
         /// </summary>
         public override string CompInspectStringExtra()
         {
-            if (isDesignated)
+            if (!isDesignated)
             {
-                return "LawAndOrder_InterrogationTableStatus".Translate();
+                return null;
             }
-            return null;
+
+            // Start with designation status
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.Append("LawAndOrder_InterrogationTableStatus".Translate());
+
+            // Add room effectiveness breakdown
+            Room room = parent.GetRoom();
+            if (room != null && !room.PsychologicallyOutdoors)
+            {
+                sb.Append("\n");
+                sb.Append("LawAndOrder_InterrogationEffectivenessFactors".Translate());
+
+                // Impressiveness factor
+                float impressiveness = room.GetStat(RoomStatDefOf.Impressiveness);
+                string impressivenessImpact = GetImpressivenessImpact(impressiveness);
+                sb.Append($"\n  {"LawAndOrder_Factor_Impressiveness".Translate()}: {impressiveness:F0} ({impressivenessImpact})");
+
+                // Cleanliness factor
+                float cleanliness = room.GetStat(RoomStatDefOf.Cleanliness);
+                string cleanlinessImpact = GetCleanlinessImpact(cleanliness);
+                sb.Append($"\n  {"LawAndOrder_Factor_Cleanliness".Translate()}: {cleanliness:F1} ({cleanlinessImpact})");
+
+                // Space factor
+                float space = room.GetStat(RoomStatDefOf.Space);
+                string spaceImpact = GetSpaceImpact(space);
+                sb.Append($"\n  {"LawAndOrder_Factor_Space".Translate()}: {space:F0} ({spaceImpact})");
+            }
+            else
+            {
+                sb.Append("\n");
+                sb.Append("LawAndOrder_InterrogationTableOutdoors".Translate());
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Get impact description for impressiveness
+        /// </summary>
+        private string GetImpressivenessImpact(float impressiveness)
+        {
+            if (impressiveness < 20)
+                return "LawAndOrder_Impact_Negative".Translate();
+            else if (impressiveness < 40)
+                return "LawAndOrder_Impact_Neutral".Translate();
+            else if (impressiveness < 65)
+                return "LawAndOrder_Impact_Positive".Translate();
+            else if (impressiveness < 100)
+                return "LawAndOrder_Impact_VeryPositive".Translate();
+            else
+                return "LawAndOrder_Impact_Excellent".Translate();
+        }
+
+        /// <summary>
+        /// Get impact description for cleanliness
+        /// </summary>
+        private string GetCleanlinessImpact(float cleanliness)
+        {
+            if (cleanliness < -2.0f)
+                return "LawAndOrder_Impact_VeryNegative".Translate();
+            else if (cleanliness < -0.5f)
+                return "LawAndOrder_Impact_Negative".Translate();
+            else if (cleanliness < 0f)
+                return "LawAndOrder_Impact_SlightlyNegative".Translate();
+            else if (cleanliness < 0.5f)
+                return "LawAndOrder_Impact_Positive".Translate();
+            else
+                return "LawAndOrder_Impact_VeryPositive".Translate();
+        }
+
+        /// <summary>
+        /// Get impact description for space
+        /// </summary>
+        private string GetSpaceImpact(float space)
+        {
+            if (space < 12.5f)
+                return "LawAndOrder_Impact_Neutral".Translate();
+            else if (space < 29f)
+                return "LawAndOrder_Impact_SlightlyPositive".Translate();
+            else if (space < 55f)
+                return "LawAndOrder_Impact_Positive".Translate();
+            else if (space < 100f)
+                return "LawAndOrder_Impact_VeryPositive".Translate();
+            else
+                return "LawAndOrder_Impact_Excellent".Translate();
         }
 
         /// <summary>

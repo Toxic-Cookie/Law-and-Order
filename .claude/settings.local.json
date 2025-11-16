@@ -56,7 +56,8 @@
       "WebFetch(domain:dwarffortresswiki.org)",
       "Bash(cat:*)",
       "Bash(del /Q \"Hediffs\\Hediff_Debt.cs\" \"Components\\WorldComponent_DebtManager.cs\" \"Utils\\DebtUtils.cs\" \"CrimeDetection\\DebtSystemPatches.cs\" \"Patches\\SlaveEmancipation_Patch.cs\")",
-      "Bash(del \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\CourtroomChairComp_Patch.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")"
+      "Bash(del \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\CourtroomChairComp_Patch.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")",
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\RoomStatDefs\\RoomStats_Interrogation.xml\")"
     ],
     "deny": [],
     "ask": []

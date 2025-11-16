@@ -516,7 +516,6 @@
   <LawAndOrder_TotalSeverity>Total Severity</LawAndOrder_TotalSeverity>
   <LawAndOrder_AssignPunishment>Assign Punishment</LawAndOrder_AssignPunishment>
   <LawAndOrder_Recommended>(Recommended)</LawAndOrder_Recommended>
-  <LawAndOrder_Severity>Severity</LawAndOrder_Severity>
   <LawAndOrder_ImprisonmentDuration>Imprisonment Duration</LawAndOrder_ImprisonmentDuration>
   <LawAndOrder_FineAmount>Fine Amount</LawAndOrder_FineAmount>
 
@@ -551,36 +550,6 @@
   <LawAndOrder_CriminalNotImprisoned>Criminal must be imprisoned first</LawAndOrder_CriminalNotImprisoned>
   <LawAndOrder_CrimeSeverityTooLow>Crime severity too low (need {0}, have {1})</LawAndOrder_CrimeSeverityTooLow>
 
-  <!-- Convictions Tab -->
-  <LawAndOrder_Tab_OpenCases>Open Cases</LawAndOrder_Tab_OpenCases>
-  <LawAndOrder_Tab_Convictions>Convictions</LawAndOrder_Tab_Convictions>
-  <LawAndOrder_Tab_Settings>Settings</LawAndOrder_Tab_Settings>
-  <LawAndOrder_NoConvictions>No convicted cases</LawAndOrder_NoConvictions>
-  <LawAndOrder_CrimesConvicted>crime(s) convicted</LawAndOrder_CrimesConvicted>
-  <LawAndOrder_ConvictedDaysAgo>Convicted {0} days ago</LawAndOrder_ConvictedDaysAgo>
-  <LawAndOrder_PunishmentPending>Punishment: Pending</LawAndOrder_PunishmentPending>
-  <LawAndOrder_PunishmentStatus>Punishment: {0}</LawAndOrder_PunishmentStatus>
-
-  <!-- Action Buttons Phase 4 -->
-  <LawAndOrder_ConvictSelected>Convict Selected</LawAndOrder_ConvictSelected>
-  <LawAndOrder_DismissSelected>Dismiss Selected</LawAndOrder_DismissSelected>
-  <LawAndOrder_Investigate>Investigate</LawAndOrder_Investigate>
-  <LawAndOrder_InvestigateNotImplemented>Investigation system coming in Phase 5</LawAndOrder_InvestigateNotImplemented>
-
-  <!-- Settings Phase 4 -->
-  <LawAndOrder_DebugSettings>Debug Settings (God Mode Only)</LawAndOrder_DebugSettings>
-  <LawAndOrder_Setting_ShowHiddenCrimes>Show Hidden Crimes</LawAndOrder_Setting_ShowHiddenCrimes>
-  <LawAndOrder_Setting_ShowHiddenCrimes_Desc>Display crimes that have not been witnessed (debug mode)</LawAndOrder_Setting_ShowHiddenCrimes_Desc>
-  <LawAndOrder_Setting_AutoConvictRedHanded>Auto-Convict Red-Handed</LawAndOrder_Setting_AutoConvictRedHanded>
-  <LawAndOrder_Setting_AutoConvictRedHanded_Desc>Automatically convict crimes with strong evidence (≥70%). You will still select punishments.</LawAndOrder_Setting_AutoConvictRedHanded_Desc>
-  <LawAndOrder_Setting_EnableFalseAccusations>Enable False Accusations</LawAndOrder_Setting_EnableFalseAccusations>
-  <LawAndOrder_Setting_EnableFalseAccusations_Desc>Allow colonists to falsely accuse others based on relationships (Phase 5+)</LawAndOrder_Setting_EnableFalseAccusations_Desc>
-
-  <!-- Crime Visibility States -->
-  <LawAndOrder_State_Hidden>Hidden</LawAndOrder_State_Hidden>
-  <LawAndOrder_State_Suspected>Suspected</LawAndOrder_State_Suspected>
-  <LawAndOrder_State_Convicted>Convicted</LawAndOrder_State_Convicted>
-
   <!-- Phase 5: Investigation & Interrogation -->
 
   <!-- Interrogation Table -->
@@ -592,9 +561,24 @@
   <LawAndOrder_InterrogationTableUndesignated>{0} is no longer designated as an interrogation table</LawAndOrder_InterrogationTableUndesignated>
   <LawAndOrder_InterrogationTableStatus>Designated Interrogation Table</LawAndOrder_InterrogationTableStatus>
 
-  <!-- Investigation Button -->
-  <LawAndOrder_Investigate>Investigate</LawAndOrder_Investigate>
-  <LawAndOrder_InvestigateNotImplemented>Investigation system not yet implemented</LawAndOrder_InvestigateNotImplemented>
+  <!-- Interrogation Effectiveness -->
+  <LawAndOrder_InterrogationEffectivenessFactors>Interrogation Effectiveness Factors:</LawAndOrder_InterrogationEffectivenessFactors>
+  <LawAndOrder_InterrogationTableOutdoors>This table is outdoors and cannot be used for interrogations</LawAndOrder_InterrogationTableOutdoors>
+  <LawAndOrder_Factor_Impressiveness>Impressiveness</LawAndOrder_Factor_Impressiveness>
+  <LawAndOrder_Factor_Cleanliness>Cleanliness</LawAndOrder_Factor_Cleanliness>
+  <LawAndOrder_Factor_Space>Space</LawAndOrder_Factor_Space>
+
+  <!-- Impact Descriptors -->
+  <LawAndOrder_Impact_VeryNegative>very bad</LawAndOrder_Impact_VeryNegative>
+  <LawAndOrder_Impact_Negative>bad</LawAndOrder_Impact_Negative>
+  <LawAndOrder_Impact_SlightlyNegative>slightly bad</LawAndOrder_Impact_SlightlyNegative>
+  <LawAndOrder_Impact_Neutral>neutral</LawAndOrder_Impact_Neutral>
+  <LawAndOrder_Impact_SlightlyPositive>slightly good</LawAndOrder_Impact_SlightlyPositive>
+  <LawAndOrder_Impact_Positive>good</LawAndOrder_Impact_Positive>
+  <LawAndOrder_Impact_VeryPositive>very good</LawAndOrder_Impact_VeryPositive>
+  <LawAndOrder_Impact_Excellent>excellent</LawAndOrder_Impact_Excellent>
+
+  <!-- Interrogation Status Messages -->
   <LawAndOrder_CannotInterrogate>{0} cannot be interrogated at this time</LawAndOrder_CannotInterrogate>
   <LawAndOrder_NoInterrogationTable>No designated interrogation table available. Right-click a table to designate it.</LawAndOrder_NoInterrogationTable>
   <LawAndOrder_NoAccessibleTable>No accessible interrogation table found</LawAndOrder_NoAccessibleTable>

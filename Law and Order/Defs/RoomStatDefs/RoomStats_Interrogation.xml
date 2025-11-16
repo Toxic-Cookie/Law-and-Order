@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <RoomStatDef>
+    <defName>LawAndOrder_InterrogationEffectiveness</defName>
+    <label>interrogation effectiveness</label>
+    <workerClass>Law_and_Order.Source.Investigation.RoomStatWorker_InterrogationEffectiveness</workerClass>
+    <updatePriority>0</updatePriority>
+    <displayRounded>true</displayRounded>
+    <roomlessScore>0</roomlessScore>
+    <scoreStages>
+      <li>
+        <label>poor</label>
+      </li>
+      <li>
+        <minScore>30</minScore>
+        <label>mediocre</label>
+      </li>
+      <li>
+        <minScore>50</minScore>
+        <label>decent</label>
+      </li>
+      <li>
+        <minScore>70</minScore>
+        <label>good</label>
+      </li>
+      <li>
+        <minScore>85</minScore>
+        <label>excellent</label>
+      </li>
+    </scoreStages>
+  </RoomStatDef>
+
+</Defs>
