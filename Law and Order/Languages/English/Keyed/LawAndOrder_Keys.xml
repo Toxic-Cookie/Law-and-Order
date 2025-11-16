@@ -601,6 +601,15 @@
   <LawAndOrder_NoWardenAvailable>No warden available to perform interrogation</LawAndOrder_NoWardenAvailable>
   <LawAndOrder_InterrogationStarted>{0} will interrogate {1}</LawAndOrder_InterrogationStarted>
 
+  <!-- Investigation Disabled Reasons -->
+  <LawAndOrder_Investigate_NoCaseSelected>Select a case first</LawAndOrder_Investigate_NoCaseSelected>
+  <LawAndOrder_Investigate_NoAccused>This case has no accused person</LawAndOrder_Investigate_NoAccused>
+  <LawAndOrder_Investigate_PrisonerDead>The accused is dead</LawAndOrder_Investigate_PrisonerDead>
+  <LawAndOrder_Investigate_NotPrisoner>The accused must be imprisoned to be interrogated</LawAndOrder_Investigate_NotPrisoner>
+  <LawAndOrder_Investigate_Unconscious>The accused is unconscious or too incapacitated to be interrogated</LawAndOrder_Investigate_Unconscious>
+  <LawAndOrder_Investigate_NoHiddenCrimes>The accused has no unrevealed crimes to confess</LawAndOrder_Investigate_NoHiddenCrimes>
+  <LawAndOrder_Investigate_CannotInvestigate>Investigation not available</LawAndOrder_Investigate_CannotInvestigate>
+
   <!-- Interrogation Results -->
   <LawAndOrder_Interrogation_Success>{0} successfully interrogated {1}. {2} crime(s) confessed: {3}</LawAndOrder_Interrogation_Success>
   <LawAndOrder_Interrogation_FalseConfession>{0} obtained a confession from {1}, but it may be false</LawAndOrder_Interrogation_FalseConfession>

@@ -433,12 +433,21 @@ namespace Law_and_Order.Source.UI
                                   selectedCase.accused != null &&
                                   Investigation.InterrogationSystem.CanInterrogate(selectedCase.accused);
 
+            // Get the reason why investigation is disabled (if it is)
+            string disabledReason = canInvestigate ? null : GetInvestigateDisabledReason();
+
             GUI.enabled = canInvestigate;
             if (Widgets.ButtonText(investigateRect, "LawAndOrder_Investigate".Translate()))
             {
                 StartInvestigation();
             }
             GUI.enabled = true;
+
+            // Show tooltip if disabled
+            if (!canInvestigate && disabledReason != null)
+            {
+                TooltipHandler.TipRegion(investigateRect, disabledReason);
+            }
         }
 
         #endregion
@@ -763,6 +772,55 @@ namespace Law_and_Order.Source.UI
 
             // Close the justice window (player can reopen to see results)
             this.Close();
+        }
+
+        /// <summary>
+        /// Get the reason why investigation is disabled
+        /// </summary>
+        private string GetInvestigateDisabledReason()
+        {
+            // No case selected
+            if (selectedCase == null)
+            {
+                return "LawAndOrder_Investigate_NoCaseSelected".Translate();
+            }
+
+            // No accused
+            if (selectedCase.accused == null)
+            {
+                return "LawAndOrder_Investigate_NoAccused".Translate();
+            }
+
+            Pawn prisoner = selectedCase.accused;
+
+            // Dead
+            if (prisoner.Dead)
+            {
+                return "LawAndOrder_Investigate_PrisonerDead".Translate();
+            }
+
+            // Not a prisoner
+            if (!prisoner.IsPrisoner)
+            {
+                return "LawAndOrder_Investigate_NotPrisoner".Translate();
+            }
+
+            // Unconscious or incapacitated
+            if (prisoner.health == null ||
+                prisoner.health.capacities.GetLevel(PawnCapacityDefOf.Consciousness) < 0.5f)
+            {
+                return "LawAndOrder_Investigate_Unconscious".Translate();
+            }
+
+            // No hidden crimes
+            var crimeRecord = CrimeUtils.TryGetCriminalRecord(prisoner);
+            if (crimeRecord == null || crimeRecord.GetHiddenCrimes().Count == 0)
+            {
+                return "LawAndOrder_Investigate_NoHiddenCrimes".Translate();
+            }
+
+            // Default
+            return "LawAndOrder_Investigate_CannotInvestigate".Translate();
         }
 
         /// <summary>
