@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using RimWorld;
 using Verse;
@@ -13,12 +14,21 @@ namespace Law_and_Order.Source.Investigation
     /// </summary>
     public class JobDriver_InvestigateCase : JobDriver
     {
-        private const int INTERROGATION_DURATION_TICKS = 1200; // ~20 seconds base
+        private const int INTERROGATION_BASE_DURATION_TICKS = 3000; // ~50 seconds base (much longer!)
+        private const int DRAMATIC_ACTION_INTERVAL_TICKS = 300; // ~5 seconds between dramatic actions
         private const int WARMUP_TICKS = 120; // ~2 seconds to get started
 
         // Job targets
         protected Pawn Prisoner => (Pawn)job.targetA.Thing;
         protected Thing InterrogationTable => job.targetB.Thing;
+
+        // Cached chairs
+        private Thing prisonerChair;
+        private Thing wardenChair;
+        private IntVec3 prisonerPosition;
+        private IntVec3 wardenPosition;
+
+        private int dramaticActionsPerformed = 0;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -94,32 +104,25 @@ namespace Law_and_Order.Source.Investigation
                 .FailOn(() => !pawn.IsCarryingPawn(Prisoner));
             yield return goToTable;
 
-            // Step 4: Put prisoner down near the table
-            yield return Toils_Haul.PlaceCarriedThingInCellFacing(TargetIndex.B);
+            // Step 4: Find and setup interrogation positions/chairs
+            yield return SetupInterrogationArea();
 
-            // Step 5: Warm up - warden prepares for interrogation
-            Toil warmup = new Toil();
-            warmup.initAction = delegate
-            {
-                pawn.pather.StopDead();
-                pawn.jobs.posture = PawnPosture.Standing;
-            };
-            warmup.tickAction = delegate
-            {
-                pawn.rotationTracker.FaceTarget(Prisoner);
-                if (Prisoner.Spawned)
-                {
-                    Prisoner.rotationTracker.FaceTarget(pawn);
-                }
-            };
-            warmup.defaultCompleteMode = ToilCompleteMode.Delay;
-            warmup.defaultDuration = WARMUP_TICKS;
-            warmup.WithProgressBarToilDelay(TargetIndex.A);
-            warmup.socialMode = RandomSocialMode.Off;
-            yield return warmup;
+            // Step 5: Place prisoner in designated position/chair
+            yield return PlacePrisonerForInterrogation();
 
-            // Step 6: Perform interrogation
-            yield return PerformInterrogation();
+            // Step 6: Warm up - warden prepares for interrogation
+            yield return WarmupInterrogation();
+
+            // Step 7-N: Perform multiple dramatic interrogation actions
+            // We'll do 3-5 dramatic actions throughout the interrogation
+            int numDramaticActions = Rand.RangeInclusive(3, 5);
+            for (int i = 0; i < numDramaticActions; i++)
+            {
+                yield return PerformDramaticAction();
+            }
+
+            // Final: Conclude interrogation and get results
+            yield return ConcludeInterrogation();
 
             // Step 7: Set last interaction time
             yield return Toils_Interpersonal.SetLastInteractTime(TargetIndex.A);
@@ -144,40 +147,128 @@ namespace Law_and_Order.Source.Investigation
         }
 
         /// <summary>
-        /// Toil to perform the actual interrogation
+        /// Setup the interrogation area - find chairs and positions
         /// </summary>
-        private Toil PerformInterrogation()
+        private Toil SetupInterrogationArea()
         {
             Toil toil = new Toil();
-
             toil.initAction = delegate
             {
-                // Position both pawns
-                pawn.pather.StopDead();
-                pawn.jobs.posture = PawnPosture.Standing;
+                // Find interrogation chair for prisoner (closest to table)
+                prisonerChair = Comp_InterrogationChair.FindNearestInterrogationChair(
+                    InterrogationTable.Position,
+                    pawn.Map,
+                    pawn
+                );
 
-                // Calculate duration based on social skill
-                int socialSkill = pawn.skills?.GetSkill(SkillDefOf.Social)?.Level ?? 0;
-                int duration = INTERROGATION_DURATION_TICKS - (socialSkill * 30); // -30 ticks per skill level
-                duration = Mathf.Max(duration, 600); // Minimum 10 seconds
-
-                toil.defaultDuration = duration;
-            };
-
-            toil.tickAction = delegate
-            {
-                // Face each other during interrogation
-                pawn.rotationTracker.FaceTarget(Prisoner);
-                Prisoner.rotationTracker.FaceTarget(pawn);
-
-                // Play interaction occasionally
-                if (Find.TickManager.TicksGame % 180 == 0)
+                // Determine prisoner position
+                if (prisonerChair != null && prisonerChair is Building_Bed bed)
                 {
-                    FleckMaker.ThrowMetaIcon(pawn.Position, pawn.Map, FleckDefOf.Heart);
+                    prisonerPosition = bed.InteractionCell;
+                }
+                else if (prisonerChair != null)
+                {
+                    prisonerPosition = prisonerChair.InteractionCell;
+                }
+                else
+                {
+                    // No designated chair - just place near table
+                    prisonerPosition = InterrogationTable.InteractionCell;
+                }
+
+                // Find a chair for the warden (any chair near the table, not designated for interrogation)
+                wardenChair = FindWardenChair();
+                wardenPosition = wardenChair != null ? wardenChair.InteractionCell : pawn.Position;
+            };
+            toil.defaultCompleteMode = ToilCompleteMode.Instant;
+            return toil;
+        }
+
+        /// <summary>
+        /// Place the prisoner in their designated position/chair
+        /// </summary>
+        private Toil PlacePrisonerForInterrogation()
+        {
+            Toil toil = new Toil();
+            toil.initAction = delegate
+            {
+                if (pawn.carryTracker.CarriedThing == Prisoner)
+                {
+                    pawn.carryTracker.TryDropCarriedThing(prisonerPosition, ThingPlaceMode.Direct, out Thing _, null);
+                }
+
+                // If there's a chair, make prisoner sit
+                if (prisonerChair != null && prisonerChair is Building_Bed bed)
+                {
+                    Job sitJob = JobMaker.MakeJob(JobDefOf.LayDown, prisonerChair);
+                    sitJob.forceSleep = false;
+                    Prisoner.jobs.StartJob(sitJob, JobCondition.InterruptForced);
                 }
             };
+            toil.defaultCompleteMode = ToilCompleteMode.Instant;
+            return toil;
+        }
 
-            toil.AddFinishAction(delegate
+        /// <summary>
+        /// Warmup phase - warden gets into position
+        /// </summary>
+        private Toil WarmupInterrogation()
+        {
+            Toil toil = new Toil();
+            toil.initAction = delegate
+            {
+                pawn.pather.StopDead();
+                pawn.jobs.posture = PawnPosture.Standing;
+            };
+            toil.tickAction = delegate
+            {
+                pawn.rotationTracker.FaceTarget(Prisoner);
+                if (Prisoner.Spawned)
+                {
+                    Prisoner.rotationTracker.FaceTarget(pawn);
+                }
+            };
+            toil.defaultCompleteMode = ToilCompleteMode.Delay;
+            toil.defaultDuration = WARMUP_TICKS;
+            toil.WithProgressBarToilDelay(TargetIndex.A);
+            toil.socialMode = RandomSocialMode.Off;
+            return toil;
+        }
+
+        /// <summary>
+        /// Perform one dramatic interrogation action
+        /// </summary>
+        private Toil PerformDramaticAction()
+        {
+            Toil toil = new Toil();
+            toil.initAction = delegate
+            {
+                // Choose a random dramatic action
+                DoDramaticAction();
+            };
+            toil.tickAction = delegate
+            {
+                // Always face the prisoner
+                pawn.rotationTracker.FaceTarget(Prisoner);
+                if (Prisoner.Spawned && prisonerChair != null)
+                {
+                    Prisoner.rotationTracker.FaceTarget(pawn);
+                }
+            };
+            toil.defaultCompleteMode = ToilCompleteMode.Delay;
+            toil.defaultDuration = DRAMATIC_ACTION_INTERVAL_TICKS;
+            toil.socialMode = RandomSocialMode.Off;
+            toil.FailOnDespawnedOrNull(TargetIndex.A);
+            return toil;
+        }
+
+        /// <summary>
+        /// Conclude the interrogation and calculate results
+        /// </summary>
+        private Toil ConcludeInterrogation()
+        {
+            Toil toil = new Toil();
+            toil.initAction = delegate
             {
                 // Perform the interrogation when toil completes
                 InterrogationResult result = InterrogationSystem.PerformInterrogation(
@@ -190,15 +281,15 @@ namespace Law_and_Order.Source.Investigation
                 ShowInterrogationResult(result);
 
                 // Grant social XP to warden
-                pawn.skills?.Learn(SkillDefOf.Social, 150f);
-            });
+                pawn.skills?.Learn(SkillDefOf.Social, 200f); // More XP for longer process
 
-            toil.defaultCompleteMode = ToilCompleteMode.Delay;
-            toil.WithProgressBarToilDelay(TargetIndex.A);
-            toil.socialMode = RandomSocialMode.Off;
-            toil.FailOnDespawnedOrNull(TargetIndex.A);
-            toil.FailOnDespawnedOrNull(TargetIndex.B);
-
+                // Release prisoner from chair if sitting
+                if (Prisoner.CurJob != null && Prisoner.CurJob.def == JobDefOf.LayDown)
+                {
+                    Prisoner.jobs.EndCurrentJob(JobCondition.Succeeded);
+                }
+            };
+            toil.defaultCompleteMode = ToilCompleteMode.Instant;
             return toil;
         }
 
@@ -244,6 +335,200 @@ namespace Law_and_Order.Source.Investigation
                     MessageTypeDefOf.NeutralEvent
                 );
             }
+        }
+
+        /// <summary>
+        /// Find a chair for the warden to use during interrogation
+        /// </summary>
+        private Thing FindWardenChair()
+        {
+            // Find any sittable thing near the interrogation table that's NOT designated as an interrogation chair
+            List<Thing> nearbyThings = GenRadial.RadialDistinctThingsAround(
+                InterrogationTable.Position,
+                pawn.Map,
+                8f, // 8 tile radius
+                true
+            ).ToList();
+
+            foreach (Thing thing in nearbyThings)
+            {
+                // Check if it's a sittable building
+                if (thing is Building_Bed bed && bed.def.building.isSittable)
+                {
+                    // Make sure it's NOT designated as an interrogation chair
+                    Comp_InterrogationChair chairComp = thing.TryGetComp<Comp_InterrogationChair>();
+                    if (chairComp == null || !chairComp.IsDesignated)
+                    {
+                        // This is a regular chair the warden can use
+                        if (pawn.CanReach(thing, PathEndMode.InteractionCell, Danger.Deadly))
+                        {
+                            return thing;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Execute a random dramatic action during interrogation
+        /// </summary>
+        private void DoDramaticAction()
+        {
+            dramaticActionsPerformed++;
+
+            // List of possible dramatic actions
+            List<System.Action> possibleActions = new List<System.Action>
+            {
+                () => ActionSitInChair(),
+                () => ActionStandUp(),
+                () => ActionPaceAround(),
+                () => ActionSlamTable(),
+                () => ActionDamageFurniture(),
+                () => ActionYell(),
+                () => ActionThreaten(),
+                () => ActionSlap(),
+                () => ActionInterrogate()
+            };
+
+            // Filter based on context
+            List<System.Action> validActions = new List<System.Action>();
+
+            // Can only sit if there's a warden chair and not already sitting
+            if (wardenChair != null && pawn.jobs.posture != PawnPosture.LayingInBed)
+            {
+                validActions.Add(() => ActionSitInChair());
+            }
+
+            // Can only stand if currently sitting
+            if (pawn.jobs.posture == PawnPosture.LayingInBed)
+            {
+                validActions.Add(() => ActionStandUp());
+            }
+
+            // Always available actions
+            validActions.Add(() => ActionPaceAround());
+            validActions.Add(() => ActionSlamTable());
+            validActions.Add(() => ActionYell());
+            validActions.Add(() => ActionThreaten());
+            validActions.Add(() => ActionInterrogate());
+
+            // Damaging actions - less frequent
+            if (Rand.Chance(0.3f))
+            {
+                validActions.Add(() => ActionDamageFurniture());
+                validActions.Add(() => ActionSlap());
+            }
+
+            // Execute a random valid action
+            if (validActions.Count > 0)
+            {
+                validActions.RandomElement()();
+            }
+        }
+
+        // ========== DRAMATIC ACTIONS ==========
+
+        private void ActionSitInChair()
+        {
+            if (wardenChair != null && wardenChair is Building_Bed bed)
+            {
+                pawn.jobs.posture = PawnPosture.LayingInBed;
+                MoteMaker.ThrowText(pawn.DrawPos, pawn.Map, "LawAndOrder_Action_Sit".Translate(), 3f);
+            }
+        }
+
+        private void ActionStandUp()
+        {
+            pawn.jobs.posture = PawnPosture.Standing;
+            MoteMaker.ThrowText(pawn.DrawPos, pawn.Map, "LawAndOrder_Action_StandUp".Translate(), 3f);
+        }
+
+        private void ActionPaceAround()
+        {
+            // Warden paces around the prisoner menacingly
+            IntVec3 paceTarget = Prisoner.Position + GenRadial.RadialPattern[Rand.Range(1, 8)];
+            if (paceTarget.InBounds(pawn.Map) && paceTarget.Standable(pawn.Map))
+            {
+                pawn.pather.StartPath(paceTarget, PathEndMode.OnCell);
+            }
+            MoteMaker.ThrowText(pawn.DrawPos, pawn.Map, "LawAndOrder_Action_Pace".Translate(), 3f);
+        }
+
+        private void ActionSlamTable()
+        {
+            // Slam fist on table for effect
+            FleckMaker.ThrowDustPuffThick(InterrogationTable.DrawPos, pawn.Map, 1f, Color.gray);
+            MoteMaker.ThrowText(InterrogationTable.DrawPos, pawn.Map, "*SLAM*", Color.red, 3f);
+
+            // Add social interaction
+            AddInterrogationSpeech("LawAndOrder_Speech_SlamTable");
+        }
+
+        private void ActionDamageFurniture()
+        {
+            // Slightly damage a random piece of furniture in the room
+            Room room = InterrogationTable.GetRoom();
+            if (room != null)
+            {
+                List<Thing> furniture = room.ContainedAndAdjacentThings.Where(t =>
+                    t is Building &&
+                    t.def.useHitPoints &&
+                    t.HitPoints > 1
+                ).ToList();
+
+                if (furniture.Count > 0)
+                {
+                    Thing target = furniture.RandomElement();
+                    int damage = Rand.Range(1, 5);
+                    target.TakeDamage(new DamageInfo(DamageDefOf.Blunt, damage));
+                    MoteMaker.ThrowText(target.DrawPos, pawn.Map, $"-{damage}", Color.yellow, 3f);
+                }
+            }
+        }
+
+        private void ActionYell()
+        {
+            // Yell at the prisoner
+            FleckMaker.ThrowMetaIcon(pawn.Position, pawn.Map, FleckDefOf.Heart);
+            AddInterrogationSpeech("LawAndOrder_Speech_Yell");
+        }
+
+        private void ActionThreaten()
+        {
+            // Threaten the prisoner
+            FleckMaker.ThrowMetaIcon(pawn.Position, pawn.Map, FleckDefOf.IncapIcon);
+            AddInterrogationSpeech("LawAndOrder_Speech_Threaten");
+        }
+
+        private void ActionSlap()
+        {
+            // Slap the prisoner (minor damage)
+            int damage = Rand.Range(1, 3);
+            Prisoner.TakeDamage(new DamageInfo(DamageDefOf.Blunt, damage, 0, -1, pawn));
+            FleckMaker.ThrowMicroSparks(Prisoner.DrawPos, pawn.Map);
+            MoteMaker.ThrowText(Prisoner.DrawPos, pawn.Map, "*SLAP*", Color.red, 3f);
+
+            AddInterrogationSpeech("LawAndOrder_Speech_Slap");
+        }
+
+        private void ActionInterrogate()
+        {
+            // Standard interrogation question
+            FleckMaker.ThrowMetaIcon(pawn.Position, pawn.Map, FleckDefOf.Heart);
+            AddInterrogationSpeech("LawAndOrder_Speech_Question");
+        }
+
+        /// <summary>
+        /// Add a speech interaction that shows in the social log
+        /// </summary>
+        private void AddInterrogationSpeech(string translationKey)
+        {
+            string speech = translationKey.Translate(pawn.LabelShort, Prisoner.LabelShort);
+
+            // Create social interaction for log (this will show in social tab)
+            pawn.interactions.TryInteractWith(Prisoner, InteractionDefOf.Insult);
         }
     }
 }

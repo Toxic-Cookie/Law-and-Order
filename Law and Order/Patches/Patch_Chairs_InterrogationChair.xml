@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+    <!-- Add Comp_InterrogationChair to all chairs so they can be designated as interrogation chairs -->
+    <Operation Class="PatchOperationSequence">
+        <operations>
+            <!-- Add to all buildings with <building><isSittable>true</isSittable></building> -->
+            <li Class="PatchOperationFindMod">
+                <mods>
+                    <li>Core</li>
+                </mods>
+                <match Class="PatchOperationAdd">
+                    <xpath>Defs/ThingDef[building/isSittable="true"]</xpath>
+                    <value>
+                        <comps>
+                            <li Class="Law_and_Order.Source.Investigation.CompProperties_InterrogationChair" />
+                        </comps>
+                    </value>
+                </match>
+            </li>
+        </operations>
+    </Operation>
+</Patch>

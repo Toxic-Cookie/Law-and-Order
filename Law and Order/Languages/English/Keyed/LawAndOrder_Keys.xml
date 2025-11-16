@@ -622,6 +622,27 @@
   <LawAndOrder_Interrogation_Silent>{0} remained silent during interrogation by {1}</LawAndOrder_Interrogation_Silent>
   <LawAndOrder_Interrogation_Evasive>{0} gave evasive answers to {1}</LawAndOrder_Interrogation_Evasive>
 
+  <!-- Interrogation Chairs -->
+  <LawAndOrder_DesignateInterrogationChair>Designate Interrogation Chair</LawAndOrder_DesignateInterrogationChair>
+  <LawAndOrder_UndesignateInterrogationChair>Undesignate Interrogation Chair</LawAndOrder_UndesignateInterrogationChair>
+  <LawAndOrder_DesignateInterrogationChairDesc>Toggle whether this chair is used to seat prisoners during interrogation</LawAndOrder_DesignateInterrogationChairDesc>
+  <LawAndOrder_UndesignateInterrogationChairDesc>Remove this chair's designation as an interrogation chair</LawAndOrder_UndesignateInterrogationChairDesc>
+  <LawAndOrder_InterrogationChairDesignated>{0} has been designated as an interrogation chair</LawAndOrder_InterrogationChairDesignated>
+  <LawAndOrder_InterrogationChairUndesignated>{0} is no longer designated as an interrogation chair</LawAndOrder_InterrogationChairUndesignated>
+  <LawAndOrder_InterrogationChairStatus>Designated Interrogation Chair</LawAndOrder_InterrogationChairStatus>
+
+  <!-- Dramatic Interrogation Actions -->
+  <LawAndOrder_Action_Sit>sits down</LawAndOrder_Action_Sit>
+  <LawAndOrder_Action_StandUp>stands up</LawAndOrder_Action_StandUp>
+  <LawAndOrder_Action_Pace>paces menacingly</LawAndOrder_Action_Pace>
+
+  <!-- Interrogation Speech -->
+  <LawAndOrder_Speech_SlamTable>WHERE WERE YOU?!</LawAndOrder_Speech_SlamTable>
+  <LawAndOrder_Speech_Yell>TELL ME THE TRUTH!</LawAndOrder_Speech_Yell>
+  <LawAndOrder_Speech_Threaten>You WILL confess...</LawAndOrder_Speech_Threaten>
+  <LawAndOrder_Speech_Slap>Don't lie to me!</LawAndOrder_Speech_Slap>
+  <LawAndOrder_Speech_Question>What do you know about this?</LawAndOrder_Speech_Question>
+
   <!-- Evidence Types -->
   <LawAndOrder_Evidence_Physical>Physical Evidence</LawAndOrder_Evidence_Physical>
   <LawAndOrder_Evidence_Circumstantial>Circumstantial Evidence</LawAndOrder_Evidence_Circumstantial>
