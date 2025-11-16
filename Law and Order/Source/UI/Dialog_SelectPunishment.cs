@@ -29,7 +29,7 @@ namespace Law_and_Order.Source.UI
         private const float PADDING = 10f;
         private const float BUTTON_HEIGHT = 35f;
 
-        public override Vector2 InitialSize => new Vector2(600f, 650f);
+        public override Vector2 InitialSize => new Vector2(700f, 750f);
 
         public Dialog_SelectPunishment(CriminalCase criminalCase, List<Crime> convictedCrimes, Action onPunishmentAssigned = null)
         {
@@ -56,11 +56,11 @@ namespace Law_and_Order.Source.UI
             DrawCrimeSummary(crimeRect);
 
             // Punishment list
-            Rect punishmentRect = new Rect(0f, 110f, inRect.width, 350f);
+            Rect punishmentRect = new Rect(0f, 110f, inRect.width, 450f);
             DrawPunishmentList(punishmentRect);
 
             // Punishment customization (if applicable)
-            Rect customizeRect = new Rect(0f, 465f, inRect.width, 100f);
+            Rect customizeRect = new Rect(0f, 565f, inRect.width, 100f);
             DrawPunishmentCustomization(customizeRect);
 
             // Buttons
@@ -136,7 +136,7 @@ namespace Law_and_Order.Source.UI
             }
 
             // Content
-            Rect labelRect = new Rect(rect.x + 5f, rect.y + 5f, rect.width - 10f, 25f);
+            Rect labelRect = new Rect(rect.x + 5f, rect.y + 5f, rect.width - 115f, 25f);
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.MiddleLeft;
 
@@ -153,11 +153,11 @@ namespace Law_and_Order.Source.UI
             GUI.color = Color.white;
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.UpperLeft;
-            Rect descRect = new Rect(rect.x + 5f, rect.y + 28f, rect.width - 10f, 32f);
+            Rect descRect = new Rect(rect.x + 5f, rect.y + 28f, rect.width - 115f, 32f);
             Widgets.Label(descRect, def.description);
 
             // Severity indicator
-            Rect severityRect = new Rect(rect.x + rect.width - 60f, rect.y + 5f, 55f, 20f);
+            Rect severityRect = new Rect(rect.x + rect.width - 105f, rect.y + 5f, 100f, 20f);
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleRight;
             Widgets.Label(severityRect, $"Severity: {def.severityRating}/10");
