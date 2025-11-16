@@ -19,6 +19,7 @@ namespace Law_and_Order.Source.UI
         private CriminalCase criminalCase;
         private Pawn criminal;
         private List<Crime> crimes;
+        private Action onPunishmentAssigned;
 
         private PunishmentDef selectedPunishment = null;
         private int customDurationDays = 15;
@@ -30,11 +31,12 @@ namespace Law_and_Order.Source.UI
 
         public override Vector2 InitialSize => new Vector2(600f, 650f);
 
-        public Dialog_SelectPunishment(CriminalCase criminalCase, List<Crime> convictedCrimes)
+        public Dialog_SelectPunishment(CriminalCase criminalCase, List<Crime> convictedCrimes, Action onPunishmentAssigned = null)
         {
             this.criminalCase = criminalCase;
             this.criminal = criminalCase.accused;
             this.crimes = convictedCrimes;
+            this.onPunishmentAssigned = onPunishmentAssigned;
 
             this.forcePause = true;
             this.doCloseX = true;
@@ -266,6 +268,9 @@ namespace Law_and_Order.Source.UI
                     criminal,
                     MessageTypeDefOf.TaskCompletion
                 );
+
+                // Call the callback to finalize conviction
+                onPunishmentAssigned?.Invoke();
             }
             else
             {

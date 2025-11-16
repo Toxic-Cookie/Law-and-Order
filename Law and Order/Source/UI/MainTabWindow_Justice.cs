@@ -635,27 +635,31 @@ namespace Law_and_Order.Source.UI
             if (selectedCase == null || selectedCrimes.Count == 0)
                 return;
 
-            // Transition selected crimes to Convicted state
+            // Get crimes to convict
             var crimesToConvict = selectedCrimes.Where(c => c.visibilityState == CrimeVisibilityState.Suspected).ToList();
 
             if (crimesToConvict.Count == 0)
                 return;
 
-            // Mark crimes as convicted
-            foreach (var crime in crimesToConvict)
+            // Open punishment selection dialog with callback
+            // Only mark crimes as convicted if punishment is actually assigned
+            Dialog_SelectPunishment dialog = new Dialog_SelectPunishment(selectedCase, crimesToConvict, () =>
             {
-                crime.TransitionToConvicted();
-            }
+                // This callback is called when punishment is successfully assigned
+                // Mark crimes as convicted
+                foreach (var crime in crimesToConvict)
+                {
+                    crime.TransitionToConvicted();
+                }
 
-            // If all crimes in case are convicted, mark case as convicted
-            var allCrimes = selectedCase.GetAssociatedCrimes();
-            if (allCrimes.All(c => c.visibilityState == CrimeVisibilityState.Convicted))
-            {
-                selectedCase.Convict();
-            }
+                // If all crimes in case are convicted, mark case as convicted
+                var allCrimes = selectedCase.GetAssociatedCrimes();
+                if (allCrimes.All(c => c.visibilityState == CrimeVisibilityState.Convicted))
+                {
+                    selectedCase.Convict();
+                }
+            });
 
-            // Open punishment selection dialog
-            Dialog_SelectPunishment dialog = new Dialog_SelectPunishment(selectedCase, crimesToConvict);
             Find.WindowStack.Add(dialog);
 
             selectedCrimes.Clear();
