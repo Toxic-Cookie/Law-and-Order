@@ -314,9 +314,27 @@ namespace Law_and_Order.Source.Investigation
                 return false;
             }
 
+            // Must not be downed
+            if (suspect.Downed)
+            {
+                return false;
+            }
+
+            // Must not be in bed (sleeping, resting, or recovering)
+            if (suspect.InBed())
+            {
+                return false;
+            }
+
             // Must be conscious
             if (suspect.health == null ||
                 suspect.health.capacities.GetLevel(PawnCapacityDefOf.Consciousness) < 0.5f)
+            {
+                return false;
+            }
+
+            // Must be able to move
+            if (!suspect.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
             {
                 return false;
             }

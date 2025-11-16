@@ -606,7 +606,10 @@
   <LawAndOrder_Investigate_NoAccused>This case has no accused person</LawAndOrder_Investigate_NoAccused>
   <LawAndOrder_Investigate_PrisonerDead>The accused is dead</LawAndOrder_Investigate_PrisonerDead>
   <LawAndOrder_Investigate_NotPrisoner>The accused must be imprisoned to be interrogated</LawAndOrder_Investigate_NotPrisoner>
+  <LawAndOrder_Investigate_Downed>The accused is downed and cannot be interrogated</LawAndOrder_Investigate_Downed>
+  <LawAndOrder_Investigate_InBed>The accused is in bed. Wait until they get up to interrogate them.</LawAndOrder_Investigate_InBed>
   <LawAndOrder_Investigate_Unconscious>The accused is unconscious or too incapacitated to be interrogated</LawAndOrder_Investigate_Unconscious>
+  <LawAndOrder_Investigate_CannotMove>The accused cannot move and must be brought to the interrogation table</LawAndOrder_Investigate_CannotMove>
   <LawAndOrder_Investigate_NoHiddenCrimes>The accused has no unrevealed crimes to confess</LawAndOrder_Investigate_NoHiddenCrimes>
   <LawAndOrder_Investigate_CannotInvestigate>Investigation not available</LawAndOrder_Investigate_CannotInvestigate>
 

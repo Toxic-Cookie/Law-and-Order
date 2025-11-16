@@ -805,11 +805,29 @@ namespace Law_and_Order.Source.UI
                 return "LawAndOrder_Investigate_NotPrisoner".Translate();
             }
 
+            // Downed
+            if (prisoner.Downed)
+            {
+                return "LawAndOrder_Investigate_Downed".Translate();
+            }
+
+            // In bed (sleeping, resting, or recovering)
+            if (prisoner.InBed())
+            {
+                return "LawAndOrder_Investigate_InBed".Translate();
+            }
+
             // Unconscious or incapacitated
             if (prisoner.health == null ||
                 prisoner.health.capacities.GetLevel(PawnCapacityDefOf.Consciousness) < 0.5f)
             {
                 return "LawAndOrder_Investigate_Unconscious".Translate();
+            }
+
+            // Cannot move
+            if (!prisoner.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
+            {
+                return "LawAndOrder_Investigate_CannotMove".Translate();
             }
 
             // No hidden crimes
