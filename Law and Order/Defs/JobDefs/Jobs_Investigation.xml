@@ -10,6 +10,8 @@
         <suspendable>false</suspendable>
         <alwaysShowWeapon>false</alwaysShowWeapon>
         <neverShowWeapon>true</neverShowWeapon>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+        <carryThingAfterJob>true</carryThingAfterJob>
     </JobDef>
 
     <!-- WorkGiver for wardens to automatically interrogate prisoners -->

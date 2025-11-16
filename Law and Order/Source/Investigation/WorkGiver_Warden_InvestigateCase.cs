@@ -87,6 +87,7 @@ namespace Law_and_Order.Source.Investigation
                 bestPrisoner,
                 table
             );
+            job.count = 1;
 
             return job;
         }

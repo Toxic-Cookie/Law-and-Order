@@ -20,8 +20,6 @@ namespace Law_and_Order.Source.Investigation
         protected Pawn Prisoner => (Pawn)job.targetA.Thing;
         protected Thing InterrogationTable => job.targetB.Thing;
 
-        private bool returningPrisoner = false;
-
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             // Reserve the prisoner
@@ -76,7 +74,19 @@ namespace Law_and_Order.Source.Investigation
             yield return goToPrisoner;
 
             // Step 2: Pick up the prisoner
-            Toil startCarrying = Toils_Haul.StartCarryThing(TargetIndex.A);
+            Toil ensureCount = new Toil();
+            ensureCount.initAction = delegate
+            {
+                // Ensure count is set (defensive programming)
+                if (job.count <= 0)
+                {
+                    job.count = 1;
+                }
+            };
+            ensureCount.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return ensureCount;
+
+            Toil startCarrying = Toils_Haul.StartCarryThing(TargetIndex.A, false, false, false, true, false);
             yield return startCarrying;
 
             // Step 3: Carry prisoner to interrogation table
