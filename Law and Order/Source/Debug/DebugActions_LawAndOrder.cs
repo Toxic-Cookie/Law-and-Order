@@ -412,12 +412,76 @@ namespace Law_and_Order.Source.Debug
             CompHiddenIdentity hiddenIdentity = pawn.GetComp<CompHiddenIdentity>();
             if (hiddenIdentity != null && hiddenIdentity.Identity != null)
             {
-                Messages.Message($"{pawn.NameShortColored} already has a hidden identity.", MessageTypeDefOf.RejectInput, false);
+                Messages.Message($"{pawn.NameShortColored} already has a hidden identity: {hiddenIdentity.Identity.displayName}", MessageTypeDefOf.RejectInput, false);
                 return;
             }
 
-            // Note: CompHiddenIdentity needs to be added via XML def, not at runtime
-            Messages.Message($"To add hidden identity, add CompHiddenIdentity to pawn's ThingDef", MessageTypeDefOf.RejectInput, false);
+            // If comp doesn't exist, add it dynamically to the ThingDef
+            if (hiddenIdentity == null)
+            {
+                // Check if the comp is already in the def
+                if (!pawn.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
+                {
+                    // Add comp properties to ThingDef
+                    CompProperties_HiddenIdentity compProps = new CompProperties_HiddenIdentity();
+                    pawn.def.comps.Add(compProps);
+                }
+
+                // Create and initialize the comp instance
+                hiddenIdentity = new CompHiddenIdentity();
+                hiddenIdentity.parent = pawn;
+
+                // Initialize the comp properties
+                var compPropsInDef = pawn.def.comps.FirstOrDefault(cp => cp is CompProperties_HiddenIdentity);
+                if (compPropsInDef != null)
+                {
+                    hiddenIdentity.Initialize(compPropsInDef);
+                }
+
+                // Add to pawn's comps list
+                pawn.AllComps.Add(hiddenIdentity);
+            }
+
+            // Force-generate identity using reflection (bypass ShouldHaveHiddenIdentity check)
+            if (hiddenIdentity.Identity == null)
+            {
+                try
+                {
+                    // Use reflection to call private GenerateFakeIdentity method
+                    var generateMethod = typeof(CompHiddenIdentity).GetMethod("GenerateFakeIdentity",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                    if (generateMethod != null)
+                    {
+                        HiddenIdentity newIdentity = (HiddenIdentity)generateMethod.Invoke(hiddenIdentity, new object[] { pawn });
+
+                        // Set the identity field using reflection
+                        var identityField = typeof(CompHiddenIdentity).GetField("identity",
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                        if (identityField != null && newIdentity != null)
+                        {
+                            identityField.SetValue(hiddenIdentity, newIdentity);
+                            Messages.Message($"Added hidden identity to {pawn.NameShortColored} → Display Name: {newIdentity.displayName}",
+                                MessageTypeDefOf.TaskCompletion, false);
+                            ModLog.Info($"Debug: Generated hidden identity for {pawn.LabelShort}: {newIdentity.displayName} (Intel: {newIdentity.intelligenceStat:F2})");
+                        }
+                        else
+                        {
+                            Messages.Message("Failed to set identity field", MessageTypeDefOf.RejectInput, false);
+                        }
+                    }
+                    else
+                    {
+                        Messages.Message("Failed to find GenerateFakeIdentity method", MessageTypeDefOf.RejectInput, false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Messages.Message($"Error generating identity: {ex.Message}", MessageTypeDefOf.RejectInput, false);
+                    ModLog.Error($"Failed to generate hidden identity: {ex}");
+                }
+            }
         }
 
         [DebugAction("Law & Order - Infiltration", "Reveal Identity (25%)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
