@@ -66,6 +66,7 @@ namespace Law_and_Order.Source.Investigation
 
             int grudgeCheckCount = 0;
             int grudgesFound = 0;
+            bool accusationCreated = false;
 
             foreach (var accuser in potentialAccusers)
             {
@@ -94,6 +95,7 @@ namespace Law_and_Order.Source.Investigation
 
                 // Generate the false accusation
                 GenerateGrudgeBasedFalseAccusation(accuser, target, map);
+                accusationCreated = true;
                 break; // Only one false accusation per check
             }
 
@@ -101,7 +103,7 @@ namespace Law_and_Order.Source.Investigation
             {
                 Mod.Log?.Message($"[False Accusation] No grudges found after checking {grudgeCheckCount} colonists. Need colonists with opinion ≤ -20.");
             }
-            else
+            else if (!accusationCreated)
             {
                 float grudgeChance = LawAndOrderSettings.FalseAccusationChancePerGrudge?.Value ?? 0.05f;
                 Mod.Log?.Message($"[False Accusation] Found {grudgesFound} grudges, but none rolled successfully ({grudgeChance:P0} chance each)");
