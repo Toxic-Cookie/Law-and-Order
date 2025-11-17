@@ -10,6 +10,10 @@ namespace Law_and_Order.Source.Infiltration
     /// </summary>
     public class Hediff_HiddenIdentity : HediffWithComps
     {
+        /// <summary>
+        /// Hide this hediff from all UI displays
+        /// </summary>
+        public override bool Visible => false;
         // Real identity (what we're hiding)
         public Name realName;                   // Actual name - restored when revealed
         public BackstoryDef realBackstoryChildhood;
