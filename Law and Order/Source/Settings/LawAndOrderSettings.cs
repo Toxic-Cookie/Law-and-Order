@@ -20,6 +20,9 @@ namespace Law_and_Order.Source.Settings
 
         // Debug/Logging settings
         public static SettingHandle<LogLevel> LogLevel;
+        public static SettingHandle<bool> ShowHiddenCrimes;
+        public static SettingHandle<bool> AutoConvictRedHanded;
+        public static SettingHandle<int> StatuteOfLimitationsDays;
 
         // Phase 6: False Accusations & Infiltration settings
         public static SettingHandle<float> FalseAccusationRate;
@@ -87,6 +90,35 @@ namespace Law_and_Order.Source.Settings
             // Initialize ModLog with current setting
             ModLog.CurrentLogLevel = LogLevel.Value;
 
+            // Debug settings (god mode only - enforced in UI)
+            ShowHiddenCrimes = settings.GetHandle(
+                "ShowHiddenCrimes",
+                "LawAndOrder_Setting_ShowHiddenCrimes".Translate(),
+                "LawAndOrder_Setting_ShowHiddenCrimes_Desc".Translate(),
+                false
+            );
+
+            AutoConvictRedHanded = settings.GetHandle(
+                "AutoConvictRedHanded",
+                "LawAndOrder_Setting_AutoConvictRedHanded".Translate(),
+                "LawAndOrder_Setting_AutoConvictRedHanded_Desc".Translate(),
+                false
+            );
+
+            // Sync auto-convict setting with JusticeManager
+            AutoConvictRedHanded.ValueChanged += (SettingHandle handle) =>
+            {
+                Components.WorldComponent_JusticeManager.SetAutoConvictSetting(AutoConvictRedHanded.Value);
+            };
+
+            StatuteOfLimitationsDays = settings.GetHandle(
+                "StatuteOfLimitationsDays",
+                "LawAndOrder_Setting_StatuteOfLimitations".Translate(),
+                "LawAndOrder_Setting_StatuteOfLimitations_Desc".Translate(),
+                60,
+                Validators.IntRangeValidator(0, 120)
+            );
+
             // Phase 6: False Accusations & Infiltration settings
             FalseAccusationRate = settings.GetHandle(
                 "FalseAccusationRate",
@@ -144,6 +176,11 @@ namespace Law_and_Order.Source.Settings
         {
             DefaultSilverPerDay.Value = 35f;
             GlobalPenaltyScale.Value = 1.0f;
+
+            // Debug defaults
+            ShowHiddenCrimes.Value = false;
+            AutoConvictRedHanded.Value = false;
+            StatuteOfLimitationsDays.Value = 60;
 
             // Phase 6 defaults
             FalseAccusationRate.Value = 0.12f;

@@ -28,35 +28,81 @@ namespace Law_and_Order.Source.Investigation
         public static void TryGenerateGrudgeFalseAccusation(Map map)
         {
             if (map == null)
+            {
+                Mod.Log?.Warning("[False Accusation] TryGenerateGrudgeFalseAccusation called with null map");
                 return;
+            }
 
             // Check if false accusations are enabled
             float falseAccusationRate = LawAndOrderSettings.FalseAccusationRate?.Value ?? 0.12f;
-            if (falseAccusationRate <= 0f || !Rand.Chance(falseAccusationRate))
+            Mod.Log?.Message($"[False Accusation] Checking for false accusations on map {map.uniqueID}. Rate: {falseAccusationRate:P0}");
+
+            if (falseAccusationRate <= 0f)
+            {
+                Mod.Log?.Message($"[False Accusation] False accusations disabled (rate = 0)");
                 return;
+            }
+
+            if (!Rand.Chance(falseAccusationRate))
+            {
+                Mod.Log?.Message($"[False Accusation] Rate check failed ({falseAccusationRate:P0}). Better luck next time.");
+                return;
+            }
+
+            Mod.Log?.Message($"[False Accusation] Rate check PASSED! Looking for colonists with grudges...");
 
             // Find colonists with strong grudges
             var potentialAccusers = map.mapPawns.FreeColonistsSpawned
                 .Where(p => p.RaceProps.Humanlike && !p.Dead && !p.Downed)
                 .ToList();
 
+            Mod.Log?.Message($"[False Accusation] Found {potentialAccusers.Count} potential accusers");
+
             if (!potentialAccusers.Any())
+            {
+                Mod.Log?.Warning($"[False Accusation] No potential accusers found on map");
                 return;
+            }
+
+            int grudgeCheckCount = 0;
+            int grudgesFound = 0;
 
             foreach (var accuser in potentialAccusers)
             {
+                grudgeCheckCount++;
+
                 // Find someone they hate
                 var target = FindGrudgeTarget(accuser, map);
                 if (target == null)
+                {
+                    Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} has no grudge targets (checked {grudgeCheckCount}/{potentialAccusers.Count})");
                     continue;
+                }
+
+                grudgesFound++;
+                Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} HATES {target.LabelShort} (opinion: {accuser.relations.OpinionOf(target)})! Rolling for false accusation...");
 
                 // Small chance to file false accusation per check
                 if (!Rand.Chance(0.05f)) // 5% chance when grudge exists
+                {
+                    Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} chose not to falsely accuse {target.LabelShort} this time (5% roll failed)");
                     continue;
+                }
+
+                Mod.Log?.Message($"[False Accusation] ⚠️ {accuser.LabelShort} is filing a FALSE ACCUSATION against {target.LabelShort}!");
 
                 // Generate the false accusation
                 GenerateGrudgeBasedFalseAccusation(accuser, target, map);
                 break; // Only one false accusation per check
+            }
+
+            if (grudgesFound == 0)
+            {
+                Mod.Log?.Message($"[False Accusation] No grudges found after checking {grudgeCheckCount} colonists. Need colonists with opinion ≤ -20.");
+            }
+            else
+            {
+                Mod.Log?.Message($"[False Accusation] Found {grudgesFound} grudges, but none rolled successfully (5% chance each)");
             }
         }
 
@@ -75,6 +121,11 @@ namespace Law_and_Order.Source.Investigation
                            !p.Dead &&
                            accuser.relations.OpinionOf(p) <= GRUDGE_OPINION_THRESHOLD)
                 .ToList();
+
+            if (hatedPawns.Any())
+            {
+                Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} has {hatedPawns.Count} potential grudge targets: {string.Join(", ", hatedPawns.Select(p => $"{p.LabelShort} ({accuser.relations.OpinionOf(p)})"))}");
+            }
 
             return hatedPawns.RandomElementWithFallback();
         }

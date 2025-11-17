@@ -233,17 +233,31 @@ namespace Law_and_Order.Source.Components
         /// </summary>
         private void CheckFalseAccusations()
         {
+            int currentTick = Find.TickManager.TicksGame;
+            Mod.Log?.Message($"[Justice Manager] CheckFalseAccusations running at tick {currentTick} ({GenDate.ToStringTicksToPeriod(currentTick)})");
+
             // Check all maps for potential false accusations
             var maps = Find.Maps;
             if (maps == null || maps.Count == 0)
+            {
+                Mod.Log?.Warning($"[Justice Manager] No maps found for false accusation check");
                 return;
+            }
 
+            int playerHomeMaps = 0;
             foreach (var map in maps)
             {
                 if (map.IsPlayerHome)
                 {
+                    playerHomeMaps++;
+                    Mod.Log?.Message($"[Justice Manager] Checking map {map.uniqueID} for false accusations");
                     Investigation.FalseAccusationGenerator.TryGenerateGrudgeFalseAccusation(map);
                 }
+            }
+
+            if (playerHomeMaps == 0)
+            {
+                Mod.Log?.Message($"[Justice Manager] No player home maps found");
             }
         }
 

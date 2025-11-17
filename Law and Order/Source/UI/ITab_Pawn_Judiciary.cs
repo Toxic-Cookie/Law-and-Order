@@ -79,8 +79,8 @@ namespace Law_and_Order.Source.UI
                 yPos += SECTION_SPACING;
             }
 
-            // Hidden crimes section (only show in god mode)
-            if (DebugSettings.godMode)
+            // Hidden crimes section (only show in god mode or if setting enabled)
+            if (DebugSettings.godMode || Settings.LawAndOrderSettings.ShowHiddenCrimes.Value)
             {
                 var hiddenCrimes = criminalRecord.GetHiddenCrimes();
                 if (hiddenCrimes.Count > 0)
@@ -288,7 +288,7 @@ namespace Law_and_Order.Source.UI
                 height += SECTION_SPACING;
             }
 
-            if (DebugSettings.godMode)
+            if (DebugSettings.godMode || Settings.LawAndOrderSettings.ShowHiddenCrimes.Value)
             {
                 var hiddenCrimes = criminalRecord.GetHiddenCrimes();
                 if (hiddenCrimes.Count > 0)

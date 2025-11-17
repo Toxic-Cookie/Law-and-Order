@@ -15,7 +15,7 @@ namespace Law_and_Order.Source.UI
 {
     /// <summary>
     /// Main tab window for the Law and Order justice system.
-    /// Shows open cases, convicted cases, and settings.
+    /// Shows open cases and convicted cases.
     /// Phase 3: Basic UI Implementation
     /// </summary>
     public class MainTabWindow_Justice : MainTabWindow
@@ -23,8 +23,7 @@ namespace Law_and_Order.Source.UI
         private enum JusticeTab
         {
             OpenCases,
-            Convictions,
-            Settings
+            Convictions
         }
 
         // UI State
@@ -34,12 +33,6 @@ namespace Law_and_Order.Source.UI
         private Vector2 caseListScrollPos = Vector2.zero;
         private Vector2 crimeListScrollPos = Vector2.zero;
         private Vector2 convictionsScrollPos = Vector2.zero;
-
-        // Settings state (god mode only)
-        private bool showHiddenCrimes = false;
-        private bool autoConvictRedHanded = false;
-        private bool enableFalseAccusations = false;
-        private int statuteOfLimitationsDays = 60;
 
         // UI Constants
         private const float CASE_LIST_WIDTH = 300f;
@@ -71,15 +64,12 @@ namespace Law_and_Order.Source.UI
                 case JusticeTab.Convictions:
                     DrawConvictionsTab(contentRect);
                     break;
-                case JusticeTab.Settings:
-                    DrawSettingsTab(contentRect);
-                    break;
             }
         }
 
         private void DrawTabs(Rect rect)
         {
-            float tabWidth = rect.width / 3f;
+            float tabWidth = rect.width / 2f;
 
             List<TabRecord> tabs = new List<TabRecord>
             {
@@ -88,10 +78,7 @@ namespace Law_and_Order.Source.UI
                     currentTab == JusticeTab.OpenCases),
                 new TabRecord("LawAndOrder_Tab_Convictions".Translate(),
                     () => { currentTab = JusticeTab.Convictions; selectedCase = null; selectedCrimes.Clear(); },
-                    currentTab == JusticeTab.Convictions),
-                new TabRecord("LawAndOrder_Tab_Settings".Translate(),
-                    () => { currentTab = JusticeTab.Settings; },
-                    currentTab == JusticeTab.Settings)
+                    currentTab == JusticeTab.Convictions)
             };
 
             TabDrawer.DrawTabs(rect, tabs);
@@ -677,66 +664,6 @@ namespace Law_and_Order.Source.UI
             }
 
             Text.Font = GameFont.Small;
-        }
-
-        #endregion
-
-        #region Settings Tab
-
-        private void DrawSettingsTab(Rect rect)
-        {
-            // Only show in god mode
-            if (!DebugSettings.godMode)
-            {
-                Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(rect, "LawAndOrder_SettingsGodModeOnly".Translate());
-                Text.Anchor = TextAnchor.UpperLeft;
-                return;
-            }
-
-            Widgets.DrawMenuSection(rect);
-            Rect innerRect = rect.ContractedBy(PADDING);
-
-            Listing_Standard listing = new Listing_Standard();
-            listing.Begin(innerRect);
-
-            // Header
-            Text.Font = GameFont.Medium;
-            listing.Label("LawAndOrder_DebugSettings".Translate());
-            Text.Font = GameFont.Small;
-            listing.Gap();
-
-            // Show hidden crimes
-            listing.CheckboxLabeled("LawAndOrder_Setting_ShowHiddenCrimes".Translate(), ref showHiddenCrimes,
-                "LawAndOrder_Setting_ShowHiddenCrimes_Desc".Translate());
-            listing.Gap();
-
-            // Auto-convict caught red-handed
-            bool prevAutoConvict = autoConvictRedHanded;
-            listing.CheckboxLabeled("LawAndOrder_Setting_AutoConvictRedHanded".Translate(), ref autoConvictRedHanded,
-                "LawAndOrder_Setting_AutoConvictRedHanded_Desc".Translate());
-
-            // Sync with JusticeManager when changed
-            if (prevAutoConvict != autoConvictRedHanded)
-            {
-                Components.WorldComponent_JusticeManager.SetAutoConvictSetting(autoConvictRedHanded);
-            }
-
-            listing.Gap();
-
-            // Enable false accusations
-            listing.CheckboxLabeled("LawAndOrder_Setting_EnableFalseAccusations".Translate(), ref enableFalseAccusations,
-                "LawAndOrder_Setting_EnableFalseAccusations_Desc".Translate());
-            listing.Gap();
-
-            // Statute of limitations
-            listing.Label($"{"LawAndOrder_Setting_StatuteOfLimitations".Translate()}: {statuteOfLimitationsDays} {"LawAndOrder_Days".Translate()}");
-            statuteOfLimitationsDays = (int)listing.Slider(statuteOfLimitationsDays, 0, 120);
-            Text.Font = GameFont.Tiny;
-            listing.Label("LawAndOrder_Setting_StatuteOfLimitations_Desc".Translate());
-            Text.Font = GameFont.Small;
-
-            listing.End();
         }
 
         #endregion
