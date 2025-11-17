@@ -794,16 +794,9 @@
   <LawAndOrder_MultiProngedAssault>Multi-pronged assault detected! Raiders have detailed colony layout information.</LawAndOrder_MultiProngedAssault>
 
   <!-- Evidence System -->
-  <LawAndOrder_Evidence>Evidence</LawAndOrder_Evidence>
   <LawAndOrder_EvidencePieces>Evidence collected</LawAndOrder_EvidencePieces>
-  <LawAndOrder_EvidenceStrength>Case strength</LawAndOrder_EvidenceStrength>
   <LawAndOrder_EvidenceDetails>Evidence details:</LawAndOrder_EvidenceDetails>
   <LawAndOrder_NoEvidenceCollected>No evidence collected yet</LawAndOrder_NoEvidenceCollected>
-
-  <!-- Evidence Types -->
-  <LawAndOrder_Evidence_Physical>Physical</LawAndOrder_Evidence_Physical>
-  <LawAndOrder_Evidence_Circumstantial>Circumstantial</LawAndOrder_Evidence_Circumstantial>
-  <LawAndOrder_Evidence_Testimonial>Testimonial</LawAndOrder_Evidence_Testimonial>
 
   <!-- Evidence Quality Tiers -->
   <LawAndOrder_Evidence_Quality_Conclusive>Conclusive</LawAndOrder_Evidence_Quality_Conclusive>
@@ -862,33 +855,10 @@
   <LawAndOrder_Button_Exonerate>Exonerate</LawAndOrder_Button_Exonerate>
   <LawAndOrder_Button_ExonerateAll>Exonerate All</LawAndOrder_Button_ExonerateAll>
 
-  <!-- Settings -->
-  <LawAndOrder_Setting_FalseAccusationRate_Title>False Accusation Rate</LawAndOrder_Setting_FalseAccusationRate_Title>
-  <LawAndOrder_Setting_FalseAccusationRate_Desc>How often to check for false accusations (0-30%, default 12%). Checks occur every 6 hours.</LawAndOrder_Setting_FalseAccusationRate_Desc>
-
   <LawAndOrder_Setting_FalseAccusationChancePerGrudge_Title>False Accusation Chance Per Grudge</LawAndOrder_Setting_FalseAccusationChancePerGrudge_Title>
   <LawAndOrder_Setting_FalseAccusationChancePerGrudge_Desc>When a colonist has a grudge (opinion ≤ -20), this is the chance they'll falsely accuse the target per check (0-100%, default 5%)</LawAndOrder_Setting_FalseAccusationChancePerGrudge_Desc>
 
-  <LawAndOrder_Setting_InfiltratorSpawnChance_Title>Infiltrator Spawn Chance</LawAndOrder_Setting_InfiltratorSpawnChance_Title>
-  <LawAndOrder_Setting_InfiltratorSpawnChance_Desc>Percentage of visitors that might be infiltrators with hidden identities (0-15%, default 5%)</LawAndOrder_Setting_InfiltratorSpawnChance_Desc>
-
-  <LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title>Max Accomplices per Infiltrator</LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title>
-  <LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc>Maximum number of colonists an infiltrator can recruit as accomplices (0-5, default 2)</LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc>
-
-  <LawAndOrder_Setting_TruthDiscoveryChance_Title>Truth Discovery Chance</LawAndOrder_Setting_TruthDiscoveryChance_Title>
-  <LawAndOrder_Setting_TruthDiscoveryChance_Desc>Base chance per investigation to discover the truth about false accusations (5-40%, default 15%)</LawAndOrder_Setting_TruthDiscoveryChance_Desc>
-
-  <LawAndOrder_Setting_CluesPerCrime_Min_Title>Min Clues Per Crime</LawAndOrder_Setting_CluesPerCrime_Min_Title>
-  <LawAndOrder_Setting_CluesPerCrime_Min_Desc>Minimum number of clues spawned at crime scenes (0-5, default 1)</LawAndOrder_Setting_CluesPerCrime_Min_Desc>
-
-  <LawAndOrder_Setting_CluesPerCrime_Max_Title>Max Clues Per Crime</LawAndOrder_Setting_CluesPerCrime_Max_Title>
-  <LawAndOrder_Setting_CluesPerCrime_Max_Desc>Maximum number of clues spawned at crime scenes (1-5, default 3)</LawAndOrder_Setting_CluesPerCrime_Max_Desc>
-
   <!-- Phase 6.4: Hidden Identity System -->
-
-  <!-- Infiltrator Revelation -->
-  <LawAndOrder_LetterLabelInfiltratorRevealed>Infiltrator Exposed!</LawAndOrder_LetterLabelInfiltratorRevealed>
-  <LawAndOrder_LetterInfiltratorRevealed>The colonist known as {0} has been revealed as an infiltrator!\n\nTheir true identity is {1}.\n\nInvestigation has uncovered their deception. They are now choosing how to react...</LawAndOrder_LetterInfiltratorRevealed>
 
   <!-- Infiltrator Reactions -->
   <LawAndOrder_InfiltratorFleeing>{0} is attempting to flee the colony!</LawAndOrder_InfiltratorFleeing>

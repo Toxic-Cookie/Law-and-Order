@@ -45,9 +45,13 @@ namespace Law_and_Order.Source
     [DefOf]
     public static class ThingDefOf
     {
-        public static ThingDef CrimeSceneClue;
-        public static ThingDef InterrogationTable;
-        public static ThingDef InterrogationChair;
+        // Crime Scene Clues - Using Blood as default for spawning
+        public static ThingDef CrimeSceneClue_Blood;
+        public static ThingDef CrimeSceneClue_Footprint;
+        public static ThingDef CrimeSceneClue_ToolMark;
+        public static ThingDef CrimeSceneClue_DroppedItem;
+        public static ThingDef CrimeSceneClue_FabricScrap;
+        public static ThingDef CrimeSceneClue_Fingerprint;
 
         static ThingDefOf()
         {
@@ -62,7 +66,7 @@ namespace Law_and_Order.Source
     [DefOf]
     public static class MainTabDefOf
     {
-        public static MainButtonDef Justice;
+        public static MainButtonDef LawAndOrder_Justice;
 
         static MainTabDefOf()
         {

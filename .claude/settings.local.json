@@ -77,7 +77,9 @@
       "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\" /b /s)",
       "Bash(cmd /c \"dir /b /s C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\*.cs\")",
       "WebFetch(domain:rimworldwiki.com)",
-      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law-and-Order.wiki\" /b)"
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law-and-Order.wiki\" /b)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\" /b /s)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\" /b)"
     ],
     "deny": [],
     "ask": []

@@ -136,7 +136,7 @@ namespace Law_and_Order.Source.Debug
         [DebugAction("Law & Order - Cases", "Open Justice Tab", allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void OpenJusticeTab()
         {
-            Find.MainTabsRoot.SetCurrentTab(MainTabDefOf.Justice, true);
+            Find.MainTabsRoot.SetCurrentTab(MainTabDefOf.LawAndOrder_Justice, true);
             Messages.Message("Opened Justice tab", MessageTypeDefOf.TaskCompletion, false);
         }
 
@@ -234,46 +234,28 @@ namespace Law_and_Order.Source.Debug
 
         // ==================== PHASE 5: INVESTIGATION & INTERROGATION ====================
 
-        [DebugAction("Law & Order - Investigation", "Spawn Interrogation Table", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnInterrogationTable(IntVec3 cell)
+        [DebugAction("Law & Order - Investigation", "Log Interrogation Furniture", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void LogInterrogationFurniture()
         {
-            if (!cell.InBounds(Find.CurrentMap) || cell.Filled(Find.CurrentMap))
+            var tables = Comp_InterrogationTable.GetAllInterrogationTables(Find.CurrentMap);
+            var chairs = Comp_InterrogationChair.GetAllInterrogationChairs(Find.CurrentMap);
+
+            Log.Message($"=== INTERROGATION FURNITURE ===");
+            Log.Message($"Tables: {tables.Count}");
+            foreach (var table in tables)
             {
-                Messages.Message("Invalid location.", MessageTypeDefOf.RejectInput, false);
-                return;
+                var comp = table.TryGetComp<Comp_InterrogationTable>();
+                Log.Message($"  - {table.Label} at {table.Position} (Designated: {comp?.IsDesignated ?? false})");
             }
 
-            ThingDef tableDef = DefDatabase<ThingDef>.GetNamedSilentFail("InterrogationTable");
-            if (tableDef == null)
+            Log.Message($"Chairs: {chairs.Count}");
+            foreach (var chair in chairs)
             {
-                Messages.Message("InterrogationTable def not found!", MessageTypeDefOf.RejectInput, false);
-                return;
+                var comp = chair.TryGetComp<Comp_InterrogationChair>();
+                Log.Message($"  - {chair.Label} at {chair.Position} (Designated: {comp?.IsDesignated ?? false})");
             }
 
-            Thing table = ThingMaker.MakeThing(tableDef);
-            GenSpawn.Spawn(table, cell, Find.CurrentMap);
-            Messages.Message("Spawned interrogation table", MessageTypeDefOf.TaskCompletion, false);
-        }
-
-        [DebugAction("Law & Order - Investigation", "Spawn Interrogation Chair", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnInterrogationChair(IntVec3 cell)
-        {
-            if (!cell.InBounds(Find.CurrentMap) || cell.Filled(Find.CurrentMap))
-            {
-                Messages.Message("Invalid location.", MessageTypeDefOf.RejectInput, false);
-                return;
-            }
-
-            ThingDef chairDef = DefDatabase<ThingDef>.GetNamedSilentFail("InterrogationChair");
-            if (chairDef == null)
-            {
-                Messages.Message("InterrogationChair def not found!", MessageTypeDefOf.RejectInput, false);
-                return;
-            }
-
-            Thing chair = ThingMaker.MakeThing(chairDef);
-            GenSpawn.Spawn(chair, cell, Find.CurrentMap);
-            Messages.Message("Spawned interrogation chair", MessageTypeDefOf.TaskCompletion, false);
+            Messages.Message($"Logged {tables.Count} tables and {chairs.Count} chairs to console. Use vanilla furniture and designate it for interrogation.", MessageTypeDefOf.TaskCompletion, false);
         }
 
         // ==================== PHASE 6: CLUE & EVIDENCE SYSTEM ====================
@@ -323,8 +305,16 @@ namespace Law_and_Order.Source.Debug
                 return;
             }
 
+            // Get the appropriate ThingDef for this clue type
+            ThingDef clueDef = GetClueThingDef(clueType);
+            if (clueDef == null)
+            {
+                Messages.Message($"Failed to find ThingDef for {clueType}", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
             // Spawn the clue Thing
-            CrimeSceneClue clue = (CrimeSceneClue)ThingMaker.MakeThing(ThingDefOf.CrimeSceneClue);
+            CrimeSceneClue clue = (CrimeSceneClue)ThingMaker.MakeThing(clueDef);
             clue.clueType = clueType;
             clue.linkedCriminal = perp;
             clue.clueQuality = Rand.Range(0.5f, 1.0f);
@@ -335,6 +325,30 @@ namespace Law_and_Order.Source.Debug
             GenSpawn.Spawn(clue, cell, Find.CurrentMap);
 
             Messages.Message($"Spawned {clueType} clue at {cell} (linked to {perp.NameShortColored})", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        /// <summary>
+        /// Helper to get the appropriate ThingDef for a clue type
+        /// </summary>
+        private static ThingDef GetClueThingDef(ClueType clueType)
+        {
+            switch (clueType)
+            {
+                case ClueType.BloodStain:
+                    return ThingDefOf.CrimeSceneClue_Blood;
+                case ClueType.Footprint:
+                    return ThingDefOf.CrimeSceneClue_Footprint;
+                case ClueType.ToolMark:
+                    return ThingDefOf.CrimeSceneClue_ToolMark;
+                case ClueType.DroppedItem:
+                    return ThingDefOf.CrimeSceneClue_DroppedItem;
+                case ClueType.FabricScrap:
+                    return ThingDefOf.CrimeSceneClue_FabricScrap;
+                case ClueType.FingerprintTrace:
+                    return ThingDefOf.CrimeSceneClue_Fingerprint;
+                default:
+                    return ThingDefOf.CrimeSceneClue_Blood; // Fallback
+            }
         }
 
         [DebugAction("Law & Order - Evidence", "Spawn Crime Scene (w/ clues)", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
@@ -366,12 +380,16 @@ namespace Law_and_Order.Source.Debug
                 if (cluePos.InBounds(Find.CurrentMap) && !cluePos.Impassable(Find.CurrentMap))
                 {
                     ClueType clueType = clueTypes.RandomElement();
-                    CrimeSceneClue clue = (CrimeSceneClue)ThingMaker.MakeThing(ThingDefOf.CrimeSceneClue);
-                    clue.clueType = clueType;
-                    clue.linkedCriminal = perp;
-                    clue.clueQuality = Rand.Range(0.6f, 1.0f);
-                    clue.isPlanted = false;
-                    GenSpawn.Spawn(clue, cluePos, Find.CurrentMap);
+                    ThingDef clueDef = GetClueThingDef(clueType);
+                    if (clueDef != null)
+                    {
+                        CrimeSceneClue clue = (CrimeSceneClue)ThingMaker.MakeThing(clueDef);
+                        clue.clueType = clueType;
+                        clue.linkedCriminal = perp;
+                        clue.clueQuality = Rand.Range(0.6f, 1.0f);
+                        clue.isPlanted = false;
+                        GenSpawn.Spawn(clue, cluePos, Find.CurrentMap);
+                    }
                 }
             }
 
@@ -480,11 +498,15 @@ namespace Law_and_Order.Source.Debug
                     if (cluePos.InBounds(Find.CurrentMap) && !cluePos.Impassable(Find.CurrentMap))
                     {
                         ClueType clueType = i == 0 ? ClueType.BloodStain : i == 1 ? ClueType.Footprint : ClueType.FabricScrap;
-                        CrimeSceneClue clue = (CrimeSceneClue)ThingMaker.MakeThing(ThingDefOf.CrimeSceneClue);
-                        clue.clueType = clueType;
-                        clue.linkedCriminal = criminal;
-                        clue.clueQuality = 0.8f;
-                        GenSpawn.Spawn(clue, cluePos, Find.CurrentMap);
+                        ThingDef clueDef = GetClueThingDef(clueType);
+                        if (clueDef != null)
+                        {
+                            CrimeSceneClue clue = (CrimeSceneClue)ThingMaker.MakeThing(clueDef);
+                            clue.clueType = clueType;
+                            clue.linkedCriminal = criminal;
+                            clue.clueQuality = 0.8f;
+                            GenSpawn.Spawn(clue, cluePos, Find.CurrentMap);
+                        }
                     }
                 }
             }
@@ -492,7 +514,7 @@ namespace Law_and_Order.Source.Debug
             Messages.Message($"Created full test scenario:\n- Criminal: {criminal.NameShortColored} (4 crimes)\n- Crime scene with clues at {crimeScene}", MessageTypeDefOf.TaskCompletion, false);
 
             // Open Justice tab
-            Find.MainTabsRoot.SetCurrentTab(MainTabDefOf.Justice, true);
+            Find.MainTabsRoot.SetCurrentTab(MainTabDefOf.LawAndOrder_Justice, true);
         }
 
         [DebugAction("Law & Order - Testing", "Clear All Crimes & Cases", allowedGameStates = AllowedGameStates.PlayingOnMap)]
