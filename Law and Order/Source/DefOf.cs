@@ -37,4 +37,36 @@ namespace Law_and_Order.Source
             DefOfHelper.EnsureInitializedInCtor(typeof(LawAndOrder_PunishmentDefOf));
         }
     }
+
+    /// <summary>
+    /// DefOf class for Law and Order mod - Things
+    /// Phase 6: Evidence & Clues
+    /// </summary>
+    [DefOf]
+    public static class ThingDefOf
+    {
+        public static ThingDef CrimeSceneClue;
+        public static ThingDef InterrogationTable;
+        public static ThingDef InterrogationChair;
+
+        static ThingDefOf()
+        {
+            DefOfHelper.EnsureInitializedInCtor(typeof(ThingDefOf));
+        }
+    }
+
+    /// <summary>
+    /// DefOf class for Law and Order mod - Main Tabs
+    /// Phase 3: UI
+    /// </summary>
+    [DefOf]
+    public static class MainTabDefOf
+    {
+        public static MainButtonDef Justice;
+
+        static MainTabDefOf()
+        {
+            DefOfHelper.EnsureInitializedInCtor(typeof(MainTabDefOf));
+        }
+    }
 }

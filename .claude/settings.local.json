@@ -72,7 +72,12 @@
       "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\" /b)",
       "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\research\" /b)",
       "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\*.csproj\" /b)",
-      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\" /b)"
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\" /b)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\" /b)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\" /b /s)",
+      "Bash(cmd /c \"dir /b /s C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\*.cs\")",
+      "WebFetch(domain:rimworldwiki.com)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law-and-Order.wiki\" /b)"
     ],
     "deny": [],
     "ask": []
