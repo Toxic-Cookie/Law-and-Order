@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,6 +9,7 @@ using Law_and_Order.Source.Hediffs;
 using Law_and_Order.Source.Justice;
 using Law_and_Order.Source.Components;
 using Law_and_Order.Source.Utils;
+using Law_and_Order.Source.Investigation;
 
 namespace Law_and_Order.Source.UI
 {
@@ -216,6 +218,11 @@ namespace Law_and_Order.Source.UI
 
             yPos += PADDING;
 
+            // Evidence section
+            yPos = DrawEvidenceSection(innerRect, caseItem, yPos);
+
+            yPos += PADDING;
+
             // Crimes section header - position relative to innerRect
             Rect crimesHeaderRect = new Rect(innerRect.x, innerRect.y + yPos, innerRect.width, 25f);
             Text.Font = GameFont.Small;
@@ -271,6 +278,103 @@ namespace Law_and_Order.Source.UI
             Text.Anchor = oldAnchor;
 
             return yPos + 80f;
+        }
+
+        private float DrawEvidenceSection(Rect rect, CriminalCase caseItem, float yPos)
+        {
+            // Get evidence data
+            var evidence = caseItem.GetEvidence();
+            float evidenceStrength = caseItem.GetEvidenceStrength();
+            var recommendation = caseItem.GetConvictionRecommendation();
+
+            // Header
+            Rect headerRect = new Rect(rect.x, rect.y + yPos, rect.width, 25f);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+            Widgets.Label(headerRect, "LawAndOrder_Evidence".Translate());
+            yPos += 25f;
+
+            // Evidence summary box
+            Rect summaryRect = new Rect(rect.x, rect.y + yPos, rect.width, 60f);
+            Widgets.DrawBoxSolid(summaryRect, new Color(0.1f, 0.1f, 0.1f, 0.5f));
+            Widgets.DrawBox(summaryRect);
+
+            Rect summaryInner = summaryRect.ContractedBy(5f);
+
+            // Evidence count and strength
+            string summaryText = $"{"LawAndOrder_EvidencePieces".Translate()}: {evidence.Count}";
+            summaryText += $"\n{"LawAndOrder_EvidenceStrength".Translate()}: {evidenceStrength:P0}";
+            summaryText += $"\n{"LawAndOrder_ConvictionConfidence".Translate()}: {recommendation.confidence}";
+
+            // Color the text based on evidence strength
+            Color evidenceColor = Color.white;
+            if (evidenceStrength >= 0.9f)
+                evidenceColor = new Color(0.4f, 1f, 0.4f); // Green
+            else if (evidenceStrength >= 0.7f)
+                evidenceColor = new Color(0.7f, 1f, 0.7f); // Light green
+            else if (evidenceStrength >= 0.3f)
+                evidenceColor = new Color(1f, 1f, 0.6f); // Yellow
+            else
+                evidenceColor = new Color(1f, 0.6f, 0.6f); // Red
+
+            GUI.color = evidenceColor;
+            Widgets.Label(summaryInner, summaryText);
+            GUI.color = Color.white;
+
+            yPos += 60f + 5f;
+
+            // Show individual evidence pieces if there are any
+            if (evidence.Count > 0)
+            {
+                Rect evidenceListHeaderRect = new Rect(rect.x, rect.y + yPos, rect.width, 20f);
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(evidenceListHeaderRect, "LawAndOrder_EvidenceDetails".Translate());
+                yPos += 20f;
+
+                // Limit to showing top 3 pieces of evidence
+                int maxToShow = Math.Min(3, evidence.Count);
+                var topEvidence = evidence.OrderByDescending(e => e.reliability).Take(maxToShow);
+
+                foreach (var ev in topEvidence)
+                {
+                    Rect evidenceRowRect = new Rect(rect.x + 10f, rect.y + yPos, rect.width - 10f, 18f);
+                    string evidenceText = $"• {ev.GetTypeLabel()}: {ev.description.Truncate(40)} ({ev.reliability:P0})";
+                    Text.Font = GameFont.Tiny;
+                    Widgets.Label(evidenceRowRect, evidenceText);
+                    yPos += 18f;
+
+                    if (Mouse.IsOver(evidenceRowRect))
+                    {
+                        TooltipHandler.TipRegion(evidenceRowRect, ev.GetDetailedDescription());
+                    }
+                }
+
+                if (evidence.Count > maxToShow)
+                {
+                    Rect moreRect = new Rect(rect.x + 10f, rect.y + yPos, rect.width - 10f, 15f);
+                    Text.Font = GameFont.Tiny;
+                    GUI.color = Color.gray;
+                    Widgets.Label(moreRect, $"... and {evidence.Count - maxToShow} more");
+                    GUI.color = Color.white;
+                    yPos += 15f;
+                }
+            }
+            else
+            {
+                // No evidence collected
+                Rect noEvidenceRect = new Rect(rect.x + 10f, rect.y + yPos, rect.width - 10f, 20f);
+                Text.Font = GameFont.Tiny;
+                GUI.color = Color.gray;
+                Widgets.Label(noEvidenceRect, "LawAndOrder_NoEvidenceCollected".Translate());
+                GUI.color = Color.white;
+                yPos += 20f;
+            }
+
+            // Reset text state
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            return yPos;
         }
 
         private void DrawCrimeList(Rect rect, List<Crime> crimes)

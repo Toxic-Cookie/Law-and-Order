@@ -152,34 +152,145 @@ namespace Law_and_Order.Source.Investigation
         }
 
         /// <summary>
-        /// Link a clue to a criminal case
+        /// Link a clue to a criminal case and create evidence
         /// </summary>
         private void LinkClueToCase(CrimeSceneClue clue, Pawn suspect)
         {
-            // TODO: Link to CriminalCase system
-            // For now, just log
             ModLog.Debug($"Clue {clue.clueType} linked to suspect {suspect.LabelShort}");
 
-            // If there's a linked crime, upgrade its visibility
-            if (clue.linkedCrime != null && clue.linkedCrime.visibilityState == CrimeVisibilityState.Hidden)
+            // Create Evidence object from analyzed clue
+            if (clue.linkedCrime != null)
             {
-                // Transition to Suspected
-                clue.linkedCrime.TransitionToSuspected(
-                    new List<Pawn> { pawn }, // Analyst is the "witness"
-                    clue.clueQuality
-                );
+                CreateEvidenceFromClue(clue, suspect);
 
-                Messages.Message(
-                    "LawAndOrder_ClueRevealsHiddenCrime".Translate(
-                        pawn.LabelShort.Named("PAWN"),
-                        clue.clueType.Named("CLUETYPE"),
-                        suspect.LabelShort.Named("SUSPECT"),
-                        clue.linkedCrime.crimeType.Named("CRIMETYPE")
-                    ),
-                    suspect,
-                    MessageTypeDefOf.NegativeEvent
-                );
+                // If crime is Hidden, upgrade its visibility
+                if (clue.linkedCrime.visibilityState == CrimeVisibilityState.Hidden)
+                {
+                    // Transition to Suspected
+                    clue.linkedCrime.TransitionToSuspected(
+                        new List<Pawn> { pawn }, // Analyst is the "witness"
+                        clue.clueQuality
+                    );
+
+                    Messages.Message(
+                        "LawAndOrder_ClueRevealsHiddenCrime".Translate(
+                            pawn.LabelShort.Named("PAWN"),
+                            clue.clueType.Named("CLUETYPE"),
+                            suspect.LabelShort.Named("SUSPECT"),
+                            clue.linkedCrime.crimeType.Named("CRIMETYPE")
+                        ),
+                        suspect,
+                        MessageTypeDefOf.NegativeEvent
+                    );
+                }
             }
+        }
+
+        /// <summary>
+        /// Create an Evidence object from an analyzed clue
+        /// </summary>
+        private void CreateEvidenceFromClue(CrimeSceneClue clue, Pawn suspect)
+        {
+            // Determine evidence type based on clue type
+            EvidenceType evidenceType = DetermineEvidenceType(clue.clueType);
+
+            // Calculate evidence reliability based on clue quality and analyst skill
+            float reliability = CalculateEvidenceReliability(clue);
+
+            // Generate description
+            string description = GenerateEvidenceDescription(clue, suspect);
+
+            // Create the evidence
+            Evidence evidence = new Evidence(
+                evidenceType,
+                description,
+                reliability,
+                pawn, // Analyst who collected it
+                clue.Position,
+                clue.linkedCrime
+            );
+
+            // Add type-specific data
+            if (evidenceType == EvidenceType.Physical && clue is Thing thing)
+            {
+                evidence.physicalItem = thing;
+            }
+
+            // Link to planted evidence if applicable
+            if (clue.isPlanted)
+            {
+                evidence.isPlanted = true;
+                evidence.plantedBy = clue.plantedBy;
+            }
+
+            // Add to evidence manager
+            var evidenceManager = Components.MapComponent_EvidenceManager.GetFor(pawn.Map);
+            if (evidenceManager != null)
+            {
+                evidenceManager.AddEvidence(evidence);
+                ModLog.Debug($"Evidence created: {description} (reliability: {reliability:F2})");
+            }
+            else
+            {
+                Mod.Log?.Warning("EvidenceManager not found on map!");
+            }
+        }
+
+        /// <summary>
+        /// Determine evidence type from clue type
+        /// </summary>
+        private EvidenceType DetermineEvidenceType(ClueType clueType)
+        {
+            switch (clueType)
+            {
+                case ClueType.BloodStain:
+                case ClueType.FingerprintTrace:
+                case ClueType.DroppedItem:
+                case ClueType.Footprint:
+                case ClueType.FabricScrap:
+                case ClueType.ToolMark:
+                    return EvidenceType.Physical;
+
+                case ClueType.WitnessReport:
+                    return EvidenceType.Testimonial;
+
+                default:
+                    return EvidenceType.Circumstantial;
+            }
+        }
+
+        /// <summary>
+        /// Calculate evidence reliability from clue quality and analyst skill
+        /// </summary>
+        private float CalculateEvidenceReliability(CrimeSceneClue clue)
+        {
+            // Base reliability from clue quality
+            float baseReliability = clue.clueQuality;
+
+            // Analyst's intellectual skill affects reliability
+            int intellectSkill = pawn.skills.GetSkill(SkillDefOf.Intellectual).Level;
+            float skillBonus = intellectSkill * 0.01f; // Up to +20% for max skill
+
+            // Freshness factor - old clues are less reliable
+            int daysOld = clue.linkedCrime?.DaysAgo ?? 0;
+            float freshnessFactor = 1.0f;
+            if (daysOld > 5)
+            {
+                freshnessFactor = 0.8f; // 20% penalty for old evidence
+            }
+
+            float reliability = (baseReliability + skillBonus) * freshnessFactor;
+
+            return UnityEngine.Mathf.Clamp01(reliability);
+        }
+
+        /// <summary>
+        /// Generate a description for the evidence
+        /// </summary>
+        private string GenerateEvidenceDescription(CrimeSceneClue clue, Pawn suspect)
+        {
+            string crimeType = clue.linkedCrime?.GetCrimeLabel() ?? "unknown crime";
+            return $"{clue.clueType} evidence linking {suspect.LabelShort} to {crimeType}";
         }
 
         /// <summary>

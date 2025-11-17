@@ -793,4 +793,35 @@
   <LawAndOrder_RaidTargetingValuables>Raiders are targeting your valuables!</LawAndOrder_RaidTargetingValuables>
   <LawAndOrder_MultiProngedAssault>Multi-pronged assault detected! Raiders have detailed colony layout information.</LawAndOrder_MultiProngedAssault>
 
+  <!-- Evidence System -->
+  <LawAndOrder_Evidence>Evidence</LawAndOrder_Evidence>
+  <LawAndOrder_EvidencePieces>Evidence collected</LawAndOrder_EvidencePieces>
+  <LawAndOrder_EvidenceStrength>Case strength</LawAndOrder_EvidenceStrength>
+  <LawAndOrder_EvidenceDetails>Evidence details:</LawAndOrder_EvidenceDetails>
+  <LawAndOrder_NoEvidenceCollected>No evidence collected yet</LawAndOrder_NoEvidenceCollected>
+
+  <!-- Evidence Types -->
+  <LawAndOrder_Evidence_Physical>Physical</LawAndOrder_Evidence_Physical>
+  <LawAndOrder_Evidence_Circumstantial>Circumstantial</LawAndOrder_Evidence_Circumstantial>
+  <LawAndOrder_Evidence_Testimonial>Testimonial</LawAndOrder_Evidence_Testimonial>
+
+  <!-- Evidence Quality Tiers -->
+  <LawAndOrder_Evidence_Quality_Conclusive>Conclusive</LawAndOrder_Evidence_Quality_Conclusive>
+  <LawAndOrder_Evidence_Quality_Strong>Strong</LawAndOrder_Evidence_Quality_Strong>
+  <LawAndOrder_Evidence_Quality_Moderate>Moderate</LawAndOrder_Evidence_Quality_Moderate>
+  <LawAndOrder_Evidence_Quality_Unreliable>Unreliable</LawAndOrder_Evidence_Quality_Unreliable>
+
+  <!-- Conviction Confidence -->
+  <LawAndOrder_ConvictionConfidence>Conviction confidence</LawAndOrder_ConvictionConfidence>
+  <LawAndOrder_Conviction_Confidence_Conclusive>Beyond reasonable doubt</LawAndOrder_Conviction_Confidence_Conclusive>
+  <LawAndOrder_Conviction_Confidence_Strong>Likely guilty</LawAndOrder_Conviction_Confidence_Strong>
+  <LawAndOrder_Conviction_Confidence_Moderate>Possibly guilty</LawAndOrder_Conviction_Confidence_Moderate>
+  <LawAndOrder_Conviction_Confidence_Unreliable>Insufficient evidence</LawAndOrder_Conviction_Confidence_Unreliable>
+
+  <!-- Conviction Recommendations -->
+  <LawAndOrder_Conviction_Recommendation_Conclusive>Overwhelming evidence ({0} pieces). Conviction is highly recommended.</LawAndOrder_Conviction_Recommendation_Conclusive>
+  <LawAndOrder_Conviction_Recommendation_Strong>Strong evidence ({0} pieces). Conviction is recommended.</LawAndOrder_Conviction_Recommendation_Strong>
+  <LawAndOrder_Conviction_Recommendation_Moderate>Moderate evidence ({0} pieces). More investigation may be warranted.</LawAndOrder_Conviction_Recommendation_Moderate>
+  <LawAndOrder_Conviction_Recommendation_Unreliable>Weak evidence ({0} pieces). Conviction not recommended.</LawAndOrder_Conviction_Recommendation_Unreliable>
+
 </LanguageData>

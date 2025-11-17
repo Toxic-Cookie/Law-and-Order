@@ -81,6 +81,14 @@ namespace Law_and_Order.Source.UI
             int totalSeverity = crimes.Sum(c => GetCrimeSeverity(c.crimeType));
             crimeText += $"\n\nTotal Severity: {totalSeverity}";
 
+            // Show evidence strength and recommendation
+            var recommendation = criminalCase.GetConvictionRecommendation();
+            float evidenceStrength = criminalCase.GetEvidenceStrength();
+            var evidence = criminalCase.GetEvidence();
+
+            crimeText += $"\n\nEvidence: {evidence.Count} piece(s) - Strength: {evidenceStrength:P0}";
+            crimeText += $"\nConfidence: {recommendation.confidence}";
+
             Text.Font = GameFont.Small;
             Widgets.Label(innerRect, crimeText);
         }

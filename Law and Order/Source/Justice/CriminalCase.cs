@@ -3,6 +3,8 @@ using System.Linq;
 using Verse;
 using RimWorld;
 using Law_and_Order.Source.Hediffs;
+using Law_and_Order.Source.Investigation;
+using Law_and_Order.Source.Components;
 
 namespace Law_and_Order.Source.Justice
 {
@@ -148,6 +150,102 @@ namespace Law_and_Order.Source.Justice
             };
         }
 
+        /// <summary>
+        /// Get all evidence collected for this case from the EvidenceManager
+        /// </summary>
+        public List<Evidence> GetEvidence()
+        {
+            if (accused?.Map == null)
+                return new List<Evidence>();
+
+            var evidenceManager = MapComponent_EvidenceManager.GetFor(accused.Map);
+            if (evidenceManager == null)
+                return new List<Evidence>();
+
+            return evidenceManager.GetEvidenceForCase(caseId);
+        }
+
+        /// <summary>
+        /// Get the overall evidence strength for this case (quality-based calculation)
+        /// </summary>
+        public float GetEvidenceStrength()
+        {
+            if (accused?.Map == null)
+                return 0f;
+
+            var evidenceManager = MapComponent_EvidenceManager.GetFor(accused.Map);
+            if (evidenceManager == null)
+                return 0f;
+
+            return evidenceManager.CalculateCaseEvidenceStrength(caseId);
+        }
+
+        /// <summary>
+        /// Get the best (highest quality) evidence for this case
+        /// </summary>
+        public Evidence GetBestEvidence()
+        {
+            if (accused?.Map == null)
+                return null;
+
+            var evidenceManager = MapComponent_EvidenceManager.GetFor(accused.Map);
+            if (evidenceManager == null)
+                return null;
+
+            return evidenceManager.GetBestEvidence(caseId);
+        }
+
+        /// <summary>
+        /// Get a conviction recommendation based on evidence quality
+        /// </summary>
+        public ConvictionRecommendation GetConvictionRecommendation()
+        {
+            float evidenceStrength = GetEvidenceStrength();
+            var evidence = GetEvidence();
+            int evidenceCount = evidence?.Count ?? 0;
+
+            // Conclusive evidence (90%+)
+            if (evidenceStrength >= 0.9f)
+            {
+                return new ConvictionRecommendation
+                {
+                    shouldConvict = true,
+                    confidence = "LawAndOrder_Conviction_Confidence_Conclusive".Translate(),
+                    description = "LawAndOrder_Conviction_Recommendation_Conclusive".Translate(evidenceCount)
+                };
+            }
+
+            // Strong evidence (70%+)
+            if (evidenceStrength >= 0.7f)
+            {
+                return new ConvictionRecommendation
+                {
+                    shouldConvict = true,
+                    confidence = "LawAndOrder_Conviction_Confidence_Strong".Translate(),
+                    description = "LawAndOrder_Conviction_Recommendation_Strong".Translate(evidenceCount)
+                };
+            }
+
+            // Moderate evidence (30-70%)
+            if (evidenceStrength >= 0.3f)
+            {
+                return new ConvictionRecommendation
+                {
+                    shouldConvict = false,
+                    confidence = "LawAndOrder_Conviction_Confidence_Moderate".Translate(),
+                    description = "LawAndOrder_Conviction_Recommendation_Moderate".Translate(evidenceCount)
+                };
+            }
+
+            // Weak/unreliable evidence (<30%)
+            return new ConvictionRecommendation
+            {
+                shouldConvict = false,
+                confidence = "LawAndOrder_Conviction_Confidence_Unreliable".Translate(),
+                description = "LawAndOrder_Conviction_Recommendation_Unreliable".Translate(evidenceCount)
+            };
+        }
+
         public void ExposeData()
         {
             Scribe_Values.Look(ref caseId, "caseId", 0);
@@ -169,5 +267,15 @@ namespace Law_and_Order.Source.Justice
         {
             return $"Case #{caseId}: {accused?.NameShortColored ?? "Unknown"} - {status} ({GetAssociatedCrimes().Count} crimes)";
         }
+    }
+
+    /// <summary>
+    /// Represents a conviction recommendation based on evidence quality
+    /// </summary>
+    public struct ConvictionRecommendation
+    {
+        public bool shouldConvict;      // Should the player convict?
+        public string confidence;        // Confidence level (Conclusive, Strong, Moderate, Unreliable)
+        public string description;       // Description of recommendation
     }
 }
