@@ -1,8 +1,61 @@
 # Law and Order - Project Notepad
 
 **Date:** November 16, 2025
-**Phase:** Phase 6.2 - Clue & Evidence System COMPLETE ✅
+**Phase:** Phase 6.2 - Clue & Evidence System - BALANCING & FIXES 🔧
 **Next:** Phase 6.3 - False Accusation System
+
+---
+
+## Recent Fixes (Nov 16, 2025)
+
+### Bug Fixes Applied:
+1. **Texture Loading Error** ✅
+   - Fixed texture path from `ChunkSlagSteel` → `ChunkSlag`
+   - Added `drawerType=MapMeshOnly` to ThingDef
+   - Changed `Graphic_Single` → `Graphic_Random`
+   - Files: `Things_CrimeSceneClues.xml`
+
+2. **TickRare NotImplementedException** ✅
+   - Removed `base.TickRare()` call (Entity throws NotImplementedException)
+   - Follows RimWorld pattern (Corpse, Blight, etc. don't call base)
+   - Files: `CrimeSceneClue.cs:122`
+
+3. **Inspect String Empty Lines** ✅
+   - Changed `AppendLine(base.GetInspectString())` → `Append(base.GetInspectString())`
+   - Changed all subsequent `AppendLine()` → `AppendInNewLine()`
+   - Follows RimWorld pattern (Building_Bed, etc.)
+   - Files: `CrimeSceneClue.cs:138-166`
+
+### Balance Adjustments:
+1. **Clue Spawning Cooldown** ✅
+   - Added 2-day cooldown per pawn for clue spawning
+   - Prevents spam from single criminal
+   - Tracked via static Dictionary<pawnID, lastSpawnTick>
+   - Files: `CrimeSceneClue.cs:198-226`
+
+2. **Analysis Speed Rebalance** ✅
+   - Increased StudyDuration: 600 ticks → 2400 ticks (40 seconds = 1 in-game hour)
+   - Reduced StudyProgressPerTick: 0.1f → 0.00025f (400x slower)
+   - Makes clue analysis take meaningful time
+   - Files: `JobDriver_AnalyzeClue.cs:17-18`
+
+3. **Translation Key Fixes** ✅
+   - Removed string interpolation from revelation labels
+   - Changed dynamic translation keys to static English strings
+   - Fixed: "Initial Analysis", "Detailed Examination", "Complete Profile"
+   - Files: `CrimeSceneClue.cs:398-426`
+
+4. **Translation Pattern Fix** ✅
+   - Updated to RimWorld 1.6 NamedArgument pattern
+   - Changed `.Translate(arg1, arg2)` → `.Translate(arg1.Named("KEY1"), arg2.Named("KEY2"))`
+   - Added "LawAndOrder_" prefix to all translation keys (project convention)
+   - Updated XML keys from `{0}, {1}, {2}` → `{PAWN}, {LABEL}, {CLUETYPE}, {DESCRIPTION}`
+   - Follows RimWorld pattern (ChildcareUtility, etc.)
+   - Fixed 3 translation calls in JobDriver_AnalyzeClue.cs
+   - Files: `JobDriver_AnalyzeClue.cs:95, 134, 173`, `LawAndOrder_Keys.xml:683-685`
+
+**Build Status:** ✅ 0 errors, 0 warnings - CLEAN BUILD!
+**Deploy Status:** ✅ Successfully deployed to RimWorld mods folder
 
 ---
 

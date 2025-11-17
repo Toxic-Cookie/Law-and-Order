@@ -92,7 +92,7 @@ namespace Law_and_Order.Source.Investigation
                 if (Clue.analyzed)
                 {
                     Messages.Message(
-                        "ClueFullyAnalyzed".Translate(pawn.LabelShort, Clue.clueType),
+                        "LawAndOrder_ClueFullyAnalyzed".Translate(pawn.LabelShort.Named("PAWN"), Clue.clueType.Named("CLUETYPE")),
                         Clue,
                         MessageTypeDefOf.PositiveEvent
                     );
@@ -131,11 +131,11 @@ namespace Law_and_Order.Source.Investigation
 
                 // Create message
                 Messages.Message(
-                    "ClueRevelation".Translate(
-                        pawn.LabelShort,
-                        revelation.label,
-                        clue.clueType.ToString(),
-                        revelation.description
+                    "LawAndOrder_ClueRevelation".Translate(
+                        pawn.LabelShort.Named("PAWN"),
+                        revelation.label.Named("LABEL"),
+                        clue.clueType.ToString().Named("CLUETYPE"),
+                        revelation.description.Named("DESCRIPTION")
                     ),
                     clue,
                     MessageTypeDefOf.PositiveEvent
@@ -170,11 +170,11 @@ namespace Law_and_Order.Source.Investigation
                 );
 
                 Messages.Message(
-                    "ClueRevealsHiddenCrime".Translate(
-                        pawn.LabelShort,
-                        clue.clueType,
-                        suspect.LabelShort,
-                        clue.linkedCrime.crimeType
+                    "LawAndOrder_ClueRevealsHiddenCrime".Translate(
+                        pawn.LabelShort.Named("PAWN"),
+                        clue.clueType.Named("CLUETYPE"),
+                        suspect.LabelShort.Named("SUSPECT"),
+                        clue.linkedCrime.crimeType.Named("CRIMETYPE")
                     ),
                     suspect,
                     MessageTypeDefOf.NegativeEvent

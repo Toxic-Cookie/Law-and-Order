@@ -680,9 +680,9 @@
   <LawAndOrder_ClueAnalysis_InProgress>Analyzing clue...</LawAndOrder_ClueAnalysis_InProgress>
   <LawAndOrder_ClueAnalysis_Complete>Analysis complete</LawAndOrder_ClueAnalysis_Complete>
   <LawAndOrder_ClueAnalysis_Progress>Analysis Progress</LawAndOrder_ClueAnalysis_Progress>
-  <LawAndOrder_ClueRevelation>{0} analyzed {1} and discovered: {2}</LawAndOrder_ClueRevelation>
-  <LawAndOrder_ClueFullyAnalyzed>{0} has completed analysis of the {1} clue</LawAndOrder_ClueFullyAnalyzed>
-  <LawAndOrder_ClueRevealsHiddenCrime>{0} analyzed a {1} clue that implicates {2} in {3}</LawAndOrder_ClueRevealsHiddenCrime>
+  <LawAndOrder_ClueRevelation>{PAWN} completed {LABEL} of the {CLUETYPE} clue: {DESCRIPTION}</LawAndOrder_ClueRevelation>
+  <LawAndOrder_ClueFullyAnalyzed>{PAWN} has completed analysis of the {CLUETYPE} clue</LawAndOrder_ClueFullyAnalyzed>
+  <LawAndOrder_ClueRevealsHiddenCrime>{PAWN} analyzed a {CLUETYPE} clue that implicates {SUSPECT} in {CRIMETYPE}</LawAndOrder_ClueRevealsHiddenCrime>
 
   <!-- Job Reports -->
   <JobReport_AnalyzingClue>analyzing {0}</JobReport_AnalyzingClue>

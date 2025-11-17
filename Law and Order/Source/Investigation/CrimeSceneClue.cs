@@ -195,6 +195,10 @@ namespace Law_and_Order.Source.Investigation
     /// </summary>
     public static class ClueGenerator
     {
+        // Cooldown tracking: pawn ID -> tick of last clue spawn
+        private static Dictionary<int, int> lastClueSpawnTick = new Dictionary<int, int>();
+        private const int CLUE_SPAWN_COOLDOWN_TICKS = GenDate.TicksPerDay * 2; // 2 day cooldown per pawn
+
         /// <summary>
         /// Generate clues for a crime
         /// </summary>
@@ -206,6 +210,20 @@ namespace Law_and_Order.Source.Investigation
         {
             if (crime == null || criminal == null || map == null)
                 return;
+
+            // Check cooldown - prevent same pawn from leaving clues too frequently
+            int currentTick = Find.TickManager.TicksGame;
+            if (lastClueSpawnTick.TryGetValue(criminal.thingIDNumber, out int lastTick))
+            {
+                if (currentTick - lastTick < CLUE_SPAWN_COOLDOWN_TICKS)
+                {
+                    ModLog.Debug($"Skipping clue generation for {criminal.LabelShort} - on cooldown ({(CLUE_SPAWN_COOLDOWN_TICKS - (currentTick - lastTick)) / GenDate.TicksPerDay} days remaining)");
+                    return;
+                }
+            }
+
+            // Update last spawn tick
+            lastClueSpawnTick[criminal.thingIDNumber] = currentTick;
 
             // Intelligence determines if criminal leaves clues
             float clueLikelihood = 1.0f;
@@ -399,7 +417,7 @@ namespace Law_and_Order.Source.Investigation
             revelations.Add(new ClueRevelation
             {
                 threshold = 0.25f,
-                label = $"Initial_{clue.clueType}_Analysis".Translate(),
+                label = "Initial Analysis",
                 description = GetBasicDescription(clue.clueType),
                 accuracyChance = 0.7f,
                 pointsTo = null // General information
@@ -409,7 +427,7 @@ namespace Law_and_Order.Source.Investigation
             revelations.Add(new ClueRevelation
             {
                 threshold = 0.50f,
-                label = $"Detailed_{clue.clueType}_Examination".Translate(),
+                label = "Detailed Examination",
                 description = GetDetailedDescription(clue.clueType, criminal),
                 accuracyChance = 0.85f,
                 pointsTo = criminal // May be wrong if planted!
@@ -419,7 +437,7 @@ namespace Law_and_Order.Source.Investigation
             revelations.Add(new ClueRevelation
             {
                 threshold = 1.0f,
-                label = $"Complete_{clue.clueType}_Profile".Translate(),
+                label = "Complete Profile",
                 description = GetCompleteDescription(clue.clueType, criminal),
                 accuracyChance = clue.isPlanted ? 0.95f : 1.0f, // Still small chance of error
                 pointsTo = clue.isPlanted ? clue.plantedBy : criminal
