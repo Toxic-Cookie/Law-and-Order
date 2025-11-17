@@ -80,12 +80,13 @@ namespace Law_and_Order.Source.Investigation
                 }
 
                 grudgesFound++;
-                Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} HATES {target.LabelShort} (opinion: {accuser.relations.OpinionOf(target)})! Rolling for false accusation...");
+                float grudgeChance = LawAndOrderSettings.FalseAccusationChancePerGrudge?.Value ?? 0.05f;
+                Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} HATES {target.LabelShort} (opinion: {accuser.relations.OpinionOf(target)})! Rolling for false accusation ({grudgeChance:P0} chance)...");
 
-                // Small chance to file false accusation per check
-                if (!Rand.Chance(0.05f)) // 5% chance when grudge exists
+                // Chance to file false accusation per check (configurable)
+                if (!Rand.Chance(grudgeChance))
                 {
-                    Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} chose not to falsely accuse {target.LabelShort} this time (5% roll failed)");
+                    Mod.Log?.Message($"[False Accusation] {accuser.LabelShort} chose not to falsely accuse {target.LabelShort} this time ({grudgeChance:P0} roll failed)");
                     continue;
                 }
 
@@ -102,7 +103,8 @@ namespace Law_and_Order.Source.Investigation
             }
             else
             {
-                Mod.Log?.Message($"[False Accusation] Found {grudgesFound} grudges, but none rolled successfully (5% chance each)");
+                float grudgeChance = LawAndOrderSettings.FalseAccusationChancePerGrudge?.Value ?? 0.05f;
+                Mod.Log?.Message($"[False Accusation] Found {grudgesFound} grudges, but none rolled successfully ({grudgeChance:P0} chance each)");
             }
         }
 

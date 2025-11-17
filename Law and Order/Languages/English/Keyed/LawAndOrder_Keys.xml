@@ -864,7 +864,10 @@
 
   <!-- Settings -->
   <LawAndOrder_Setting_FalseAccusationRate_Title>False Accusation Rate</LawAndOrder_Setting_FalseAccusationRate_Title>
-  <LawAndOrder_Setting_FalseAccusationRate_Desc>Percentage chance that colonists with strong grudges will make false accusations (0-30%, default 12%)</LawAndOrder_Setting_FalseAccusationRate_Desc>
+  <LawAndOrder_Setting_FalseAccusationRate_Desc>How often to check for false accusations (0-30%, default 12%). Checks occur every 6 hours.</LawAndOrder_Setting_FalseAccusationRate_Desc>
+
+  <LawAndOrder_Setting_FalseAccusationChancePerGrudge_Title>False Accusation Chance Per Grudge</LawAndOrder_Setting_FalseAccusationChancePerGrudge_Title>
+  <LawAndOrder_Setting_FalseAccusationChancePerGrudge_Desc>When a colonist has a grudge (opinion ≤ -20), this is the chance they'll falsely accuse the target per check (0-100%, default 5%)</LawAndOrder_Setting_FalseAccusationChancePerGrudge_Desc>
 
   <LawAndOrder_Setting_InfiltratorSpawnChance_Title>Infiltrator Spawn Chance</LawAndOrder_Setting_InfiltratorSpawnChance_Title>
   <LawAndOrder_Setting_InfiltratorSpawnChance_Desc>Percentage of visitors that might be infiltrators with hidden identities (0-15%, default 5%)</LawAndOrder_Setting_InfiltratorSpawnChance_Desc>

@@ -26,6 +26,7 @@ namespace Law_and_Order.Source.Settings
 
         // Phase 6: False Accusations & Infiltration settings
         public static SettingHandle<float> FalseAccusationRate;
+        public static SettingHandle<float> FalseAccusationChancePerGrudge;
         public static SettingHandle<float> InfiltratorSpawnChance;
         public static SettingHandle<int> MaxAccomplicesPerInfiltrator;
         public static SettingHandle<float> TruthDiscoveryChance;
@@ -128,6 +129,14 @@ namespace Law_and_Order.Source.Settings
                 Validators.FloatRangeValidator(0f, 0.30f)
             );
 
+            FalseAccusationChancePerGrudge = settings.GetHandle(
+                "FalseAccusationChancePerGrudge",
+                "LawAndOrder_Setting_FalseAccusationChancePerGrudge_Title".Translate(),
+                "LawAndOrder_Setting_FalseAccusationChancePerGrudge_Desc".Translate(),
+                0.05f, // 5% default
+                Validators.FloatRangeValidator(0f, 1.0f)
+            );
+
             InfiltratorSpawnChance = settings.GetHandle(
                 "InfiltratorSpawnChance",
                 "LawAndOrder_Setting_InfiltratorSpawnChance_Title".Translate(),
@@ -184,6 +193,7 @@ namespace Law_and_Order.Source.Settings
 
             // Phase 6 defaults
             FalseAccusationRate.Value = 0.12f;
+            FalseAccusationChancePerGrudge.Value = 0.05f;
             InfiltratorSpawnChance.Value = 0.05f;
             MaxAccomplicesPerInfiltrator.Value = 2;
             TruthDiscoveryChance.Value = 0.15f;
