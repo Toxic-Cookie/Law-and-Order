@@ -58,7 +58,19 @@
       "Bash(del /Q \"Hediffs\\Hediff_Debt.cs\" \"Components\\WorldComponent_DebtManager.cs\" \"Utils\\DebtUtils.cs\" \"CrimeDetection\\DebtSystemPatches.cs\" \"Patches\\SlaveEmancipation_Patch.cs\")",
       "Bash(del \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\CourtroomChairComp_Patch.xml\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Law and Order\\Patches\\Patch_Tables_JudgesBench.xml\")",
       "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\\RoomStatDefs\\RoomStats_Interrogation.xml\")",
-      "Bash(cmd /c xcopy:*)"
+      "Bash(cmd /c xcopy:*)",
+      "Bash(test:*)",
+      "Bash(for page in FAQ Game-Systems-Overview Crime-Detection Investigation-System Punishment-System UI-Guide Technical-Specifications Phase-6-Blueprint Development-Setup Architecture-Overview Contributing-Guide Code-Style-Guide Phase-Tracking Testing-Guide DF-Justice-System DF-Crime-System DF-Intrigue-System DF-Punishment-System API-Documentation Changelog Quick-Start-Guide)",
+      "Bash(do if [ -f \"$page.md\" ])",
+      "Bash(then echo \"EXISTS: $page.md\")",
+      "Bash(else echo \"MISSING: $page.md\")",
+      "Bash(done)",
+      "Bash(del FINAL-DELIVERABLES.md WIKI-CREATION-SUMMARY.md WIKI-MIGRATION-PLAN.md)",
+      "Bash(cmd /c del:*)",
+      "Bash(cmd /c \"dir /s /-c /a-d C:\\Users\\Giovanni\\source\\repos\\Law-and-Order.wiki\\*.md | findstr /C:\"\" File(s)\"\"\")",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\" /b)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\docs\" /b)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\llms\\research\" /b)"
     ],
     "deny": [],
     "ask": []
