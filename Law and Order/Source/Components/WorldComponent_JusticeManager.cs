@@ -165,6 +165,12 @@ namespace Law_and_Order.Source.Components
             {
                 CheckTruthDiscoveries();
             }
+
+            // Phase 6.4: Check for behavioral clues once per day
+            if (currentTick % GenDate.TicksPerDay == 0)
+            {
+                CheckBehavioralClues();
+            }
         }
 
         /// <summary>
@@ -291,6 +297,25 @@ namespace Law_and_Order.Source.Components
                             }
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Phase 6.4: Check for behavioral clues on pawns with hidden identities
+        /// </summary>
+        private void CheckBehavioralClues()
+        {
+            // Check all player maps
+            var maps = Find.Maps;
+            if (maps == null || maps.Count == 0)
+                return;
+
+            foreach (var map in maps)
+            {
+                if (map.IsPlayerHome)
+                {
+                    Infiltration.BehavioralClueDetector.CheckBehavioralClues(map);
                 }
             }
         }

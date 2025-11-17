@@ -884,4 +884,38 @@
   <LawAndOrder_Setting_CluesPerCrime_Max_Title>Max Clues Per Crime</LawAndOrder_Setting_CluesPerCrime_Max_Title>
   <LawAndOrder_Setting_CluesPerCrime_Max_Desc>Maximum number of clues spawned at crime scenes (1-5, default 3)</LawAndOrder_Setting_CluesPerCrime_Max_Desc>
 
+  <!-- Phase 6.4: Hidden Identity System -->
+
+  <!-- Infiltrator Revelation -->
+  <LawAndOrder_LetterLabelInfiltratorRevealed>Infiltrator Exposed!</LawAndOrder_LetterLabelInfiltratorRevealed>
+  <LawAndOrder_LetterInfiltratorRevealed>The colonist known as {0} has been revealed as an infiltrator!\n\nTheir true identity is {1}.\n\nInvestigation has uncovered their deception. They are now choosing how to react...</LawAndOrder_LetterInfiltratorRevealed>
+
+  <!-- Infiltrator Reactions -->
+  <LawAndOrder_InfiltratorFleeing>{0} is attempting to flee the colony!</LawAndOrder_InfiltratorFleeing>
+  <LawAndOrder_InfiltratorBerserk>{0} has gone berserk and is fighting to the death!</LawAndOrder_InfiltratorBerserk>
+  <LawAndOrder_InfiltratorFakedInnocence>{0} is claiming their exposure is a misunderstanding. Some colonists seem convinced...</LawAndOrder_InfiltratorFakedInnocence>
+  <LawAndOrder_InfiltratorFakedInnocenceFailed>{0} failed to convince anyone of their innocence. They're running!</LawAndOrder_InfiltratorFakedInnocenceFailed>
+  <LawAndOrder_InfiltratorActivatedAccomplices>{0} has activated their accomplices! Expect sabotage!</LawAndOrder_InfiltratorActivatedAccomplices>
+  <LawAndOrder_InfiltratorTransmittingIntel>{0} is transmitting intelligence to their faction! This could lead to a dangerous raid!</LawAndOrder_InfiltratorTransmittingIntel>
+
+  <!-- Bribery Attempt -->
+  <LawAndOrder_LetterBriberyAttemptTitle>Infiltrator Offers Information</LawAndOrder_LetterBriberyAttemptTitle>
+  <LawAndOrder_LetterBriberyAttemptDesc>The exposed infiltrator {0} is offering to trade {1} in exchange for their freedom.\n\nThis information could be valuable, but can you trust them?</LawAndOrder_LetterBriberyAttemptDesc>
+
+  <!-- Behavioral Clues (for dev mode messages) -->
+  <LawAndOrder_BehavioralClue_NightActivity>CLUE: {0} is always active at night ({1})</LawAndOrder_BehavioralClue_NightActivity>
+  <LawAndOrder_BehavioralClue_NoFood>CLUE: {0} never eats normal food</LawAndOrder_BehavioralClue_NoFood>
+  <LawAndOrder_BehavioralClue_Antisocial>CLUE: {0} avoids social interactions ({1})</LawAndOrder_BehavioralClue_Antisocial>
+  <LawAndOrder_BehavioralClue_NoRelationships>CLUE: {0} has formed no relationships after {1} days</LawAndOrder_BehavioralClue_NoRelationships>
+
+  <!-- Discovery Progress Labels -->
+  <LawAndOrder_IdentityDiscovery_Label>Identity Investigation</LawAndOrder_IdentityDiscovery_Label>
+  <LawAndOrder_IdentityDiscovery_Progress>Discovery Progress: {0}%</LawAndOrder_IdentityDiscovery_Progress>
+  <LawAndOrder_IdentityDiscovery_Clues>Clues Found: {0}</LawAndOrder_IdentityDiscovery_Clues>
+  <LawAndOrder_IdentityDiscovery_Tooltip>Suspicious behaviors and investigation clues reveal this pawn's true identity.\n\nProgress: {0}%\nClues discovered: {1}\n\nAt 100%, their identity will be revealed.</LawAndOrder_IdentityDiscovery_Tooltip>
+
+  <!-- Hidden Identity Indicators -->
+  <LawAndOrder_HiddenIdentity_Indicator>SUSPICIOUS</LawAndOrder_HiddenIdentity_Indicator>
+  <LawAndOrder_HiddenIdentity_Revealed>INFILTRATOR</LawAndOrder_HiddenIdentity_Revealed>
+
 </LanguageData>

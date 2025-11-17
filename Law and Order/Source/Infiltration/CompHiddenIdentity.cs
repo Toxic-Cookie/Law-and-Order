@@ -99,33 +99,16 @@ namespace Law_and_Order.Source.Infiltration
         /// </summary>
         private void ChooseReaction(Pawn infiltrator)
         {
-            if (identity == null)
+            if (identity == null || infiltrator == null)
                 return;
 
-            // Smart infiltrators have more options
-            var reactions = new List<InfiltratorReaction>
-            {
-                InfiltratorReaction.FleeMap,        // Always available
-                InfiltratorReaction.FightToTheEnd   // Always available
-            };
+            // Choose reaction based on intelligence
+            var reaction = InfiltratorReactionHandler.ChooseReaction(infiltrator, identity);
 
-            if (identity.intelligenceStat > 0.6f)
-            {
-                reactions.Add(InfiltratorReaction.FakeInnocence);  // "This is a mistake!"
-                reactions.Add(InfiltratorReaction.AttemptBribery); // "I'll tell you everything!"
-            }
+            ModLog.Debug($"Infiltrator {infiltrator.LabelShort} reaction: {reaction}");
 
-            if (identity.intelligenceStat > 0.8f)
-            {
-                reactions.Add(InfiltratorReaction.ActivateAccomplices); // Sabotage NOW
-                reactions.Add(InfiltratorReaction.TransmitIntelNow);    // Emergency transmission
-            }
-
-            // For now, just log the potential reaction (full implementation in later phases)
-            var chosen = reactions.RandomElement();
-            ModLog.Debug($"Infiltrator {infiltrator.LabelShort} reaction: {chosen}");
-
-            // TODO Phase 6.4+: Implement actual reactions
+            // Execute the reaction
+            InfiltratorReactionHandler.ExecuteReaction(infiltrator, reaction);
         }
 
         /// <summary>
@@ -205,9 +188,7 @@ namespace Law_and_Order.Source.Infiltration
         /// </summary>
         private string GenerateFakeName(Pawn pawn)
         {
-            // Use existing name generation
-            Name fakeName = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full);
-            return fakeName?.ToStringShort ?? "Unknown";
+            return BackstoryFabricator.GenerateFakeName(pawn);
         }
 
         /// <summary>
@@ -215,8 +196,7 @@ namespace Law_and_Order.Source.Infiltration
         /// </summary>
         private string GenerateFakeBackstory(Pawn pawn)
         {
-            // Simple fake backstory for now
-            return "A settler from a distant colony seeking a new life.";
+            return BackstoryFabricator.GenerateCoverStory(pawn);
         }
     }
 
