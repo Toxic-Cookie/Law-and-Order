@@ -261,32 +261,32 @@ namespace Law_and_Order.Source.Debug
         // ==================== PHASE 6: CLUE & EVIDENCE SYSTEM ====================
 
         [DebugAction("Law & Order - Evidence", "Spawn Blood Clue", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnBloodClue(IntVec3 cell)
+        private static void SpawnBloodClue()
         {
-            SpawnClueAtLocation(cell, ClueType.BloodStain);
+            SpawnClueAtLocation(Verse.UI.MouseCell(), ClueType.BloodStain);
         }
 
         [DebugAction("Law & Order - Evidence", "Spawn Footprint Clue", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnFootprintClue(IntVec3 cell)
+        private static void SpawnFootprintClue()
         {
-            SpawnClueAtLocation(cell, ClueType.Footprint);
+            SpawnClueAtLocation(Verse.UI.MouseCell(), ClueType.Footprint);
         }
 
         [DebugAction("Law & Order - Evidence", "Spawn Tool Mark Clue", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnToolMarkClue(IntVec3 cell)
+        private static void SpawnToolMarkClue()
         {
-            SpawnClueAtLocation(cell, ClueType.ToolMark);
+            SpawnClueAtLocation(Verse.UI.MouseCell(), ClueType.ToolMark);
         }
 
         [DebugAction("Law & Order - Evidence", "Spawn Random Clue", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnRandomClue(IntVec3 cell)
+        private static void SpawnRandomClue()
         {
             ClueType[] clueTypes = new ClueType[] {
                 ClueType.BloodStain, ClueType.Footprint, ClueType.ToolMark,
                 ClueType.DroppedItem, ClueType.FabricScrap, ClueType.FingerprintTrace
             };
             ClueType randomType = clueTypes.RandomElement();
-            SpawnClueAtLocation(cell, randomType);
+            SpawnClueAtLocation(Verse.UI.MouseCell(), randomType);
         }
 
         private static void SpawnClueAtLocation(IntVec3 cell, ClueType clueType)
@@ -352,8 +352,10 @@ namespace Law_and_Order.Source.Debug
         }
 
         [DebugAction("Law & Order - Evidence", "Spawn Crime Scene (w/ clues)", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void SpawnCrimeScene(IntVec3 cell)
+        private static void SpawnCrimeScene()
         {
+            IntVec3 cell = Verse.UI.MouseCell();
+
             if (!cell.InBounds(Find.CurrentMap))
             {
                 Messages.Message("Invalid location.", MessageTypeDefOf.RejectInput, false);
