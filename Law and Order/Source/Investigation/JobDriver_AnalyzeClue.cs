@@ -88,6 +88,26 @@ namespace Law_and_Order.Source.Investigation
                 // Final check for any remaining revelations
                 CheckForRevelations(Clue, 0f, true);
 
+                // Phase 6: Check if this clue reveals planted evidence (false accusation)
+                TruthDiscoveryUtils.TruthDiscoveryResult truthResult =
+                    TruthDiscoveryUtils.TryDiscoverTruthDuringAnalysis(pawn, Clue);
+
+                if (truthResult != null && truthResult.truthRevealed)
+                {
+                    // Apply truth discovery
+                    TruthDiscoveryUtils.ApplyTruthDiscovery(truthResult);
+
+                    // Exonerate the falsely accused pawn
+                    if (truthResult.falselyAccused != null)
+                    {
+                        ExonerationSystem.ExoneratePawn(
+                            truthResult.falselyAccused,
+                            truthResult.falseAccusationCrime,
+                            truthResult.falseAccuser
+                        );
+                    }
+                }
+
                 // Message if fully analyzed
                 if (Clue.analyzed)
                 {

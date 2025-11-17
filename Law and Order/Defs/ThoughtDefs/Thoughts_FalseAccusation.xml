@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- ==================== Falsely Accused Pawn Thoughts ==================== -->
+
+  <!-- Thought for being falsely accused of a crime -->
+  <ThoughtDef>
+    <defName>LawAndOrder_FalselyAccused</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>15</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>falsely accused</label>
+        <description>I was accused of a crime I didn't commit! This is an outrage!</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Thought for being exonerated -->
+  <ThoughtDef>
+    <defName>LawAndOrder_JusticeRestored</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>10</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>vindicated</label>
+        <description>The truth came out and I was proven innocent. Justice prevails!</description>
+        <baseMoodEffect>8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ==================== False Accuser Thoughts ==================== -->
+
+  <!-- Thought for being exposed as a liar -->
+  <ThoughtDef>
+    <defName>LawAndOrder_ExposedAsLiar</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>20</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>exposed as liar</label>
+        <description>Everyone knows I made a false accusation. My reputation is ruined.</description>
+        <baseMoodEffect>-15</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ==================== Social/Opinion Thoughts ==================== -->
+
+  <!-- Opinion modifier for being caught making false accusations -->
+  <ThoughtDef>
+    <defName>LawAndOrder_MadeFalseAccusation</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <durationDays>60</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>made false accusation</label>
+        <baseOpinionOffset>-15</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Opinion modifier for someone who was falsely accused by you -->
+  <ThoughtDef>
+    <defName>LawAndOrder_FalselyAccusedMe</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <durationDays>60</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>falsely accused me</label>
+        <baseOpinionOffset>-25</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ==================== Colony-Wide Thoughts ==================== -->
+
+  <!-- Thought for witnessing truth being discovered -->
+  <ThoughtDef>
+    <defName>LawAndOrder_WitnessedTruthRevealed</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>5</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>truth revealed</label>
+        <description>Justice was done when the truth about a false accusation was revealed.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Thought for knowing someone was falsely convicted (negative) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_KnowFalseConviction</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>15</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.6</stackedEffectMultiplier>
+    <stages>
+      <li>
+        <label>unjust conviction</label>
+        <description>Someone was convicted for a crime they didn't commit. Can we trust our justice system?</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- ==================== Victim Thoughts ==================== -->
+
+  <!-- Victim of false accusation gets satisfaction when accuser is punished -->
+  <ThoughtDef>
+    <defName>LawAndOrder_FalseAccuserPunished</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <durationDays>12</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>false accuser punished</label>
+        <description>The person who falsely accused me faced justice. I feel vindicated.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

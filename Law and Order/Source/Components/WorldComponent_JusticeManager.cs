@@ -60,6 +60,14 @@ namespace Law_and_Order.Source.Components
         }
 
         /// <summary>
+        /// Alias for GetOrCreateCase for compatibility with FalseAccusationGenerator
+        /// </summary>
+        public CriminalCase GetOrCreateCaseForPawn(Pawn pawn)
+        {
+            return GetOrCreateCase(pawn);
+        }
+
+        /// <summary>
         /// Get all open cases across all pawns.
         /// </summary>
         public List<CriminalCase> GetOpenCases()
@@ -145,6 +153,18 @@ namespace Law_and_Order.Source.Components
             {
                 CheckAutoConviction();
             }
+
+            // Phase 6: Check for false accusations every 6 hours
+            if (currentTick % (GenDate.TicksPerHour * 6) == 0)
+            {
+                CheckFalseAccusations();
+            }
+
+            // Phase 6: Check for truth discoveries every 3 hours
+            if (currentTick % (GenDate.TicksPerHour * 3) == 0)
+            {
+                CheckTruthDiscoveries();
+            }
         }
 
         /// <summary>
@@ -206,6 +226,59 @@ namespace Law_and_Order.Source.Components
         private bool GetAutoConvictSetting()
         {
             return autoConvictRedHanded;
+        }
+
+        /// <summary>
+        /// Phase 6: Check for grudge-based false accusations
+        /// </summary>
+        private void CheckFalseAccusations()
+        {
+            // Check all maps for potential false accusations
+            var maps = Find.Maps;
+            if (maps == null || maps.Count == 0)
+                return;
+
+            foreach (var map in maps)
+            {
+                if (map.IsPlayerHome)
+                {
+                    Investigation.FalseAccusationGenerator.TryGenerateGrudgeFalseAccusation(map);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Phase 6: Check for witness contradictions that might reveal false accusations
+        /// </summary>
+        private void CheckTruthDiscoveries()
+        {
+            var openCases = GetOpenCases();
+
+            foreach (var caseItem in openCases)
+            {
+                var crimes = caseItem.GetAssociatedCrimes();
+                foreach (var crime in crimes)
+                {
+                    if (crime.isFalseAccusation)
+                    {
+                        var result = Investigation.TruthDiscoveryUtils.TryDiscoverContradictions(crime);
+                        if (result != null && result.truthRevealed)
+                        {
+                            Investigation.TruthDiscoveryUtils.ApplyTruthDiscovery(result);
+
+                            // Exonerate the falsely accused pawn
+                            if (result.falselyAccused != null)
+                            {
+                                Investigation.ExonerationSystem.ExoneratePawn(
+                                    result.falselyAccused,
+                                    result.falseAccusationCrime,
+                                    result.falseAccuser
+                                );
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public override void ExposeData()

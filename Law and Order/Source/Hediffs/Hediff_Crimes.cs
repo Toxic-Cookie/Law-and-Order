@@ -231,7 +231,8 @@ namespace Law_and_Order.Source.Hediffs
         Trespassing,        // Entering forbidden areas
         Kidnapping,         // Taking colonists prisoner
         Vandalism,          // Minor property damage
-        ContrabandPossession // Possessing contraband items
+        ContrabandPossession, // Possessing contraband items
+        FalseAccusation     // Making a false accusation against another pawn
     }
 
     /// <summary>

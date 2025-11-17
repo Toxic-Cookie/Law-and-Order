@@ -824,4 +824,61 @@
   <LawAndOrder_Conviction_Recommendation_Moderate>Moderate evidence ({0} pieces). More investigation may be warranted.</LawAndOrder_Conviction_Recommendation_Moderate>
   <LawAndOrder_Conviction_Recommendation_Unreliable>Weak evidence ({0} pieces). Conviction not recommended.</LawAndOrder_Conviction_Recommendation_Unreliable>
 
+  <!-- Phase 6.3: False Accusation System -->
+  <!-- Crime Type -->
+  <LawAndOrder_Crime_FalseAccusation>False Accusation</LawAndOrder_Crime_FalseAccusation>
+
+  <!-- False Accusation Messages -->
+  <LawAndOrder_FalseAccusation_Grudge>{0} has falsely accused {1} of {2} due to a grudge</LawAndOrder_FalseAccusation_Grudge>
+  <LawAndOrder_FalseAccusation_Sanguophage>{0} has been accused of {1} (evidence may be fabricated)</LawAndOrder_FalseAccusation_Sanguophage>
+
+  <!-- Truth Discovery Messages -->
+  <LawAndOrder_TruthDiscovered_Interrogation>{0} was innocent! During interrogation, the truth was revealed about the {1} accusation made by {2}</LawAndOrder_TruthDiscovered_Interrogation>
+  <LawAndOrder_TruthDiscovered_Evidence>{0} was innocent! Evidence analysis revealed the {1} accusation was based on planted evidence from {2}</LawAndOrder_TruthDiscovered_Evidence>
+  <LawAndOrder_TruthDiscovered_Contradiction>{0} was innocent! Witness contradictions exposed the {1} accusation from {2}</LawAndOrder_TruthDiscovered_Contradiction>
+  <LawAndOrder_TruthDiscovered_Generic>{0} was innocent! The truth about the {1} accusation from {2} has been revealed</LawAndOrder_TruthDiscovered_Generic>
+
+  <!-- Truth Discovery Letters -->
+  <LawAndOrder_TruthDiscovered_Letter_Title>Truth Revealed</LawAndOrder_TruthDiscovered_Letter_Title>
+  <LawAndOrder_TruthDiscovered_Letter_Text>Investigation has revealed the truth:\n\n{0} was falsely accused of {1}!\n\nThe false accusation was made by {2} through {3}.\n\nJustice demands exoneration.</LawAndOrder_TruthDiscovered_Letter_Text>
+
+  <!-- Exoneration Messages -->
+  <LawAndOrder_Exoneration_Message>{0} has been exonerated of {1}</LawAndOrder_Exoneration_Message>
+  <LawAndOrder_Exoneration_Letter_Title>Exoneration</LawAndOrder_Exoneration_Letter_Title>
+  <LawAndOrder_Exoneration_Letter_Text>{0} has been officially exonerated of {1}.\n\nThe false accusation was made by {2}.\n\nJustice has been restored.</LawAndOrder_Exoneration_Letter_Text>
+
+  <!-- UI Indicators -->
+  <LawAndOrder_Disputed>DISPUTED</LawAndOrder_Disputed>
+  <LawAndOrder_FalseAccusation>FALSE ACCUSATION</LawAndOrder_FalseAccusation>
+  <LawAndOrder_PlantedEvidence>PLANTED EVIDENCE</LawAndOrder_PlantedEvidence>
+  <LawAndOrder_Exonerated>EXONERATED</LawAndOrder_Exonerated>
+
+  <!-- UI Tooltips -->
+  <LawAndOrder_Disputed_Tooltip>This crime has questionable evidence:\n{0}</LawAndOrder_Disputed_Tooltip>
+  <LawAndOrder_FalseAccusation_Tooltip>This is a false accusation.\nFalsely Accused: {0}\nActual Perpetrator: {1}\nAccuser: {2}</LawAndOrder_FalseAccusation_Tooltip>
+  <LawAndOrder_Exonerate_Tooltip>Exonerate {0} and punish the false accuser</LawAndOrder_Exonerate_Tooltip>
+
+  <!-- UI Buttons -->
+  <LawAndOrder_Button_Exonerate>Exonerate</LawAndOrder_Button_Exonerate>
+  <LawAndOrder_Button_ExonerateAll>Exonerate All</LawAndOrder_Button_ExonerateAll>
+
+  <!-- Settings -->
+  <LawAndOrder_Setting_FalseAccusationRate_Title>False Accusation Rate</LawAndOrder_Setting_FalseAccusationRate_Title>
+  <LawAndOrder_Setting_FalseAccusationRate_Desc>Percentage chance that colonists with strong grudges will make false accusations (0-30%, default 12%)</LawAndOrder_Setting_FalseAccusationRate_Desc>
+
+  <LawAndOrder_Setting_InfiltratorSpawnChance_Title>Infiltrator Spawn Chance</LawAndOrder_Setting_InfiltratorSpawnChance_Title>
+  <LawAndOrder_Setting_InfiltratorSpawnChance_Desc>Percentage of visitors that might be infiltrators with hidden identities (0-15%, default 5%)</LawAndOrder_Setting_InfiltratorSpawnChance_Desc>
+
+  <LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title>Max Accomplices per Infiltrator</LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Title>
+  <LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc>Maximum number of colonists an infiltrator can recruit as accomplices (0-5, default 2)</LawAndOrder_Setting_MaxAccomplicesPerInfiltrator_Desc>
+
+  <LawAndOrder_Setting_TruthDiscoveryChance_Title>Truth Discovery Chance</LawAndOrder_Setting_TruthDiscoveryChance_Title>
+  <LawAndOrder_Setting_TruthDiscoveryChance_Desc>Base chance per investigation to discover the truth about false accusations (5-40%, default 15%)</LawAndOrder_Setting_TruthDiscoveryChance_Desc>
+
+  <LawAndOrder_Setting_CluesPerCrime_Min_Title>Min Clues Per Crime</LawAndOrder_Setting_CluesPerCrime_Min_Title>
+  <LawAndOrder_Setting_CluesPerCrime_Min_Desc>Minimum number of clues spawned at crime scenes (0-5, default 1)</LawAndOrder_Setting_CluesPerCrime_Min_Desc>
+
+  <LawAndOrder_Setting_CluesPerCrime_Max_Title>Max Clues Per Crime</LawAndOrder_Setting_CluesPerCrime_Max_Title>
+  <LawAndOrder_Setting_CluesPerCrime_Max_Desc>Maximum number of clues spawned at crime scenes (1-5, default 3)</LawAndOrder_Setting_CluesPerCrime_Max_Desc>
+
 </LanguageData>

@@ -280,6 +280,26 @@ namespace Law_and_Order.Source.Investigation
                 // Show result message
                 ShowInterrogationResult(result);
 
+                // Phase 6: Check for truth discovery about false accusations
+                TruthDiscoveryUtils.TruthDiscoveryResult truthResult =
+                    TruthDiscoveryUtils.TryDiscoverTruthDuringInterrogation(pawn, Prisoner);
+
+                if (truthResult != null && truthResult.truthRevealed)
+                {
+                    // Apply truth discovery
+                    TruthDiscoveryUtils.ApplyTruthDiscovery(truthResult);
+
+                    // Exonerate the falsely accused pawn
+                    if (truthResult.falselyAccused != null)
+                    {
+                        ExonerationSystem.ExoneratePawn(
+                            truthResult.falselyAccused,
+                            truthResult.falseAccusationCrime,
+                            truthResult.falseAccuser
+                        );
+                    }
+                }
+
                 // Grant social XP to warden
                 pawn.skills?.Learn(SkillDefOf.Social, 200f); // More XP for longer process
 
