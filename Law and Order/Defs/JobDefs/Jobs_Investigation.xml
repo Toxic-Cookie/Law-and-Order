@@ -29,4 +29,51 @@
             <li>Moving</li>
         </requiredCapacities>
     </WorkGiverDef>
+
+    <!-- Job for analyzing crime scene clues -->
+    <JobDef>
+        <defName>AnalyzeCrimeClue</defName>
+        <driverClass>Law_and_Order.Source.Investigation.JobDriver_AnalyzeClue</driverClass>
+        <reportString>analyzing TargetA.</reportString>
+        <casualInterruptible>true</casualInterruptible>
+        <collideWithPawns>false</collideWithPawns>
+        <suspendable>true</suspendable>
+        <alwaysShowWeapon>false</alwaysShowWeapon>
+        <neverShowWeapon>true</neverShowWeapon>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+        <joySkill>Intellectual</joySkill>
+        <joyXpPerTick>0.02</joyXpPerTick>
+    </JobDef>
+
+    <!-- WorkGiver for researchers to analyze clues -->
+    <WorkGiverDef>
+        <defName>AnalyzeCrimeClue_Research</defName>
+        <label>analyze crime clues</label>
+        <giverClass>Law_and_Order.Source.Investigation.WorkGiver_AnalyzeClue</giverClass>
+        <workType>Research</workType>
+        <verb>Analyze</verb>
+        <gerund>analyzing clue</gerund>
+        <priorityInType>90</priorityInType>
+        <requiredCapacities>
+            <li>Manipulation</li>
+            <li>Moving</li>
+            <li>Sight</li>
+        </requiredCapacities>
+    </WorkGiverDef>
+
+    <!-- WorkGiver for wardens to also analyze clues -->
+    <WorkGiverDef>
+        <defName>AnalyzeCrimeClue_Warden</defName>
+        <label>analyze crime clues</label>
+        <giverClass>Law_and_Order.Source.Investigation.WorkGiver_AnalyzeClue</giverClass>
+        <workType>Warden</workType>
+        <verb>Analyze</verb>
+        <gerund>analyzing clue</gerund>
+        <priorityInType>25</priorityInType>
+        <requiredCapacities>
+            <li>Manipulation</li>
+            <li>Moving</li>
+            <li>Sight</li>
+        </requiredCapacities>
+    </WorkGiverDef>
 </Defs>

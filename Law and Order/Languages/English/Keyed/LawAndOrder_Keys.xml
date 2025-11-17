@@ -681,6 +681,60 @@
   <LawAndOrder_ClueAnalysis_Complete>Analysis complete</LawAndOrder_ClueAnalysis_Complete>
   <LawAndOrder_ClueAnalysis_Progress>Analysis Progress</LawAndOrder_ClueAnalysis_Progress>
   <LawAndOrder_ClueRevelation>{0} analyzed {1} and discovered: {2}</LawAndOrder_ClueRevelation>
+  <LawAndOrder_ClueFullyAnalyzed>{0} has completed analysis of the {1} clue</LawAndOrder_ClueFullyAnalyzed>
+  <LawAndOrder_ClueRevealsHiddenCrime>{0} analyzed a {1} clue that implicates {2} in {3}</LawAndOrder_ClueRevealsHiddenCrime>
+
+  <!-- Job Reports -->
+  <JobReport_AnalyzingClue>analyzing {0}</JobReport_AnalyzingClue>
+
+  <!-- Clue Revelation Stages -->
+  <Initial_BloodStain_Analysis>Initial Blood Analysis</Initial_BloodStain_Analysis>
+  <Detailed_BloodStain_Examination>Detailed Blood Examination</Detailed_BloodStain_Examination>
+  <Complete_BloodStain_Profile>Complete Blood Profile</Complete_BloodStain_Profile>
+
+  <Initial_Footprint_Analysis>Initial Footprint Analysis</Initial_Footprint_Analysis>
+  <Detailed_Footprint_Examination>Detailed Footprint Examination</Detailed_Footprint_Examination>
+  <Complete_Footprint_Profile>Complete Footprint Profile</Complete_Footprint_Profile>
+
+  <Initial_ToolMark_Analysis>Initial Tool Mark Analysis</Initial_ToolMark_Analysis>
+  <Detailed_ToolMark_Examination>Detailed Tool Mark Examination</Detailed_ToolMark_Examination>
+  <Complete_ToolMark_Profile>Complete Tool Mark Profile</Complete_ToolMark_Profile>
+
+  <Initial_DroppedItem_Analysis>Initial Item Analysis</Initial_DroppedItem_Analysis>
+  <Detailed_DroppedItem_Examination>Detailed Item Examination</Detailed_DroppedItem_Examination>
+  <Complete_DroppedItem_Profile>Complete Item Profile</Complete_DroppedItem_Profile>
+
+  <Initial_FabricScrap_Analysis>Initial Fabric Analysis</Initial_FabricScrap_Analysis>
+  <Detailed_FabricScrap_Examination>Detailed Fabric Examination</Detailed_FabricScrap_Examination>
+  <Complete_FabricScrap_Profile>Complete Fabric Profile</Complete_FabricScrap_Profile>
+
+  <Initial_FingerprintTrace_Analysis>Initial Fingerprint Analysis</Initial_FingerprintTrace_Analysis>
+  <Detailed_FingerprintTrace_Examination>Detailed Fingerprint Examination</Detailed_FingerprintTrace_Examination>
+  <Complete_FingerprintTrace_Profile>Complete Fingerprint Profile</Complete_FingerprintTrace_Profile>
+
+  <!-- Clue Basic Descriptions -->
+  <Clue_Blood_Basic>Blood type analysis shows human blood</Clue_Blood_Basic>
+  <Clue_Footprint_Basic>Distinct footprint pattern detected</Clue_Footprint_Basic>
+  <Clue_ToolMark_Basic>Tool marks indicate weapon type</Clue_ToolMark_Basic>
+  <Clue_DroppedItem_Basic>Item appears to have been dropped during the incident</Clue_DroppedItem_Basic>
+  <Clue_FabricScrap_Basic>Fabric scrap torn from clothing</Clue_FabricScrap_Basic>
+  <Clue_Fingerprint_Basic>Partial fingerprints detected</Clue_Fingerprint_Basic>
+
+  <!-- Clue Detailed Descriptions -->
+  <Clue_Blood_Detailed>Blood analysis matches {0}</Clue_Blood_Detailed>
+  <Clue_Footprint_Detailed>Footprint pattern matches {0}'s boots</Clue_Footprint_Detailed>
+  <Clue_ToolMark_Detailed>Tool marks consistent with weapon used by {0}</Clue_ToolMark_Detailed>
+  <Clue_DroppedItem_Detailed>Item belongs to {0}</Clue_DroppedItem_Detailed>
+  <Clue_FabricScrap_Detailed>Fabric matches {0}'s clothing</Clue_FabricScrap_Detailed>
+  <Clue_Fingerprint_Detailed>Fingerprints belong to {0}</Clue_Fingerprint_Detailed>
+
+  <!-- Clue Complete Descriptions -->
+  <Clue_Blood_Complete>Conclusive blood analysis: {0} is the perpetrator</Clue_Blood_Complete>
+  <Clue_Footprint_Complete>Conclusive footprint match: {0} is the perpetrator</Clue_Footprint_Complete>
+  <Clue_ToolMark_Complete>Conclusive tool mark analysis: {0} is the perpetrator</Clue_ToolMark_Complete>
+  <Clue_DroppedItem_Complete>Conclusive item analysis: {0} is the perpetrator</Clue_DroppedItem_Complete>
+  <Clue_FabricScrap_Complete>Conclusive fabric analysis: {0} is the perpetrator</Clue_FabricScrap_Complete>
+  <Clue_Fingerprint_Complete>Conclusive fingerprint match: {0} is the perpetrator</Clue_Fingerprint_Complete>
 
   <!-- Phase 6: Witness Reliability -->
   <LawAndOrder_WitnessReliability_Header>Witness Credibility</LawAndOrder_WitnessReliability_Header>

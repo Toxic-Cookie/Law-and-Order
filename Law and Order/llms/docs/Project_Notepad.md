@@ -1,8 +1,100 @@
 # Law and Order - Project Notepad
 
 **Date:** November 16, 2025
-**Phase:** Phase 6.1 - Foundation COMPLETE ✅
-**Next:** Phase 6.2 - False Accusation System
+**Phase:** Phase 6.2 - Clue & Evidence System COMPLETE ✅
+**Next:** Phase 6.3 - False Accusation System
+
+---
+
+## Phase 6.2: Clue & Evidence System (Week 2) - COMPLETE ✅
+
+**Status:** ✅ All clue system components implemented and compiling successfully!
+
+### Components Implemented:
+
+**Core Systems:**
+- ✅ `CrimeSceneClue.cs` (500+ lines) - Physical evidence Thing class with study interface
+- ✅ `ClueRevelation.cs` (60+ lines) - Progressive discovery data structure
+- ✅ `ClueGenerator` static class - Complete clue spawning system
+  - Clue type determination based on crime type
+  - Quality calculation (lighting, intelligence, witnesses)
+  - Spawn location finding
+  - Revelation generation (3 stages: 25%, 50%, 100%)
+- ✅ `EvidencePlanter.cs` (150+ lines) - False evidence planting system
+  - Smart criminals (intelligence 0.6+) can plant evidence
+  - High-quality fakes (0.8-1.0 quality)
+  - False revelations pointing to scapegoats
+
+**Job System:**
+- ✅ `JobDriver_AnalyzeClue.cs` (200+ lines) - Study job with workflow:
+  - Progress based on Intellectual skill
+  - Progressive revelations at thresholds
+  - Accuracy rolls for each revelation
+  - Crime visibility transitions (Hidden → Suspected)
+- ✅ `WorkGiver_AnalyzeClue.cs` (80+ lines) - Automatic clue analysis
+  - Assigned to Research work (priority 90)
+  - Assigned to Warden work (priority 25)
+
+**ThingDefs (XML):**
+- ✅ `Things_CrimeSceneClues.xml` - 6 clue ThingDefs:
+  - CrimeSceneClue_Blood (blood stains)
+  - CrimeSceneClue_Footprint (shoe prints)
+  - CrimeSceneClue_ToolMark (weapon marks)
+  - CrimeSceneClue_DroppedItem (left items)
+  - CrimeSceneClue_FabricScrap (torn clothing)
+  - CrimeSceneClue_Fingerprint (touch evidence)
+
+**JobDefs (XML):**
+- ✅ `Jobs_Investigation.xml` updated with:
+  - AnalyzeCrimeClue JobDef
+  - AnalyzeCrimeClue_Research WorkGiverDef
+  - AnalyzeCrimeClue_Warden WorkGiverDef
+
+**Translation Keys:**
+- ✅ 40+ new clue-related translation keys:
+  - Clue revelation stages (initial/detailed/complete × 6 types)
+  - Basic/Detailed/Complete descriptions for each clue type
+  - Job reports and progress messages
+  - Revelation discovery messages
+
+**Build Status:**
+- ✅ 0 errors, 0 warnings
+- ✅ Successfully deployed to RimWorld mods folder
+
+**Files Created:** 3 new files
+**Files Modified:** 3 existing files
+**Total Lines Added:** ~1,000+ lines
+
+**Key Features:**
+1. **Clue Spawning:** Crimes automatically spawn 1-3 physical clues at scene
+2. **Progressive Study:** Researchers/wardens analyze clues over time
+3. **Staged Revelations:** 3 stages unlock as study progresses (25%, 50%, 100%)
+4. **Evidence Planting:** Infiltrators plant false evidence to frame innocents
+5. **Crime Discovery:** Analyzing clues can reveal Hidden crimes
+6. **Automatic Decay:** Clues disappear after 10 days
+
+**Integration:**
+- ✅ Fully integrated with Phase 6.1 CompHiddenIdentity system
+- ✅ Intelligence stat affects clue quality and planting ability
+- ✅ Links to Crime class and CrimeVisibilityState system
+- ✅ **INTEGRATED**: `ClueGenerator.GenerateCluesForCrime()` called in `CrimeUtils.RecordCrime()`
+- ✅ Crime location stored automatically when crimes are committed
+- ✅ Clues spawn for ALL crimes detected by the system (assault, theft, property damage, etc.)
+- Ready for Phase 6.3 False Accusation integration
+
+**Testing Notes:**
+To test in-game:
+1. Start/load a game
+2. Wait for a raid or provoke a fight
+3. After crimes are committed, physical clues should spawn at crime locations
+4. Assign researchers or wardens to analyze clues (they should auto-assign)
+5. Watch for revelation messages as clues are studied (25%, 50%, 100% progress)
+6. Check that clues decay after 10 in-game days
+
+**Next Steps:**
+- **READY FOR IN-GAME TESTING** ✅
+- Phase 6.3: Implement false accusation mechanics
+- Phase 6.4: Truth discovery system
 
 ---
 

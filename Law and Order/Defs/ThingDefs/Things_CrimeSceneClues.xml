@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Base clue definition -->
+  <ThingDef Name="CrimeSceneClueBase" Abstract="True">
+    <category>Item</category>
+    <thingClass>Law_and_Order.Source.Investigation.CrimeSceneClue</thingClass>
+    <selectable>true</selectable>
+    <tickerType>Rare</tickerType>
+    <altitudeLayer>Item</altitudeLayer>
+    <passability>PassThroughOnly</passability>
+    <pathCost>14</pathCost>
+    <useHitPoints>false</useHitPoints>
+    <drawerType>MapMeshOnly</drawerType>
+    <graphicData>
+      <texPath>Things/Item/Chunk/ChunkSlag</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
+      <drawSize>(0.4,0.4)</drawSize>
+    </graphicData>
+    <statBases>
+      <MarketValue>0</MarketValue>
+      <Mass>0.1</Mass>
+      <Beauty>-2</Beauty>
+    </statBases>
+    <alwaysHaulable>false</alwaysHaulable>
+    <drawGUIOverlay>false</drawGUIOverlay>
+    <rotatable>false</rotatable>
+    <socialPropernessMatters>false</socialPropernessMatters>
+  </ThingDef>
+
+  <!-- Blood Stain Clue -->
+  <ThingDef ParentName="CrimeSceneClueBase">
+    <defName>CrimeSceneClue_Blood</defName>
+    <label>blood stain clue</label>
+    <description>A blood stain left at a crime scene. Can be analyzed to identify who it belongs to.</description>
+    <graphicData>
+      <color>(120,40,40)</color>
+    </graphicData>
+  </ThingDef>
+
+  <!-- Footprint Clue -->
+  <ThingDef ParentName="CrimeSceneClueBase">
+    <defName>CrimeSceneClue_Footprint</defName>
+    <label>footprint clue</label>
+    <description>Footprints left at a crime scene. Can be analyzed to identify the perpetrator.</description>
+    <graphicData>
+      <color>(100,80,60)</color>
+    </graphicData>
+  </ThingDef>
+
+  <!-- Tool Mark Clue -->
+  <ThingDef ParentName="CrimeSceneClueBase">
+    <defName>CrimeSceneClue_ToolMark</defName>
+    <label>tool mark clue</label>
+    <description>Tool marks or damage patterns left at a crime scene. Can be analyzed to identify the weapon or tool used.</description>
+    <graphicData>
+      <color>(80,80,80)</color>
+    </graphicData>
+  </ThingDef>
+
+  <!-- Dropped Item Clue -->
+  <ThingDef ParentName="CrimeSceneClueBase">
+    <defName>CrimeSceneClue_DroppedItem</defName>
+    <label>dropped item clue</label>
+    <description>An item dropped at a crime scene. Can be analyzed to identify who it belongs to.</description>
+    <graphicData>
+      <color>(150,150,100)</color>
+    </graphicData>
+  </ThingDef>
+
+  <!-- Fabric Scrap Clue -->
+  <ThingDef ParentName="CrimeSceneClueBase">
+    <defName>CrimeSceneClue_FabricScrap</defName>
+    <label>fabric scrap clue</label>
+    <description>A piece of torn fabric left at a crime scene. Can be analyzed to match to clothing worn by the perpetrator.</description>
+    <graphicData>
+      <color>(100,100,150)</color>
+    </graphicData>
+  </ThingDef>
+
+  <!-- Fingerprint Trace Clue -->
+  <ThingDef ParentName="CrimeSceneClueBase">
+    <defName>CrimeSceneClue_Fingerprint</defName>
+    <label>fingerprint trace clue</label>
+    <description>Fingerprints or touch evidence left at a crime scene. Can be analyzed to identify the perpetrator.</description>
+    <graphicData>
+      <color>(200,200,200)</color>
+    </graphicData>
+  </ThingDef>
+
+</Defs>

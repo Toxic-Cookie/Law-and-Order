@@ -3,6 +3,7 @@ using System.Linq;
 using Verse;
 using RimWorld;
 using Law_and_Order.Source.Hediffs;
+using Law_and_Order.Source.Investigation;
 using LawAndOrder.Utils;
 
 namespace Law_and_Order.Source.Utils
@@ -111,6 +112,9 @@ namespace Law_and_Order.Source.Utils
                 // Create the crime with state system
                 var crime = new Crime(crimeType, victim, targetThing, damageDealt, additionalInfo, wasVictimDowned, wasVictimKilled, damageType);
 
+                // Phase 6: Store crime location for clue spawning
+                crime.location = crimeLocation;
+
                 var criminalRecord = GetOrCreateCriminalRecord(criminal);
                 criminalRecord?.AddCrime(crime);
 
@@ -134,6 +138,12 @@ namespace Law_and_Order.Source.Utils
                 {
                     // No witnesses - crime remains Hidden
                     Mod.Log?.Message($"Crime {crimeType} committed with no witnesses (Hidden)");
+                }
+
+                // Phase 6.2: Generate physical clues at crime scene
+                if (crimeMap != null)
+                {
+                    ClueGenerator.GenerateCluesForCrime(crime, criminal, crimeLocation, crimeMap);
                 }
 
                 // Optional: Debug logging
