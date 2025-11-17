@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <!--
+    Hidden Identity Hediff
+
+    This hediff stores a pawn's real identity while they operate under a false identity.
+    It's completely invisible to the player (not shown in health tab).
+
+    The actual name concealment is done by setting pawn.Name to the fake name,
+    just like RimWorld's native rename feature. This hediff just stores the real
+    identity so we can restore it later when revealed.
+  -->
+  <HediffDef>
+    <defName>LawAndOrder_HiddenIdentity</defName>
+    <hediffClass>Law_and_Order.Source.Infiltration.Hediff_HiddenIdentity</hediffClass>
+    <label>hidden identity</label>
+    <description>This pawn is operating under a false identity.</description>
+    <defaultLabelColor>(0.8, 0.8, 0.8)</defaultLabelColor>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <tendable>false</tendable>
+    <initialSeverity>1</initialSeverity>
+    <maxSeverity>1</maxSeverity>
+
+    <!-- Completely hidden from UI -->
+    <makesSickThought>false</makesSickThought>
+    <chronic>true</chronic>
+
+    <!-- Don't show in health tab -->
+    <displayWound>false</displayWound>
+
+    <!-- This hediff is managed by code, not by natural causes -->
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <chanceToCauseNoPain>1</chanceToCauseNoPain>
+  </HediffDef>
+</Defs>

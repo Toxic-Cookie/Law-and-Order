@@ -232,7 +232,7 @@ namespace Law_and_Order.Source.Investigation
             if (hiddenIdentity != null && hiddenIdentity.HasHiddenIdentity)
             {
                 // Smart criminals leave fewer clues
-                clueLikelihood -= hiddenIdentity.Identity.intelligenceStat * 0.5f;
+                clueLikelihood -= hiddenIdentity.Hediff.intelligenceStat * 0.5f;
             }
 
             // Crime type affects clue generation
@@ -382,7 +382,7 @@ namespace Law_and_Order.Source.Investigation
             // Intelligence reduces clue quality
             var hiddenId = criminal.TryGetComp<Infiltration.CompHiddenIdentity>();
             if (hiddenId != null && hiddenId.HasHiddenIdentity)
-                quality -= hiddenId.Identity.intelligenceStat * 0.3f;
+                quality -= hiddenId.Hediff.intelligenceStat * 0.3f;
 
             return Mathf.Clamp01(quality);
         }

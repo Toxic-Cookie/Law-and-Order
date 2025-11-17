@@ -12,6 +12,7 @@ namespace Law_and_Order.Source
     public static class LawAndOrder_HediffDefOf
     {
         public static HediffDef LawAndOrder_CriminalRecord;
+        public static HediffDef LawAndOrder_HiddenIdentity;
 
         static LawAndOrder_HediffDefOf()
         {

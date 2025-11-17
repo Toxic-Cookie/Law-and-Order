@@ -68,7 +68,7 @@ namespace Law_and_Order.Source.Infiltration
                 return;
 
             var comp = pawn.TryGetComp<CompHiddenIdentity>();
-            if (comp == null || !comp.HasHiddenIdentity || comp.Identity.identityRevealed)
+            if (comp == null || !comp.HasHiddenIdentity || comp.Hediff.identityRevealed)
                 return;
 
             // Get or create tracking data
@@ -167,7 +167,7 @@ namespace Law_and_Order.Source.Infiltration
             if (nightRatio >= NIGHT_ACTIVITY_THRESHOLD)
             {
                 // Suspicious! Always working at night
-                if (!comp.Identity.discoveredClues.Contains("NightActivity"))
+                if (!comp.Hediff.discoveredClues.Contains("NightActivity"))
                 {
                     float discoveryAmount = Rand.Range(5f, 10f);
                     comp.ProgressDiscovery(discoveryAmount, "NightActivity");
@@ -201,7 +201,7 @@ namespace Law_and_Order.Source.Infiltration
                 if (foodRatio <= NO_FOOD_THRESHOLD - 0.8f) // Very rarely eating normal food
                 {
                     // Suspicious! Never seen eating
-                    if (!comp.Identity.discoveredClues.Contains("NoFoodEating"))
+                    if (!comp.Hediff.discoveredClues.Contains("NoFoodEating"))
                     {
                         float discoveryAmount = Rand.Range(10f, 15f);
                         comp.ProgressDiscovery(discoveryAmount, "NoFoodEating");
@@ -233,7 +233,7 @@ namespace Law_and_Order.Source.Infiltration
             if (socialRatio <= ANTISOCIAL_THRESHOLD)
             {
                 // Suspicious! Very antisocial
-                if (!comp.Identity.discoveredClues.Contains("Antisocial"))
+                if (!comp.Hediff.discoveredClues.Contains("Antisocial"))
                 {
                     float discoveryAmount = Rand.Range(5f, 8f);
                     comp.ProgressDiscovery(discoveryAmount, "Antisocial");
@@ -261,7 +261,7 @@ namespace Law_and_Order.Source.Infiltration
             if (tracking.relationshipsFormed == 0)
             {
                 // Suspicious! No bonds formed after 30+ days
-                if (!comp.Identity.discoveredClues.Contains("NoRelationships"))
+                if (!comp.Hediff.discoveredClues.Contains("NoRelationships"))
                 {
                     float discoveryAmount = Rand.Range(8f, 12f);
                     comp.ProgressDiscovery(discoveryAmount, "NoRelationships");

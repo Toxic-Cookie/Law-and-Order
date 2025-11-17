@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Verse;
 using RimWorld;
 using Law_and_Order.Source.Utils;
@@ -7,13 +6,33 @@ namespace Law_and_Order.Source.Infiltration
 {
     /// <summary>
     /// ThingComp for pawns with hidden identities (infiltrators, sanguophages)
+    /// This comp manages the Hediff_HiddenIdentity and handles name swapping
     /// </summary>
     public class CompHiddenIdentity : ThingComp
     {
-        private HiddenIdentity identity;
+        private Hediff_HiddenIdentity cachedHediff;
 
-        public HiddenIdentity Identity => identity;
-        public bool HasHiddenIdentity => identity != null;
+        /// <summary>
+        /// Get the hidden identity hediff for this pawn
+        /// </summary>
+        public Hediff_HiddenIdentity Hediff
+        {
+            get
+            {
+                if (cachedHediff == null || cachedHediff.pawn != parent)
+                {
+                    Pawn pawn = parent as Pawn;
+                    if (pawn?.health?.hediffSet != null)
+                    {
+                        cachedHediff = pawn.health.hediffSet.GetFirstHediffOfDef(
+                            LawAndOrder_HediffDefOf.LawAndOrder_HiddenIdentity) as Hediff_HiddenIdentity;
+                    }
+                }
+                return cachedHediff;
+            }
+        }
+
+        public bool HasHiddenIdentity => Hediff != null;
 
         public CompProperties_HiddenIdentity Props => (CompProperties_HiddenIdentity)props;
 
@@ -22,27 +41,59 @@ namespace Law_and_Order.Source.Infiltration
             base.PostSpawnSetup(respawningAfterLoad);
 
             // Generate fake identity when pawn spawns (if not loading from save)
-            if (!respawningAfterLoad && identity == null && ShouldHaveHiddenIdentity(parent as Pawn))
+            if (!respawningAfterLoad && Hediff == null && ShouldHaveHiddenIdentity(parent as Pawn))
             {
-                identity = GenerateFakeIdentity(parent as Pawn);
+                InitializeHiddenIdentity(parent as Pawn);
             }
         }
 
-        public override void PostExposeData()
-        {
-            base.PostExposeData();
-            Scribe_Deep.Look(ref identity, "identity");
-        }
-
         /// <summary>
-        /// Get the name that should be displayed to the player
+        /// Initialize hidden identity for this pawn
+        /// Stores real identity in hediff and changes pawn.Name to fake name
         /// </summary>
-        public string GetDisplayName()
+        public void InitializeHiddenIdentity(Pawn pawn)
         {
-            if (identity == null || identity.identityRevealed)
-                return (parent as Pawn)?.Name?.ToStringShort ?? "Unknown";
+            if (pawn?.health?.hediffSet == null)
+                return;
 
-            return identity.displayName;
+            // Create the hediff
+            var hediff = (Hediff_HiddenIdentity)HediffMaker.MakeHediff(
+                LawAndOrder_HediffDefOf.LawAndOrder_HiddenIdentity, pawn);
+
+            // Store REAL identity in hediff
+            hediff.realName = pawn.Name;
+            hediff.realFaction = pawn.Faction;
+            hediff.realKind = pawn.kindDef;
+
+            // Store real backstories
+            if (pawn.story != null)
+            {
+                hediff.realBackstoryChildhood = pawn.story.GetBackstory(BackstorySlot.Childhood);
+                hediff.realBackstoryAdulthood = pawn.story.GetBackstory(BackstorySlot.Adulthood);
+            }
+
+            // Generate FAKE identity
+            hediff.fakeName = GenerateFakeName(pawn);
+            hediff.fakeBackstory = BackstoryFabricator.GenerateCoverStory(pawn);
+
+            // Mask sanguophage gene if present
+            if (pawn.genes != null && ModsConfig.BiotechActive)
+            {
+                hediff.maskSanguophageStatus = pawn.genes.HasActiveGene(GeneDefOf.Bloodfeeder);
+            }
+
+            // Calculate intelligence
+            hediff.intelligenceStat = CalculateIntelligence(pawn);
+
+            // Add hediff to pawn
+            pawn.health.AddHediff(hediff);
+            cachedHediff = hediff;
+
+            // CRITICAL: Set pawn.Name to fake name (RimWorld's native name system)
+            // This makes the fake name appear everywhere automatically!
+            pawn.Name = hediff.fakeName;
+
+            ModLog.Debug($"Initialized hidden identity for {hediff.realName.ToStringShort} -> fake name: {hediff.fakeName.ToStringShort} (intel: {hediff.intelligenceStat:F2})");
         }
 
         /// <summary>
@@ -50,13 +101,14 @@ namespace Law_and_Order.Source.Infiltration
         /// </summary>
         public void ProgressDiscovery(float amount, string clueType)
         {
-            if (identity == null)
+            var hediff = Hediff;
+            if (hediff == null)
                 return;
 
-            identity.ProgressDiscovery(amount, clueType);
+            hediff.ProgressDiscovery(amount, clueType);
 
             // Check if we should reveal identity
-            if (identity.ShouldReveal())
+            if (hediff.ShouldReveal())
             {
                 RevealIdentity();
             }
@@ -65,30 +117,37 @@ namespace Law_and_Order.Source.Infiltration
         /// <summary>
         /// Reveal this pawn's true identity to the player
         /// </summary>
-        private void RevealIdentity()
+        public void RevealIdentity()
         {
-            if (identity == null || identity.identityRevealed)
+            var hediff = Hediff;
+            if (hediff == null || hediff.identityRevealed)
                 return;
-
-            identity.identityRevealed = true;
 
             Pawn pawn = parent as Pawn;
             if (pawn == null)
                 return;
 
+            string fakeName = pawn.Name.ToStringShort; // Currently displayed fake name
+
+            // Mark as revealed
+            hediff.identityRevealed = true;
+
+            // CRITICAL: Restore real name (RimWorld's native name system)
+            pawn.Name = hediff.realName;
+
             // Dramatic reveal event!
             Find.LetterStack.ReceiveLetter(
                 "LawAndOrder_LetterLabelInfiltratorRevealed".Translate(),
                 "LawAndOrder_LetterInfiltratorRevealed".Translate(
-                    identity.displayName,
-                    identity.realName,
+                    fakeName,
+                    hediff.realName.ToStringShort,
                     pawn.Named("INFILTRATOR")
                 ),
                 LetterDefOf.ThreatBig,
                 pawn
             );
 
-            ModLog.Info($"Identity revealed: {identity.displayName} is actually {identity.realName}");
+            ModLog.Info($"Identity revealed: {fakeName} is actually {hediff.realName.ToStringShort}");
 
             // Choose reaction based on intelligence
             ChooseReaction(pawn);
@@ -99,11 +158,12 @@ namespace Law_and_Order.Source.Infiltration
         /// </summary>
         private void ChooseReaction(Pawn infiltrator)
         {
-            if (identity == null || infiltrator == null)
+            var hediff = Hediff;
+            if (hediff == null || infiltrator == null)
                 return;
 
             // Choose reaction based on intelligence
-            var reaction = InfiltratorReactionHandler.ChooseReaction(infiltrator, identity);
+            var reaction = InfiltratorReactionHandler.ChooseReaction(infiltrator, hediff);
 
             ModLog.Debug($"Infiltrator {infiltrator.LabelShort} reaction: {reaction}");
 
@@ -138,65 +198,63 @@ namespace Law_and_Order.Source.Infiltration
         }
 
         /// <summary>
-        /// Generate a fake identity for this infiltrator
+        /// Generate a fake name for the infiltrator
         /// </summary>
-        private HiddenIdentity GenerateFakeIdentity(Pawn pawn)
+        private Name GenerateFakeName(Pawn pawn)
+        {
+            // Use RimWorld's name generator to create a realistic fake name
+            NameStyle style = NameStyle.Full;
+            string forcedLastName = null;
+            bool forceNoNick = false;
+
+            Name fakeName = PawnBioAndNameGenerator.GeneratePawnName(
+                pawn,
+                style,
+                forcedLastName,
+                forceNoNick,
+                pawn.genes?.Xenotype
+            );
+
+            return fakeName;
+        }
+
+        /// <summary>
+        /// Calculate intelligence stat based on pawn's skills and traits
+        /// </summary>
+        private static float CalculateIntelligence(Pawn pawn)
         {
             if (pawn == null)
-                return null;
+                return 0.5f;
 
-            var newIdentity = new HiddenIdentity();
+            float intel = 0.5f; // Base
 
-            // Store real identity
-            newIdentity.realName = pawn.Name?.ToStringShort ?? "Unknown";
-            newIdentity.realFaction = pawn.Faction;
-            newIdentity.realKind = pawn.kindDef;
-
-            // Generate fake name (simple for now - could be enhanced)
-            newIdentity.displayName = GenerateFakeName(pawn);
-
-            // Create fake backstory
-            newIdentity.displayBackstory = GenerateFakeBackstory(pawn);
-
-            // Mask sanguophage gene if present
-            if (pawn.genes != null && ModsConfig.BiotechActive)
+            // Social skill affects deception
+            if (pawn.skills != null)
             {
-                newIdentity.maskSanguophageStatus = pawn.genes.HasActiveGene(GeneDefOf.Bloodfeeder);
+                intel += pawn.skills.GetSkill(SkillDefOf.Social).Level * 0.02f;
+
+                // Intellectual skill affects planning
+                intel += pawn.skills.GetSkill(SkillDefOf.Intellectual).Level * 0.015f;
             }
 
-            // Hide suspicious traits
-            newIdentity.maskedTraits = new List<string>();
+            // Traits modify intelligence
             if (pawn.story?.traits != null)
             {
                 if (pawn.story.traits.HasTrait(TraitDefOf.Psychopath))
-                    newIdentity.maskedTraits.Add("Psychopath");
+                    intel += 0.1f; // Cold, calculating
 
-                if (pawn.story.traits.HasTrait(TraitDefOf.Bloodlust))
-                    newIdentity.maskedTraits.Add("Bloodlust");
+                // Check for fast/slow learner traits
+                var fastLearnerTrait = DefDatabase<TraitDef>.GetNamedSilentFail("FastLearner");
+                var slowLearnerTrait = DefDatabase<TraitDef>.GetNamedSilentFail("SlowLearner");
+
+                if (fastLearnerTrait != null && pawn.story.traits.HasTrait(fastLearnerTrait))
+                    intel += 0.1f; // Fast learner
+
+                if (slowLearnerTrait != null && pawn.story.traits.HasTrait(slowLearnerTrait))
+                    intel -= 0.2f; // Slow learner
             }
 
-            // Calculate intelligence
-            newIdentity.intelligenceStat = HiddenIdentity.CalculateIntelligence(pawn);
-
-            ModLog.Debug($"Generated fake identity for {pawn.LabelShort}: {newIdentity.displayName} (intel: {newIdentity.intelligenceStat:F2})");
-
-            return newIdentity;
-        }
-
-        /// <summary>
-        /// Generate a fake name for the infiltrator
-        /// </summary>
-        private string GenerateFakeName(Pawn pawn)
-        {
-            return BackstoryFabricator.GenerateFakeName(pawn);
-        }
-
-        /// <summary>
-        /// Generate a fake backstory for the infiltrator
-        /// </summary>
-        private string GenerateFakeBackstory(Pawn pawn)
-        {
-            return BackstoryFabricator.GenerateCoverStory(pawn);
+            return UnityEngine.Mathf.Clamp01(intel);
         }
     }
 

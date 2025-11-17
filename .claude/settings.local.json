@@ -79,7 +79,9 @@
       "WebFetch(domain:rimworldwiki.com)",
       "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law-and-Order.wiki\" /b)",
       "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\" /b /s)",
-      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\" /b)"
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Languages\\English\\Keyed\" /b)",
+      "Bash(cmd /c dir \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Defs\" /b)",
+      "Bash(del \"C:\\Users\\Giovanni\\source\\repos\\Law and Order\\Law and Order\\Source\\Infiltration\\HiddenIdentity.cs\")"
     ],
     "deny": [],
     "ask": []

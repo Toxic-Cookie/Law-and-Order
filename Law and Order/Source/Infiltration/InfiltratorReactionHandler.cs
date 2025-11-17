@@ -272,9 +272,9 @@ namespace Law_and_Order.Source.Infiltration
         /// Choose reaction based on infiltrator's intelligence stat
         /// Smarter infiltrators have more options
         /// </summary>
-        public static InfiltratorReaction ChooseReaction(Pawn infiltrator, HiddenIdentity identity)
+        public static InfiltratorReaction ChooseReaction(Pawn infiltrator, Hediff_HiddenIdentity hediff)
         {
-            if (identity == null)
+            if (hediff == null)
                 return InfiltratorReaction.FleeMap;
 
             // Build list of available reactions based on intelligence
@@ -284,13 +284,13 @@ namespace Law_and_Order.Source.Infiltration
                 InfiltratorReaction.FightToTheEnd   // Always available
             };
 
-            if (identity.intelligenceStat > 0.6f)
+            if (hediff.intelligenceStat > 0.6f)
             {
                 availableReactions.Add(InfiltratorReaction.FakeInnocence);
                 availableReactions.Add(InfiltratorReaction.AttemptBribery);
             }
 
-            if (identity.intelligenceStat > 0.8f)
+            if (hediff.intelligenceStat > 0.8f)
             {
                 availableReactions.Add(InfiltratorReaction.ActivateAccomplices);
                 availableReactions.Add(InfiltratorReaction.TransmitIntelNow);
@@ -311,23 +311,23 @@ namespace Law_and_Order.Source.Infiltration
                         break;
 
                     case InfiltratorReaction.FightToTheEnd:
-                        weight = 1.0f - identity.intelligenceStat; // Dumber = more likely to fight
+                        weight = 1.0f - hediff.intelligenceStat; // Dumber = more likely to fight
                         break;
 
                     case InfiltratorReaction.FakeInnocence:
-                        weight = identity.intelligenceStat * 1.5f; // Smart move if high intelligence
+                        weight = hediff.intelligenceStat * 1.5f; // Smart move if high intelligence
                         break;
 
                     case InfiltratorReaction.AttemptBribery:
-                        weight = identity.intelligenceStat * 1.2f;
+                        weight = hediff.intelligenceStat * 1.2f;
                         break;
 
                     case InfiltratorReaction.ActivateAccomplices:
-                        weight = identity.intelligenceStat * 2.0f; // Very smart move
+                        weight = hediff.intelligenceStat * 2.0f; // Very smart move
                         break;
 
                     case InfiltratorReaction.TransmitIntelNow:
-                        weight = identity.intelligenceStat * 2.0f; // Very smart move
+                        weight = hediff.intelligenceStat * 2.0f; // Very smart move
                         break;
                 }
 

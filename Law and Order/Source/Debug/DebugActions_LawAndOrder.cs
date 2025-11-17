@@ -400,6 +400,39 @@ namespace Law_and_Order.Source.Debug
 
         // ==================== PHASE 6: INFILTRATION & HIDDEN IDENTITY ====================
 
+        [DebugAction("Law & Order - Infiltration", "Check Hidden Identity", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void CheckHiddenIdentity(Pawn pawn)
+        {
+            if (pawn == null || pawn.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null)
+            {
+                Messages.Message($"{pawn.NameShortColored} has NO CompHiddenIdentity component.", MessageTypeDefOf.RejectInput, false);
+                ModLog.Warning($"Pawn {pawn.LabelShort} has no CompHiddenIdentity");
+                return;
+            }
+
+            var hediff = comp.Hediff;
+            if (hediff == null)
+            {
+                Messages.Message($"{pawn.NameShortColored} has CompHiddenIdentity but NO hediff data.", MessageTypeDefOf.RejectInput, false);
+                ModLog.Warning($"Pawn {pawn.LabelShort} has comp but no hediff");
+                return;
+            }
+
+            string status = hediff.identityRevealed ? "REVEALED" : "HIDDEN";
+            string currentName = pawn.Name.ToStringShort;
+            string realName = hediff.realName?.ToStringShort ?? "Unknown";
+            Messages.Message($"{pawn.NameShortColored} has hidden identity: Current Name='{currentName}', Real Name='{realName}' ({status})",
+                MessageTypeDefOf.TaskCompletion, false);
+            ModLog.Info($"Hidden Identity Check: Real={realName}, Current={currentName}, Status={status}");
+        }
+
         [DebugAction("Law & Order - Infiltration", "Add Hidden Identity", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void AddHiddenIdentity(Pawn pawn)
         {
@@ -409,15 +442,16 @@ namespace Law_and_Order.Source.Debug
                 return;
             }
 
-            CompHiddenIdentity hiddenIdentity = pawn.GetComp<CompHiddenIdentity>();
-            if (hiddenIdentity != null && hiddenIdentity.Identity != null)
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp != null && comp.Hediff != null)
             {
-                Messages.Message($"{pawn.NameShortColored} already has a hidden identity: {hiddenIdentity.Identity.displayName}", MessageTypeDefOf.RejectInput, false);
+                string fakeName = pawn.Name.ToStringShort;
+                Messages.Message($"{pawn.NameShortColored} already has a hidden identity (current name: {fakeName})", MessageTypeDefOf.RejectInput, false);
                 return;
             }
 
             // If comp doesn't exist, add it dynamically to the ThingDef
-            if (hiddenIdentity == null)
+            if (comp == null)
             {
                 // Check if the comp is already in the def
                 if (!pawn.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
@@ -428,59 +462,35 @@ namespace Law_and_Order.Source.Debug
                 }
 
                 // Create and initialize the comp instance
-                hiddenIdentity = new CompHiddenIdentity();
-                hiddenIdentity.parent = pawn;
+                comp = new CompHiddenIdentity();
+                comp.parent = pawn;
 
                 // Initialize the comp properties
                 var compPropsInDef = pawn.def.comps.FirstOrDefault(cp => cp is CompProperties_HiddenIdentity);
                 if (compPropsInDef != null)
                 {
-                    hiddenIdentity.Initialize(compPropsInDef);
+                    comp.Initialize(compPropsInDef);
                 }
 
                 // Add to pawn's comps list
-                pawn.AllComps.Add(hiddenIdentity);
+                pawn.AllComps.Add(comp);
             }
 
-            // Force-generate identity using reflection (bypass ShouldHaveHiddenIdentity check)
-            if (hiddenIdentity.Identity == null)
+            // Initialize the hidden identity (this will create the hediff and set fake name)
+            string originalName = pawn.Name.ToStringShort;
+            comp.InitializeHiddenIdentity(pawn);
+
+            var hediff = comp.Hediff;
+            if (hediff != null)
             {
-                try
-                {
-                    // Use reflection to call private GenerateFakeIdentity method
-                    var generateMethod = typeof(CompHiddenIdentity).GetMethod("GenerateFakeIdentity",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                    if (generateMethod != null)
-                    {
-                        HiddenIdentity newIdentity = (HiddenIdentity)generateMethod.Invoke(hiddenIdentity, new object[] { pawn });
-
-                        // Set the identity field using reflection
-                        var identityField = typeof(CompHiddenIdentity).GetField("identity",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                        if (identityField != null && newIdentity != null)
-                        {
-                            identityField.SetValue(hiddenIdentity, newIdentity);
-                            Messages.Message($"Added hidden identity to {pawn.NameShortColored} → Display Name: {newIdentity.displayName}",
-                                MessageTypeDefOf.TaskCompletion, false);
-                            ModLog.Info($"Debug: Generated hidden identity for {pawn.LabelShort}: {newIdentity.displayName} (Intel: {newIdentity.intelligenceStat:F2})");
-                        }
-                        else
-                        {
-                            Messages.Message("Failed to set identity field", MessageTypeDefOf.RejectInput, false);
-                        }
-                    }
-                    else
-                    {
-                        Messages.Message("Failed to find GenerateFakeIdentity method", MessageTypeDefOf.RejectInput, false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Messages.Message($"Error generating identity: {ex.Message}", MessageTypeDefOf.RejectInput, false);
-                    ModLog.Error($"Failed to generate hidden identity: {ex}");
-                }
+                string fakeName = pawn.Name.ToStringShort; // Now shows fake name
+                Messages.Message($"Added hidden identity to pawn.\nOriginal: {originalName}\nFake Name: {fakeName}\nIntelligence: {hediff.intelligenceStat:F2}",
+                    MessageTypeDefOf.TaskCompletion, false);
+                ModLog.Info($"Debug: Generated hidden identity for {originalName}: Fake={fakeName}, Intel={hediff.intelligenceStat:F2}");
+            }
+            else
+            {
+                Messages.Message("Failed to initialize hidden identity", MessageTypeDefOf.RejectInput, false);
             }
         }
 
@@ -493,18 +503,18 @@ namespace Law_and_Order.Source.Debug
                 return;
             }
 
-            CompHiddenIdentity hiddenIdentity = pawn.GetComp<CompHiddenIdentity>();
-            if (hiddenIdentity == null || hiddenIdentity.Identity == null)
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null || comp.Hediff == null)
             {
                 Messages.Message($"{pawn.NameShortColored} has no hidden identity.", MessageTypeDefOf.RejectInput, false);
                 return;
             }
 
             // Use ProgressDiscovery which handles revelation automatically
-            hiddenIdentity.ProgressDiscovery(0.25f, "Debug action");
-            Messages.Message($"Added 25% discovery progress to {pawn.NameShortColored} (now {hiddenIdentity.Identity.discoveryProgress:P0})", MessageTypeDefOf.TaskCompletion, false);
+            comp.ProgressDiscovery(25f, "Debug action");
+            Messages.Message($"Added 25% discovery progress to {pawn.NameShortColored} (now {comp.Hediff.discoveryProgress:F0}%)", MessageTypeDefOf.TaskCompletion, false);
 
-            if (hiddenIdentity.Identity.identityRevealed)
+            if (comp.Hediff.identityRevealed)
             {
                 Messages.Message($"Identity revealed!", MessageTypeDefOf.TaskCompletion, false);
             }
@@ -519,15 +529,15 @@ namespace Law_and_Order.Source.Debug
                 return;
             }
 
-            CompHiddenIdentity hiddenIdentity = pawn.GetComp<CompHiddenIdentity>();
-            if (hiddenIdentity == null || hiddenIdentity.Identity == null)
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null || comp.Hediff == null)
             {
                 Messages.Message($"{pawn.NameShortColored} has no hidden identity.", MessageTypeDefOf.RejectInput, false);
                 return;
             }
 
             // Use ProgressDiscovery to trigger full revelation
-            hiddenIdentity.ProgressDiscovery(1.0f, "Debug action - full reveal");
+            comp.ProgressDiscovery(100f, "Debug action - full reveal");
             Messages.Message($"Fully revealed identity of {pawn.NameShortColored}", MessageTypeDefOf.TaskCompletion, false);
         }
 

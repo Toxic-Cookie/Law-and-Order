@@ -30,7 +30,7 @@ namespace Law_and_Order.Source.Investigation
             if (hiddenId == null || !hiddenId.HasHiddenIdentity)
                 return;
 
-            if (hiddenId.Identity.intelligenceStat < 0.6f)
+            if (hiddenId.Hediff.intelligenceStat < 0.6f)
                 return; // Not smart enough to plant evidence
 
             // Generate fake clue
@@ -55,7 +55,7 @@ namespace Law_and_Order.Source.Investigation
             fakeClue.plantedBy = infiltrator;
 
             // High quality fake (smart criminal makes it convincing)
-            float intelligence = hiddenId.Identity.intelligenceStat;
+            float intelligence = hiddenId.Hediff.intelligenceStat;
             fakeClue.clueQuality = 0.8f + (intelligence * 0.2f);
 
             // Generate revelations that point to scapegoat
