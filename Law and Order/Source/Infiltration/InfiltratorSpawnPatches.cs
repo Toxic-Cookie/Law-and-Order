@@ -50,8 +50,20 @@ namespace Law_and_Order.Source.Infiltration
 
                 if (hostileFaction == null) return;
 
+                // Find the visitor group lord that was just created
+                var visitorLord = map.lordManager.lords
+                    .Where(l => l.faction == parms.faction && l.CurLordToil != null)
+                    .OrderByDescending(l => l.loadID)
+                    .FirstOrDefault();
+
+                if (visitorLord == null)
+                {
+                    ModLog.Warning("Could not find visitor lord to add infiltrator to");
+                    return;
+                }
+
                 // Create infiltrator disguised as part of the visitor group
-                Pawn infiltrator = CreateInfiltrator(parms.faction, hostileFaction, map);
+                Pawn infiltrator = CreateInfiltrator(parms.faction, hostileFaction, map, visitorLord);
                 if (infiltrator != null)
                 {
                     ModLog.Info($"Infiltrator from {hostileFaction.Name} joined visitor group from {parms.faction.Name}");
@@ -131,7 +143,7 @@ namespace Law_and_Order.Source.Infiltration
         /// <summary>
         /// Create an infiltrator that blends into a visitor group
         /// </summary>
-        private static Pawn CreateInfiltrator(Faction coverFaction, Faction realFaction, Map map)
+        private static Pawn CreateInfiltrator(Faction coverFaction, Faction realFaction, Map map, Verse.AI.Group.Lord visitorLord)
         {
             try
             {
@@ -154,38 +166,72 @@ namespace Law_and_Order.Source.Infiltration
                     relationWithExtraPawnChanceFactor: 0f
                 ));
 
-                // Add CompHiddenIdentity
+                // Store original name before we change it
+                string originalName = infiltrator.Name.ToStringShort;
+
+                // Add CompHiddenIdentity to ThingDef if not present
                 if (!infiltrator.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
                 {
-                    infiltrator.def.comps.Add(new CompProperties_HiddenIdentity());
+                    CompProperties_HiddenIdentity compProps = new CompProperties_HiddenIdentity();
+                    infiltrator.def.comps.Add(compProps);
                 }
 
-                // Spawn at map edge with visitor group
+                // Find a good spawn position near the other visitors
                 IntVec3 spawnPos;
-                if (!CellFinder.TryFindRandomEdgeCellWith(c => c.Standable(map) && !c.Fogged(map), map, CellFinder.EdgeRoadChance_Neutral, out spawnPos))
+                var otherVisitors = visitorLord.ownedPawns;
+                if (otherVisitors != null && otherVisitors.Any())
                 {
-                    spawnPos = CellFinder.RandomClosewalkCellNear(map.Center, map, 20);
+                    // Spawn near the other visitors
+                    Pawn nearPawn = otherVisitors.First();
+                    spawnPos = CellFinder.RandomClosewalkCellNear(nearPawn.Position, map, 3);
+                }
+                else
+                {
+                    // Fallback to map edge
+                    if (!CellFinder.TryFindRandomEdgeCellWith(c => c.Standable(map) && !c.Fogged(map), map, CellFinder.EdgeRoadChance_Neutral, out spawnPos))
+                    {
+                        spawnPos = CellFinder.RandomClosewalkCellNear(map.Center, map, 20);
+                    }
                 }
 
+                // Spawn the infiltrator
                 GenSpawn.Spawn(infiltrator, spawnPos, map);
 
-                // Initialize hidden identity
+                // Initialize CompHiddenIdentity AFTER spawning
                 CompHiddenIdentity comp = infiltrator.GetComp<CompHiddenIdentity>();
                 if (comp == null)
                 {
                     comp = new CompHiddenIdentity();
                     comp.parent = infiltrator;
-                    comp.Initialize(infiltrator.def.comps.First(cp => cp is CompProperties_HiddenIdentity));
+                    var compPropsInDef = infiltrator.def.comps.OfType<CompProperties_HiddenIdentity>().FirstOrDefault();
+                    if (compPropsInDef != null)
+                    {
+                        comp.Initialize(compPropsInDef);
+                    }
                     infiltrator.AllComps.Add(comp);
                 }
 
+                // Initialize hidden identity (changes name and creates hediff)
                 comp.InitializeHiddenIdentity(infiltrator);
 
-                // Store real faction
-                if (comp.Hediff != null)
+                // Store real faction in the hediff
+                var hediff = comp.Hediff;
+                if (hediff != null)
                 {
-                    comp.Hediff.realFaction = realFaction;
+                    hediff.realFaction = realFaction;
+
+                    if (Prefs.DevMode)
+                    {
+                        ModLog.Debug($"Created infiltrator: Original={originalName}, Fake={infiltrator.Name.ToStringShort}, RealFaction={realFaction.Name}, CoverFaction={coverFaction.Name}, Intel={hediff.intelligenceStat:F2}");
+                    }
                 }
+                else
+                {
+                    ModLog.Error($"Failed to create hediff for infiltrator {infiltrator.LabelShort}");
+                }
+
+                // Add to visitor group lord so they behave like visitors
+                visitorLord.AddPawn(infiltrator);
 
                 // Set as guest
                 infiltrator.guest.SetGuestStatus(Faction.OfPlayer, GuestStatus.Guest);
@@ -220,28 +266,47 @@ namespace Law_and_Order.Source.Infiltration
                     relationWithExtraPawnChanceFactor: 0f
                 ));
 
-                // Add CompHiddenIdentity
+                // Store original name before we change it
+                string originalName = infiltrator.Name.ToStringShort;
+
+                // Add CompHiddenIdentity to ThingDef if not present
                 if (!infiltrator.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
                 {
-                    infiltrator.def.comps.Add(new CompProperties_HiddenIdentity());
+                    CompProperties_HiddenIdentity compProps = new CompProperties_HiddenIdentity();
+                    infiltrator.def.comps.Add(compProps);
                 }
 
-                // Initialize hidden identity BEFORE spawning
+                // Initialize CompHiddenIdentity (must be done BEFORE spawning for wanderers)
                 CompHiddenIdentity comp = infiltrator.GetComp<CompHiddenIdentity>();
                 if (comp == null)
                 {
                     comp = new CompHiddenIdentity();
                     comp.parent = infiltrator;
-                    comp.Initialize(infiltrator.def.comps.First(cp => cp is CompProperties_HiddenIdentity));
+                    var compPropsInDef = infiltrator.def.comps.OfType<CompProperties_HiddenIdentity>().FirstOrDefault();
+                    if (compPropsInDef != null)
+                    {
+                        comp.Initialize(compPropsInDef);
+                    }
                     infiltrator.AllComps.Add(comp);
                 }
 
+                // Initialize hidden identity (changes name and creates hediff)
                 comp.InitializeHiddenIdentity(infiltrator);
 
-                // Store real faction
-                if (comp.Hediff != null)
+                // Store real faction in the hediff
+                var hediff = comp.Hediff;
+                if (hediff != null)
                 {
-                    comp.Hediff.realFaction = realFaction;
+                    hediff.realFaction = realFaction;
+
+                    if (Prefs.DevMode)
+                    {
+                        ModLog.Debug($"Created wanderer infiltrator: Original={originalName}, Fake={infiltrator.Name.ToStringShort}, RealFaction={realFaction.Name}, Intel={hediff.intelligenceStat:F2}");
+                    }
+                }
+                else
+                {
+                    ModLog.Error($"Failed to create hediff for wanderer infiltrator {infiltrator.LabelShort}");
                 }
 
                 return infiltrator;
