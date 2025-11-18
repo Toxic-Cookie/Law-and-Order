@@ -4,6 +4,7 @@ using Verse;
 using Verse.AI;
 using RimWorld;
 using Law_and_Order.Source.Utils;
+using Law_and_Order.Source.Components;
 
 namespace Law_and_Order.Source.Infiltration
 {
@@ -246,23 +247,44 @@ namespace Law_and_Order.Source.Infiltration
 
         /// <summary>
         /// Reaction: Emergency intelligence transmission
-        /// Sends gathered intel to faction immediately (Phase 6.5 stub)
+        /// Sends gathered intel to faction immediately (Phase 6.5)
         /// </summary>
         private static void ReactTransmitIntel(Pawn infiltrator)
         {
             if (infiltrator == null)
                 return;
 
-            // Placeholder for Phase 6.5 intelligence system
+            // Get the hidden identity hediff
+            var hediff = infiltrator.health?.hediffSet?.GetFirstHediffOfDef(
+                LawAndOrder_HediffDefOf.LawAndOrder_HiddenIdentity) as Hediff_HiddenIdentity;
+
+            if (hediff == null)
+            {
+                ModLog.Warning($"ReactTransmitIntel: {infiltrator.LabelShort} has no hidden identity hediff");
+                ReactFleeMap(infiltrator);
+                return;
+            }
+
+            // Get intelligence network
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            if (network == null)
+            {
+                ModLog.Warning("IntelligenceNetwork component not found!");
+                ReactFleeMap(infiltrator);
+                return;
+            }
+
+            // Transmit all gathered intelligence immediately
+            network.TransmitIntelligence(infiltrator, hediff);
+
+            // Show message about emergency transmission
             Messages.Message(
                 "LawAndOrder_InfiltratorTransmittingIntel".Translate(infiltrator.LabelShort),
                 infiltrator,
                 MessageTypeDefOf.ThreatBig
             );
 
-            ModLog.Debug($"{infiltrator.LabelShort} is transmitting intelligence");
-
-            // TODO Phase 6.5: Actually transmit gathered intelligence to hostile faction
+            ModLog.Info($"{infiltrator.LabelShort} completed emergency intelligence transmission");
 
             // After transmission, try to flee
             ReactFleeMap(infiltrator);

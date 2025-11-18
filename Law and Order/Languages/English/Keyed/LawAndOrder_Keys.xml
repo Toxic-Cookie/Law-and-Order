@@ -888,4 +888,67 @@
   <LawAndOrder_HiddenIdentity_Indicator>SUSPICIOUS</LawAndOrder_HiddenIdentity_Indicator>
   <LawAndOrder_HiddenIdentity_Revealed>INFILTRATOR</LawAndOrder_HiddenIdentity_Revealed>
 
+  <!-- ========================================== -->
+  <!-- Phase 6.5: Intelligence Gathering System  -->
+  <!-- ========================================== -->
+
+  <!-- Intelligence Categories -->
+  <LawAndOrder.IntelCategory.Defense>Defense Intelligence</LawAndOrder.IntelCategory.Defense>
+  <LawAndOrder.IntelCategory.Wealth>Wealth Intelligence</LawAndOrder.IntelCategory.Wealth>
+  <LawAndOrder.IntelCategory.Schedule>Schedule Intelligence</LawAndOrder.IntelCategory.Schedule>
+  <LawAndOrder.IntelCategory.Layout>Layout Intelligence</LawAndOrder.IntelCategory.Layout>
+
+  <!-- Intelligence Quality Levels -->
+  <LawAndOrder.IntelQuality.Low>Low Quality</LawAndOrder.IntelQuality.Low>
+  <LawAndOrder.IntelQuality.Moderate>Moderate Quality</LawAndOrder.IntelQuality.Moderate>
+  <LawAndOrder.IntelQuality.High>High Quality</LawAndOrder.IntelQuality.High>
+
+  <!-- Intelligence Summary -->
+  <LawAndOrder.IntelSummary>{0} intel ({1}) - {2}% complete, {3} days old</LawAndOrder.IntelSummary>
+
+  <!-- Espionage Warning Letter -->
+  <LawAndOrder.LetterLabelEspionageWarning>Espionage Alert!</LawAndOrder.LetterLabelEspionageWarning>
+  <LawAndOrder.LetterEspionageWarning>An infiltrator ({0}) has escaped and transmitted intelligence to {1}!\n\nIntelligence gathered: {2} reports\nCategories: {3}\nThreat Level: {4}\n\nFuture raids from this faction will be more tactical and dangerous. Expect the enemy to exploit weaknesses they've discovered.</LawAndOrder.LetterEspionageWarning>
+
+  <!-- Raid Modification Messages -->
+  <LawAndOrder.RaidModified.Sappers>{0} is using sappers! They know about your killbox defenses.</LawAndOrder.RaidModified.Sappers>
+  <LawAndOrder.RaidModified.DropPods>{0} is launching a drop pod assault! They know where your valuables are stored.</LawAndOrder.RaidModified.DropPods>
+  <LawAndOrder.RaidModified.NightRaid>{0} is attacking at night! They know when your guards are few.</LawAndOrder.RaidModified.NightRaid>
+  <LawAndOrder.RaidModified.MultiPronged>{0} is executing a multi-pronged assault! They have detailed knowledge of your base layout.</LawAndOrder.RaidModified.MultiPronged>
+
+  <!-- Intelligence Gathering Progress (dev mode) -->
+  <LawAndOrder.IntelGathering.Progress>{0} gathered {1} intel: {2}% complete (quality: {3})</LawAndOrder.IntelGathering.Progress>
+  <LawAndOrder.IntelGathering.Started>{0} began gathering {1} intelligence</LawAndOrder.IntelGathering.Started>
+  <LawAndOrder.IntelGathering.Complete>{0} completed gathering {1} intelligence ({2} quality)</LawAndOrder.IntelGathering.Complete>
+
+  <!-- Transmission Messages -->
+  <LawAndOrder.IntelTransmission.Success>{0} transmitted {1} intelligence reports to {2}</LawAndOrder.IntelTransmission.Success>
+  <LawAndOrder.IntelTransmission.NoIntel>{0} left without gathering any useful intelligence</LawAndOrder.IntelTransmission.NoIntel>
+  <LawAndOrder.IntelTransmission.Blocked>{0} was prevented from transmitting intelligence!</LawAndOrder.IntelTransmission.Blocked>
+
+  <!-- Intel Details Tooltips -->
+  <LawAndOrder.IntelDetails.Defense>Turret count: {0}\nCombat-skilled colonists: {1}\nDefensive strength: {2}\nHas killbox: {3}</LawAndOrder.IntelDetails.Defense>
+  <LawAndOrder.IntelDetails.Wealth>Storage locations: {0}\nEstimated wealth: {1} silver\nHigh-value items: {2}</LawAndOrder.IntelDetails.Wealth>
+  <LawAndOrder.IntelDetails.Schedule>Night guards: {0}\nTotal colonists: {1}\nVulnerable at night: {2}</LawAndOrder.IntelDetails.Schedule>
+  <LawAndOrder.IntelDetails.Layout>Power switches: {0}\nPrison cells: {1}\nEntry points: {2}</LawAndOrder.IntelDetails.Layout>
+
+  <!-- Warning Descriptions -->
+  <LawAndOrder.IntelWarning.LowThreat>Minor intelligence leaked. Expect slightly more challenging raids from {0}.</LawAndOrder.IntelWarning.LowThreat>
+  <LawAndOrder.IntelWarning.ModerateThreat>Significant intelligence leaked. {0} now knows key details about your colony. Raids will be much more tactical.</LawAndOrder.IntelWarning.ModerateThreat>
+  <LawAndOrder.IntelWarning.HighThreat>CRITICAL: Extensive intelligence leaked to {0}! They have detailed knowledge of your defenses, wealth, schedules, and layout. Expect devastating raids!</LawAndOrder.IntelWarning.HighThreat>
+
+  <!-- Reaction: Transmit Intel -->
+  <LawAndOrder.Reaction.TransmitIntel>{0} is broadcasting emergency intelligence transmission!</LawAndOrder.Reaction.TransmitIntel>
+  <LawAndOrder.Reaction.TransmitIntelComplete>{0} completed intelligence transmission to {1}. Threat level: {2}</LawAndOrder.Reaction.TransmitIntelComplete>
+
+  <!-- Intelligence Network Status -->
+  <LawAndOrder.IntelNetwork.Active>Active Intelligence Network</LawAndOrder.IntelNetwork.Active>
+  <LawAndOrder.IntelNetwork.InfiltratorsPresent>{0} infiltrator(s) currently gathering intelligence</LawAndOrder.IntelNetwork.InfiltratorsPresent>
+  <LawAndOrder.IntelNetwork.NoThreats>No active intelligence gathering detected</LawAndOrder.IntelNetwork.NoThreats>
+
+  <!-- Debug/Dev Mode Messages -->
+  <LawAndOrder.Debug.IntelGathered>DEBUG: {0} gathered {1} intel - {2}% complete (accuracy: {3}%)</LawAndOrder.Debug.IntelGathered>
+  <LawAndOrder.Debug.RaidModified>DEBUG: Raid modified by intel - Points: x{0}, Strategy: {1}</LawAndOrder.Debug.RaidModified>
+  <LawAndOrder.Debug.IntelTransmitted>DEBUG: {0} transmitted {1} reports to {2} (threat: {3})</LawAndOrder.Debug.IntelTransmitted>
+
 </LanguageData>

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Verse;
 using RimWorld;
+using LawAndOrder;
 
 namespace Law_and_Order.Source.Infiltration
 {
@@ -35,10 +36,16 @@ namespace Law_and_Order.Source.Infiltration
         // Behavior intelligence
         public float intelligenceStat;          // 0.0-1.0, how smart this infiltrator is
 
+        // Intelligence gathering (Phase 6.5)
+        public Dictionary<IntelCategory, IntelligenceData> gatheredIntelligence; // Intel being gathered
+        public int lastIntelGatherTick;         // Last time intel was gathered (for rate limiting)
+
         public Hediff_HiddenIdentity()
         {
             maskedTraits = new List<string>();
             discoveredClues = new List<string>();
+            gatheredIntelligence = new Dictionary<IntelCategory, IntelligenceData>();
+            lastIntelGatherTick = 0;
         }
 
         public override void ExposeData()
@@ -66,6 +73,10 @@ namespace Law_and_Order.Source.Infiltration
             // Behavior intelligence
             Scribe_Values.Look(ref intelligenceStat, "intelligenceStat", 0.5f);
 
+            // Intelligence gathering (Phase 6.5)
+            Scribe_Collections.Look(ref gatheredIntelligence, "gatheredIntelligence", LookMode.Value, LookMode.Deep);
+            Scribe_Values.Look(ref lastIntelGatherTick, "lastIntelGatherTick", 0);
+
             // Post-load init
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
@@ -73,6 +84,8 @@ namespace Law_and_Order.Source.Infiltration
                     maskedTraits = new List<string>();
                 if (discoveredClues == null)
                     discoveredClues = new List<string>();
+                if (gatheredIntelligence == null)
+                    gatheredIntelligence = new Dictionary<IntelCategory, IntelligenceData>();
             }
         }
 
@@ -117,6 +130,96 @@ namespace Law_and_Order.Source.Infiltration
         public bool ShouldReveal()
         {
             return !identityRevealed && discoveryProgress >= 100f;
+        }
+
+        /// <summary>
+        /// Get or create intelligence data for a specific category
+        /// </summary>
+        public IntelligenceData GetOrCreateIntelligence(IntelCategory category, Map map)
+        {
+            if (gatheredIntelligence == null)
+                gatheredIntelligence = new Dictionary<IntelCategory, IntelligenceData>();
+
+            if (!gatheredIntelligence.ContainsKey(category))
+            {
+                gatheredIntelligence[category] = new IntelligenceData(category, map.uniqueID, pawn);
+            }
+
+            return gatheredIntelligence[category];
+        }
+
+        /// <summary>
+        /// Check if this infiltrator can gather more intelligence (rate limiting)
+        /// </summary>
+        public bool CanGatherIntelNow()
+        {
+            if (identityRevealed)
+                return false; // Can't gather intel if exposed
+
+            int ticksSinceLastGather = Find.TickManager.TicksGame - lastIntelGatherTick;
+            int gatherCooldown = GenDate.TicksPerHour * 2; // 2 hour cooldown between gathering
+
+            return ticksSinceLastGather >= gatherCooldown;
+        }
+
+        /// <summary>
+        /// Gather intelligence for a random category
+        /// </summary>
+        public void GatherIntelligence(Map map)
+        {
+            if (!CanGatherIntelNow())
+                return;
+
+            // Choose a random category to focus on
+            IntelCategory category = (IntelCategory)Rand.RangeInclusive(0, 3);
+
+            // Get or create intel data
+            IntelligenceData intel = GetOrCreateIntelligence(category, map);
+
+            // Calculate progress amount
+            float progress = IntelligenceUtils.GatherIntelligence(pawn, map, category);
+
+            // Improve completeness
+            intel.ImproveCompleteness(progress);
+
+            // Populate details based on current progress
+            IntelligenceUtils.PopulateIntelDetails(intel, map);
+
+            // Update last gather time
+            lastIntelGatherTick = Find.TickManager.TicksGame;
+
+            if (Prefs.DevMode)
+            {
+                Utils.ModLog.Debug($"Infiltrator {pawn.LabelShort} gathered {category} intel: {intel.completeness * 100f:F1}% complete");
+            }
+        }
+
+        /// <summary>
+        /// Get all intelligence that has been gathered
+        /// </summary>
+        public List<IntelligenceData> GetAllGatheredIntelligence()
+        {
+            if (gatheredIntelligence == null)
+                return new List<IntelligenceData>();
+
+            return new List<IntelligenceData>(gatheredIntelligence.Values);
+        }
+
+        /// <summary>
+        /// Mark all intelligence as transmitted (when infiltrator leaves map)
+        /// </summary>
+        public void TransmitAllIntelligence()
+        {
+            if (gatheredIntelligence == null)
+                return;
+
+            foreach (var intel in gatheredIntelligence.Values)
+            {
+                if (!intel.transmitted)
+                {
+                    intel.MarkTransmitted();
+                }
+            }
         }
     }
 }
