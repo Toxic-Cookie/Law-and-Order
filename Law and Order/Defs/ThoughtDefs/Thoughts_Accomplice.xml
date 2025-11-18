@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- =========================== Accomplice Thoughts =========================== -->
+
+  <!-- Accomplice caught - feels guilty and scared -->
+  <ThoughtDef>
+    <defName>LawAndOrder_CaughtAsAccomplice</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>caught as accomplice</label>
+        <description>I was caught working with an infiltrator. What have I done? Everyone knows I betrayed them.</description>
+        <baseMoodEffect>-18</baseMoodEffect>
+      </li>
+    </stages>
+    <stackLimit>1</stackLimit>
+    <durationDays>25</durationDays>
+  </ThoughtDef>
+
+  <!-- Colony-wide thought when an accomplice is discovered -->
+  <ThoughtDef>
+    <defName>LawAndOrder_ColonistBetrayed</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>colonist betrayed us</label>
+        <description>One of our own was working with an infiltrator. How can we trust anyone now?</description>
+        <baseMoodEffect>-8</baseMoodEffect>
+      </li>
+    </stages>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+    <durationDays>20</durationDays>
+  </ThoughtDef>
+
+  <!-- Opinion penalty toward the accomplice (social thought) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_OpinionBetrayer</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>betrayed the colony</label>
+        <baseOpinionOffset>-30</baseOpinionOffset>
+      </li>
+    </stages>
+    <stackLimit>1</stackLimit>
+    <durationDays>60</durationDays>
+  </ThoughtDef>
+
+  <!-- Opinion penalty toward the infiltrator recruiter (social thought) -->
+  <ThoughtDef>
+    <defName>LawAndOrder_OpinionInfiltrator</defName>
+    <thoughtClass>Thought_MemorySocial</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>infiltrator among us</label>
+        <baseOpinionOffset>-40</baseOpinionOffset>
+      </li>
+    </stages>
+    <stackLimit>1</stackLimit>
+    <durationDays>60</durationDays>
+  </ThoughtDef>
+
+  <!-- Accomplice recruited - initial uncertainty -->
+  <ThoughtDef>
+    <defName>LawAndOrder_RecruitedByInfiltrator</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>recruited by infiltrator</label>
+        <description>I've agreed to help someone in secret. This could change everything... or ruin me.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+    <stackLimit>1</stackLimit>
+    <durationDays>15</durationDays>
+  </ThoughtDef>
+
+  <!-- Accomplice successfully sabotaged - feeling conflicted -->
+  <ThoughtDef>
+    <defName>LawAndOrder_PerformedSabotage</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>sabotaged the colony</label>
+        <description>I sabotaged my own people. What kind of person does that make me?</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+    </stages>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+    <durationDays>18</durationDays>
+  </ThoughtDef>
+
+  <!-- Witnessed accomplice being caught -->
+  <ThoughtDef>
+    <defName>LawAndOrder_WitnessedAccompliceDiscovery</defName>
+    <thoughtClass>Thought_Memory</thoughtClass>
+    <developmentalStageFilter>Baby, Child, Adult</developmentalStageFilter>
+    <stages>
+      <li>
+        <label>witnessed betrayal</label>
+        <description>I saw one of our own get exposed as a traitor. This place isn't safe anymore.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+    <stackLimit>2</stackLimit>
+    <stackedEffectMultiplier>0.6</stackedEffectMultiplier>
+    <durationDays>12</durationDays>
+  </ThoughtDef>
+
+</Defs>

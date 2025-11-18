@@ -1,6 +1,9 @@
 {
   "permissions": {
-    "allow": [],
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(tee:*)"
+    ],
     "deny": [],
     "ask": []
   }

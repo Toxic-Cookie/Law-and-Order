@@ -223,25 +223,44 @@ namespace Law_and_Order.Source.Infiltration
 
         /// <summary>
         /// Reaction: Activate recruited accomplices immediately
-        /// Triggers sabotage (Phase 6.6 stub)
+        /// Triggers sabotage (Phase 6.6)
         /// </summary>
         private static void ReactActivateAccomplices(Pawn infiltrator)
         {
-            if (infiltrator == null)
+            if (infiltrator == null || infiltrator.Map == null)
                 return;
 
-            // Placeholder for Phase 6.6 accomplice system
+            // Get all accomplices for this infiltrator
+            var accomplices = AccompliceUtils.GetAccomplicesForInfiltrator(infiltrator);
+
+            if (accomplices.Count == 0)
+            {
+                ModLog.Debug($"{infiltrator.LabelShort} tried to activate accomplices but has none");
+
+                // No accomplices, just flee
+                ReactFleeMap(infiltrator);
+                return;
+            }
+
+            ModLog.Info($"{infiltrator.LabelShort} activating {accomplices.Count} accomplices");
+
+            // Send dramatic message
             Messages.Message(
-                "LawAndOrder_InfiltratorActivatedAccomplices".Translate(infiltrator.LabelShort),
+                "LawAndOrder_InfiltratorActivatedAccomplices".Translate(
+                    infiltrator.LabelShort,
+                    accomplices.Count
+                ),
                 infiltrator,
                 MessageTypeDefOf.ThreatBig
             );
 
-            ModLog.Debug($"{infiltrator.LabelShort} is attempting to activate accomplices");
+            // Assign sabotage tasks to all accomplices
+            SabotageExecutor.AssignSabotageTasks(infiltrator, infiltrator.Map);
 
-            // TODO Phase 6.6: Trigger accomplice sabotage actions
+            // Execute sabotage immediately
+            SabotageExecutor.ExecuteAllPendingSabotage(infiltrator.Map);
 
-            // After attempting activation, flee
+            // After triggering sabotage, try to flee
             ReactFleeMap(infiltrator);
         }
 

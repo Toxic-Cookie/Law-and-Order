@@ -961,4 +961,56 @@
   <LawAndOrder.Debug.RaidModified>DEBUG: Raid modified by intel - Points: x{0}, Strategy: {1}</LawAndOrder.Debug.RaidModified>
   <LawAndOrder.Debug.IntelTransmitted>DEBUG: {0} transmitted {1} reports to {2} (threat: {3})</LawAndOrder.Debug.IntelTransmitted>
 
+  <!-- ================ Phase 6.6: Accomplice System ================ -->
+
+  <!-- Accomplice Recruitment -->
+  <LawAndOrder_AccompliceRecruited>{0} has been recruited as an accomplice by {1}</LawAndOrder_AccompliceRecruited>
+  <LawAndOrder_AccompliceRecruitmentFailed>{0} resisted recruitment attempt by {1}</LawAndOrder_AccompliceRecruitmentFailed>
+  <LawAndOrder_AccompliceAbandoned>{0} has abandoned their allegiance to {1}</LawAndOrder_AccompliceAbandoned>
+
+  <!-- Accomplice Discovery -->
+  <LawAndOrder_LetterAccompliceDiscoveredTitle>Accomplice Discovered!</LawAndOrder_LetterAccompliceDiscoveredTitle>
+  <LawAndOrder_LetterAccompliceDiscoveredDesc>{0} has been caught working with {1}! They were sabotaging the colony from within.\n\nThe betrayal has shaken the entire colony.</LawAndOrder_LetterAccompliceDiscoveredDesc>
+
+  <!-- Sabotage Messages -->
+  <LawAndOrder_SabotageTurretDisabled>SABOTAGE: {0} has been disabled!</LawAndOrder_SabotageTurretDisabled>
+  <LawAndOrder_SabotageDoorOpened>SABOTAGE: {0} has been opened!</LawAndOrder_SabotageDoorOpened>
+  <LawAndOrder_SabotageFireStarted>SABOTAGE: A fire has been started in the colony!</LawAndOrder_SabotageFireStarted>
+  <LawAndOrder_SabotageEquipmentBroken>SABOTAGE: {0} has been damaged!</LawAndOrder_SabotageEquipmentBroken>
+  <LawAndOrder_SabotageDetected>SABOTAGE DETECTED: Accomplices are attacking the colony from within!</LawAndOrder_SabotageDetected>
+
+  <!-- Infiltrator Activating Accomplices -->
+  <LawAndOrder_InfiltratorActivatedAccomplices>{0} is activating {1} accomplice(s)!</LawAndOrder_InfiltratorActivatedAccomplices>
+  <LawAndOrder_InfiltratorNoAccomplices>{0} tried to activate accomplices but has recruited none</LawAndOrder_InfiltratorNoAccomplices>
+
+  <!-- Accomplice Loyalty -->
+  <LawAndOrder_AccompliceLoyaltyHigh>{0} remains loyal to {1}</LawAndOrder_AccompliceLoyaltyHigh>
+  <LawAndOrder_AccompliceLoyaltyWavering>{0}'s loyalty to {1} is wavering...</LawAndOrder_AccompliceLoyaltyWavering>
+  <LawAndOrder_AccompliceLoyaltyBroken>{0} has broken ties with {1}</LawAndOrder_AccompliceLoyaltyBroken>
+
+  <!-- Sabotage Types (for descriptions) -->
+  <LawAndOrder_Sabotage_DisableTurret>Disable defensive turret</LawAndOrder_Sabotage_DisableTurret>
+  <LawAndOrder_Sabotage_OpenDoor>Open defensive door/gate</LawAndOrder_Sabotage_OpenDoor>
+  <LawAndOrder_Sabotage_StartFire>Start fire in colony</LawAndOrder_Sabotage_StartFire>
+  <LawAndOrder_Sabotage_BreakEquipment>Damage critical equipment</LawAndOrder_Sabotage_BreakEquipment>
+  <LawAndOrder_Sabotage_CauseDistraction>Cause distraction</LawAndOrder_Sabotage_CauseDistraction>
+  <LawAndOrder_Sabotage_SabotageDefenses>Sabotage colony defenses</LawAndOrder_Sabotage_SabotageDefenses>
+
+  <!-- Settings -->
+  <LawAndOrder_Setting_MaxAccomplices_Title>Max Accomplices per Infiltrator</LawAndOrder_Setting_MaxAccomplices_Title>
+  <LawAndOrder_Setting_MaxAccomplices_Desc>Maximum number of colonists each infiltrator can recruit as accomplices. Default: 2. Range: 0-5</LawAndOrder_Setting_MaxAccomplices_Desc>
+
+  <!-- Vulnerability Factors (for tooltips/debugging) -->
+  <LawAndOrder_Vulnerability_LowMood>Low mood (+20% vulnerability)</LawAndOrder_Vulnerability_LowMood>
+  <LawAndOrder_Vulnerability_Greedy>Greedy trait (+15% vulnerability)</LawAndOrder_Vulnerability_Greedy>
+  <LawAndOrder_Vulnerability_Jealous>Jealous trait (+12% vulnerability)</LawAndOrder_Vulnerability_Jealous>
+  <LawAndOrder_Vulnerability_Depressive>Depressive trait (+10% vulnerability)</LawAndOrder_Vulnerability_Depressive>
+  <LawAndOrder_Vulnerability_CriminalPast>Criminal background (+10% vulnerability)</LawAndOrder_Vulnerability_CriminalPast>
+  <LawAndOrder_Vulnerability_FriendOfInfiltrator>Friend of infiltrator (+15% vulnerability)</LawAndOrder_Vulnerability_FriendOfInfiltrator>
+  <LawAndOrder_Vulnerability_Isolated>Socially isolated (+8% vulnerability)</LawAndOrder_Vulnerability_Isolated>
+
+  <!-- Raid Sabotage Notifications -->
+  <LawAndOrder_RaidSabotageTriggered>Accomplices are sabotaging during the raid!</LawAndOrder_RaidSabotageTriggered>
+  <LawAndOrder_RaidSabotageComplete>{0} accomplice(s) completed their sabotage</LawAndOrder_RaidSabotageComplete>
+
 </LanguageData>

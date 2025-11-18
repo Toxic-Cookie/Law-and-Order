@@ -171,6 +171,18 @@ namespace Law_and_Order.Source.Components
             {
                 CheckBehavioralClues();
             }
+
+            // Phase 6.6: Check for accomplice recruitment every 12 hours
+            if (currentTick % (GenDate.TicksPerHour * 12) == 0)
+            {
+                CheckAccompliceRecruitment();
+            }
+
+            // Phase 6.6: Update accomplice loyalty every 8 hours
+            if (currentTick % (GenDate.TicksPerHour * 8) == 0)
+            {
+                UpdateAccompliceLoyalty();
+            }
         }
 
         /// <summary>
@@ -316,6 +328,44 @@ namespace Law_and_Order.Source.Components
                 if (map.IsPlayerHome)
                 {
                     Infiltration.BehavioralClueDetector.CheckBehavioralClues(map);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Phase 6.6: Check for accomplice recruitment opportunities
+        /// </summary>
+        private void CheckAccompliceRecruitment()
+        {
+            // Check all player maps
+            var maps = Find.Maps;
+            if (maps == null || maps.Count == 0)
+                return;
+
+            foreach (var map in maps)
+            {
+                if (map.IsPlayerHome)
+                {
+                    Infiltration.AccompliceUtils.TryRecruitAccomplices_Periodic(map);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Phase 6.6: Update loyalty for all accomplices
+        /// </summary>
+        private void UpdateAccompliceLoyalty()
+        {
+            // Check all player maps
+            var maps = Find.Maps;
+            if (maps == null || maps.Count == 0)
+                return;
+
+            foreach (var map in maps)
+            {
+                if (map.IsPlayerHome)
+                {
+                    Infiltration.AccompliceUtils.UpdateAllAccompliceLoyalty(map);
                 }
             }
         }
