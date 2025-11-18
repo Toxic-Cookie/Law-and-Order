@@ -76,4 +76,17 @@
             <li>Sight</li>
         </requiredCapacities>
     </WorkGiverDef>
+
+    <!-- Job for manually cleaning up fully analyzed clues (via right-click) -->
+    <JobDef>
+        <defName>LawAndOrder_CleanupClue</defName>
+        <driverClass>Law_and_Order.Source.Investigation.JobDriver_CleanupClue</driverClass>
+        <reportString>cleaning up TargetA.</reportString>
+        <casualInterruptible>true</casualInterruptible>
+        <collideWithPawns>false</collideWithPawns>
+        <suspendable>true</suspendable>
+        <alwaysShowWeapon>false</alwaysShowWeapon>
+        <neverShowWeapon>true</neverShowWeapon>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+    </JobDef>
 </Defs>

@@ -686,6 +686,12 @@
 
   <!-- Job Reports -->
   <JobReport_AnalyzingClue>analyzing {0}</JobReport_AnalyzingClue>
+  <JobReport_CleaningUpClue>cleaning up {0}</JobReport_CleaningUpClue>
+
+  <!-- Clue Cleanup -->
+  <LawAndOrder_CleanupClue>Clean up {0}</LawAndOrder_CleanupClue>
+  <LawAndOrder_CannotCleanupClue>Cannot clean up {0}</LawAndOrder_CannotCleanupClue>
+  <LawAndOrder_ClueCleanedUp>{PAWN} cleaned up the {CLUETYPE} clue</LawAndOrder_ClueCleanedUp>
 
   <!-- Clue Revelation Stages -->
   <Initial_BloodStain_Analysis>Initial Blood Analysis</Initial_BloodStain_Analysis>
