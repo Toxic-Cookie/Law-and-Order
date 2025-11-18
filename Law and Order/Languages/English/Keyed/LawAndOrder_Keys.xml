@@ -910,6 +910,10 @@
   <LawAndOrder.LetterLabelEspionageWarning>Espionage Alert!</LawAndOrder.LetterLabelEspionageWarning>
   <LawAndOrder.LetterEspionageWarning>An infiltrator ({0}) has escaped and transmitted intelligence to {1}!\n\nIntelligence gathered: {2} reports\nCategories: {3}\nThreat Level: {4}\n\nFuture raids from this faction will be more tactical and dangerous. Expect the enemy to exploit weaknesses they've discovered.</LawAndOrder.LetterEspionageWarning>
 
+  <!-- Infiltrator Revealed -->
+  <LawAndOrder.InfiltratorRevealedLabel>Infiltrator Revealed!</LawAndOrder.InfiltratorRevealedLabel>
+  <LawAndOrder.InfiltratorRevealed>{0}'s true identity has been exposed! They are actually an infiltrator from {1}, not {2}.\n\nThey have now turned hostile and will fight for their real faction.</LawAndOrder.InfiltratorRevealed>
+
   <!-- Raid Modification Messages -->
   <LawAndOrder.RaidModified.Sappers>{0} is using sappers! They know about your killbox defenses.</LawAndOrder.RaidModified.Sappers>
   <LawAndOrder.RaidModified.DropPods>{0} is launching a drop pod assault! They know where your valuables are stored.</LawAndOrder.RaidModified.DropPods>

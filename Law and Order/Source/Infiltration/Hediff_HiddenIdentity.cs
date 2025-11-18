@@ -133,6 +133,50 @@ namespace Law_and_Order.Source.Infiltration
         }
 
         /// <summary>
+        /// Reveal the infiltrator's true identity and change to real faction
+        /// </summary>
+        public void RevealIdentity()
+        {
+            if (identityRevealed || pawn == null)
+                return;
+
+            identityRevealed = true;
+
+            // Restore real name
+            if (realName != null)
+            {
+                pawn.Name = realName;
+            }
+
+            // Change to real hostile faction
+            if (realFaction != null)
+            {
+                Faction oldFaction = pawn.Faction;
+                pawn.SetFaction(realFaction, null);
+
+                // Send player letter about revealed infiltrator
+                TaggedString letterText = "LawAndOrder.InfiltratorRevealed".Translate(
+                    pawn.NameShortColored,
+                    realFaction.Name,
+                    oldFaction?.Name ?? "Unknown"
+                );
+                TaggedString letterLabel = "LawAndOrder.InfiltratorRevealedLabel".Translate();
+
+                Find.LetterStack.ReceiveLetter(
+                    letterLabel,
+                    letterText,
+                    LetterDefOf.ThreatBig,
+                    pawn
+                );
+
+                if (Prefs.DevMode)
+                {
+                    Utils.ModLog.Debug($"Revealed infiltrator {pawn.LabelShort}: {oldFaction?.Name ?? "None"} -> {realFaction.Name}");
+                }
+            }
+        }
+
+        /// <summary>
         /// Get or create intelligence data for a specific category
         /// </summary>
         public IntelligenceData GetOrCreateIntelligence(IntelCategory category, Map map)
