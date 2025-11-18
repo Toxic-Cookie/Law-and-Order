@@ -61,7 +61,13 @@ Reference these files when questions arise about mod-specific libraries and depe
 ### Deployed Mod Folder
 `C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Law and Order`
 
-This folder is where the mod gets deployed to. Any file changes should NOT be made here as they will be overwritten by the files in the project during the build. Although, residual files could be here and potentially interfere with new changes.
+This folder is where the mod gets deployed to.
+
+**IMPORTANT**:
+- **Never make file changes directly in this folder** - they will be overwritten on the next build
+- **Never manually copy files to this folder** - the build process handles all deployment automatically
+- **The build process guarantees a clean slate** - the entire deployment directory is wiped and rebuilt from scratch on every build
+- No residual files will interfere with changes since the automated clean build removes everything before copying fresh files
 
 ## RimWorld Source Code
 
