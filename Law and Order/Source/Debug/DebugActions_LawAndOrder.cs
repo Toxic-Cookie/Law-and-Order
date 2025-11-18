@@ -541,6 +541,318 @@ namespace Law_and_Order.Source.Debug
             Messages.Message($"Fully revealed identity of {pawn.NameShortColored}", MessageTypeDefOf.TaskCompletion, false);
         }
 
+        // ==================== PHASE 6.5: INTELLIGENCE GATHERING ====================
+
+        [DebugAction("Law & Order - Intelligence", "Spawn Infiltrator (Visitor)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SpawnInfiltrator()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Get a hostile faction
+            Faction hostileFaction = Find.FactionManager.AllFactionsVisible
+                .Where(f => f.HostileTo(Faction.OfPlayer) && !f.def.hidden && !f.IsPlayer)
+                .RandomElementWithFallback();
+
+            if (hostileFaction == null)
+            {
+                Messages.Message("No hostile faction available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Generate a pawn from that faction
+            PawnKindDef pawnKind = hostileFaction.def.pawnGroupMakers
+                .SelectMany(pgm => pgm.options)
+                .Where(opt => opt.kind.RaceProps.Humanlike)
+                .RandomElementWithFallback()?.kind;
+
+            if (pawnKind == null)
+            {
+                pawnKind = PawnKindDefOf.Colonist; // Fallback
+            }
+
+            Pawn infiltrator = PawnGenerator.GeneratePawn(new PawnGenerationRequest(
+                pawnKind,
+                Faction.OfPlayer, // They appear as player faction (undercover)
+                PawnGenerationContext.NonPlayer,
+                -1,
+                forceGenerateNewPawn: true,
+                allowDead: false,
+                allowDowned: false,
+                canGeneratePawnRelations: true,
+                mustBeCapableOfViolence: false
+            ));
+
+            // Add CompHiddenIdentity comp if not present
+            if (!infiltrator.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
+            {
+                CompProperties_HiddenIdentity compProps = new CompProperties_HiddenIdentity();
+                infiltrator.def.comps.Add(compProps);
+            }
+
+            // Spawn on map edge
+            IntVec3 spawnPos = CellFinder.RandomClosewalkCellNear(map.Center, map, 20);
+            GenSpawn.Spawn(infiltrator, spawnPos, map);
+
+            // Initialize hidden identity AFTER spawning
+            CompHiddenIdentity comp = infiltrator.GetComp<CompHiddenIdentity>();
+            if (comp == null)
+            {
+                // Create and add comp manually if still missing
+                comp = new CompHiddenIdentity();
+                comp.parent = infiltrator;
+                var compPropsInDef = infiltrator.def.comps.FirstOrDefault(cp => cp is CompProperties_HiddenIdentity);
+                if (compPropsInDef != null)
+                {
+                    comp.Initialize(compPropsInDef);
+                }
+                infiltrator.AllComps.Add(comp);
+            }
+
+            string originalName = infiltrator.Name.ToStringShort;
+            comp.InitializeHiddenIdentity(infiltrator);
+
+            // Store real faction AFTER initialization
+            var hediff = comp.Hediff;
+            if (hediff != null)
+            {
+                hediff.realFaction = hostileFaction;
+                string fakeName = infiltrator.Name.ToStringShort;
+                Messages.Message($"Infiltrator spawned!\nReal Faction: {hostileFaction.Name}\nOriginal: {originalName}\nFake Name: {fakeName}\nIntelligence: {hediff.intelligenceStat:F2}",
+                    MessageTypeDefOf.TaskCompletion, false);
+                ModLog.Info($"Debug: Spawned infiltrator from {hostileFaction.Name}: Fake={fakeName}, Intel={hediff.intelligenceStat:F2}");
+            }
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Gather Defense Intel (Instant)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void GatherDefenseIntel(Pawn pawn)
+        {
+            GatherIntelForCategory(pawn, LawAndOrder.IntelCategory.Defense);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Gather Wealth Intel (Instant)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void GatherWealthIntel(Pawn pawn)
+        {
+            GatherIntelForCategory(pawn, LawAndOrder.IntelCategory.Wealth);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Gather Schedule Intel (Instant)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void GatherScheduleIntel(Pawn pawn)
+        {
+            GatherIntelForCategory(pawn, LawAndOrder.IntelCategory.Schedule);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Gather Layout Intel (Instant)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void GatherLayoutIntel(Pawn pawn)
+        {
+            GatherIntelForCategory(pawn, LawAndOrder.IntelCategory.Layout);
+        }
+
+        private static void GatherIntelForCategory(Pawn pawn, LawAndOrder.IntelCategory category)
+        {
+            if (pawn == null || pawn.Dead || pawn.Map == null)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null || comp.Hediff == null)
+            {
+                Messages.Message($"{pawn.NameShortColored} is not an infiltrator (no hidden identity).", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var hediff = comp.Hediff;
+            var intel = hediff.GetOrCreateIntelligence(category, pawn.Map);
+
+            // Set to 100% complete instantly
+            intel.completeness = 1.0f;
+            LawAndOrder.IntelligenceUtils.PopulateIntelDetails(intel, pawn.Map);
+
+            Messages.Message($"{pawn.NameShortColored} instantly gathered {category} intel (100% complete, quality: {intel.Quality})",
+                MessageTypeDefOf.TaskCompletion, false);
+            ModLog.Info($"Debug: {pawn.LabelShort} gathered {category} intel - Quality: {intel.Quality}");
+        }
+
+        [DebugAction("Law & Order - Intelligence", "View Gathered Intel", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ViewGatheredIntel(Pawn pawn)
+        {
+            if (pawn == null || pawn.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null || comp.Hediff == null)
+            {
+                Messages.Message($"{pawn.NameShortColored} is not an infiltrator.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var allIntel = comp.Hediff.GetAllGatheredIntelligence();
+            if (allIntel.Count == 0)
+            {
+                Messages.Message($"{pawn.NameShortColored} has not gathered any intelligence yet.", MessageTypeDefOf.NeutralEvent, false);
+                return;
+            }
+
+            Log.Message($"=== INTELLIGENCE GATHERED BY {pawn.LabelShort} ===");
+            foreach (var intel in allIntel)
+            {
+                Log.Message($"  - {intel.category}: {intel.completeness * 100f:F1}% complete, {intel.Quality} quality");
+                Log.Message($"    Accuracy: {intel.accuracy * 100f:F1}%, Age: {intel.DaysOld} days, Transmitted: {intel.transmitted}");
+            }
+
+            Messages.Message($"{pawn.NameShortColored} has gathered {allIntel.Count} intelligence reports (see console)", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Force Intel Transmission", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ForceIntelTransmission(Pawn pawn)
+        {
+            if (pawn == null || pawn.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null || comp.Hediff == null)
+            {
+                Messages.Message($"{pawn.NameShortColored} is not an infiltrator.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            if (network == null)
+            {
+                Messages.Message("IntelligenceNetwork component not found!", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var hediff = comp.Hediff;
+            var allIntel = hediff.GetAllGatheredIntelligence();
+            if (allIntel.Count == 0)
+            {
+                Messages.Message($"{pawn.NameShortColored} has no intelligence to transmit.", MessageTypeDefOf.NeutralEvent, false);
+                return;
+            }
+
+            network.TransmitIntelligence(pawn, hediff);
+            Messages.Message($"{pawn.NameShortColored} transmitted {allIntel.Count} intelligence reports!", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Log Intelligence Network", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void LogIntelligenceNetwork()
+        {
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            if (network == null)
+            {
+                Messages.Message("IntelligenceNetwork component not found!", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"=== INTELLIGENCE NETWORK STATUS ===");
+
+            int totalIntel = 0;
+            foreach (var faction in Find.FactionManager.AllFactionsVisible.Where(f => f.HostileTo(Faction.OfPlayer)))
+            {
+                var factionIntel = network.GetFactionIntelligence(faction);
+                if (factionIntel.Count > 0)
+                {
+                    totalIntel += factionIntel.Count;
+                    Log.Message($"Faction: {faction.Name} ({factionIntel.Count} intelligence reports)");
+                    foreach (var intel in factionIntel)
+                    {
+                        Log.Message($"  - {intel.category}: {intel.completeness * 100f:F1}% complete, {intel.Quality} quality (Age: {intel.DaysOld} days)");
+                    }
+                }
+            }
+
+            if (totalIntel == 0)
+            {
+                Log.Message("No intelligence has been transmitted yet.");
+            }
+
+            Messages.Message($"Logged intelligence network ({totalIntel} total reports) to console", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Set Intelligence Stat (Low)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SetIntelligenceLow(Pawn pawn)
+        {
+            SetInfiltratorIntelligence(pawn, 0.3f);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Set Intelligence Stat (Medium)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SetIntelligenceMedium(Pawn pawn)
+        {
+            SetInfiltratorIntelligence(pawn, 0.6f);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Set Intelligence Stat (High)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SetIntelligenceHigh(Pawn pawn)
+        {
+            SetInfiltratorIntelligence(pawn, 0.9f);
+        }
+
+        private static void SetInfiltratorIntelligence(Pawn pawn, float intelligenceStat)
+        {
+            if (pawn == null || pawn.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            CompHiddenIdentity comp = pawn.GetComp<CompHiddenIdentity>();
+            if (comp == null || comp.Hediff == null)
+            {
+                Messages.Message($"{pawn.NameShortColored} is not an infiltrator.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            comp.Hediff.intelligenceStat = intelligenceStat;
+            string level = intelligenceStat < 0.5f ? "Low" : intelligenceStat < 0.8f ? "Medium" : "High";
+            Messages.Message($"{pawn.NameShortColored} intelligence set to {level} ({intelligenceStat:F2})", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Intelligence", "Simulate Intel-Based Raid", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SimulateIntelBasedRaid()
+        {
+            // Get a hostile faction with intelligence
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            if (network == null)
+            {
+                Messages.Message("IntelligenceNetwork component not found!", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Faction hostileFaction = Find.FactionManager.AllFactionsVisible
+                .Where(f => f.HostileTo(Faction.OfPlayer) && !f.def.hidden)
+                .FirstOrDefault(f => network.GetFactionIntelligence(f).Count > 0);
+
+            if (hostileFaction == null)
+            {
+                Messages.Message("No hostile faction has intelligence. Use 'Force Intel Transmission' first.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var intel = network.GetFactionIntelligence(hostileFaction);
+            Messages.Message($"Triggering raid from {hostileFaction.Name} with {intel.Count} intelligence reports...", MessageTypeDefOf.ThreatBig, false);
+
+            // Trigger a raid incident
+            IncidentParms parms = StorytellerUtility.DefaultParmsNow(IncidentCategoryDefOf.ThreatBig, Find.CurrentMap);
+            parms.faction = hostileFaction;
+            parms.forced = true;
+
+            // The RaidModificationPatches will automatically apply intel-based modifications
+            IncidentDefOf.RaidEnemy.Worker.TryExecute(parms);
+        }
+
         // ==================== COMPREHENSIVE TESTING ====================
 
         [DebugAction("Law & Order - Testing", "Create Full Test Scenario", allowedGameStates = AllowedGameStates.PlayingOnMap)]
