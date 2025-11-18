@@ -553,80 +553,36 @@ namespace Law_and_Order.Source.Debug
                 return;
             }
 
-            // Get a hostile faction
-            Faction hostileFaction = Find.FactionManager.AllFactionsVisible
-                .Where(f => f.HostileTo(Faction.OfPlayer) && !f.def.hidden && !f.IsPlayer)
+            // Set flag to guarantee infiltrator in next visitor group
+            InfiltratorSpawnPatches.forceNextVisitorGroupInfiltrator = true;
+
+            // Trigger vanilla visitor group incident
+            IncidentDef visitorGroupDef = IncidentDefOf.VisitorGroup;
+            IncidentParms parms = StorytellerUtility.DefaultParmsNow(IncidentCategoryDefOf.Misc, map);
+
+            // Find a friendly faction to send the visitors
+            Faction faction = Find.FactionManager.AllFactionsVisible
+                .Where(f => !f.HostileTo(Faction.OfPlayer) && !f.IsPlayer && !f.def.hidden && f.def.humanlikeFaction)
                 .RandomElementWithFallback();
 
-            if (hostileFaction == null)
+            if (faction == null)
             {
-                Messages.Message("No hostile faction available.", MessageTypeDefOf.RejectInput, false);
+                Messages.Message("No friendly faction available to send visitors.", MessageTypeDefOf.RejectInput, false);
+                InfiltratorSpawnPatches.forceNextVisitorGroupInfiltrator = false;
                 return;
             }
 
-            // Generate a pawn with neutral/wanderer appearance
-            PawnKindDef pawnKind = PawnKindDefOf.Villager; // Generic civilian
+            parms.faction = faction;
+            parms.forced = true;
 
-            Pawn infiltrator = PawnGenerator.GeneratePawn(new PawnGenerationRequest(
-                pawnKind,
-                null, // No faction - appears as neutral visitor/wanderer
-                PawnGenerationContext.NonPlayer,
-                -1,
-                forceGenerateNewPawn: true,
-                allowDead: false,
-                allowDowned: false,
-                canGeneratePawnRelations: true,
-                mustBeCapableOfViolence: false,
-                relationWithExtraPawnChanceFactor: 0f // Don't generate relations that would expose them
-            ));
-
-            // Add CompHiddenIdentity comp if not present
-            if (!infiltrator.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
+            if (visitorGroupDef.Worker.TryExecute(parms))
             {
-                CompProperties_HiddenIdentity compProps = new CompProperties_HiddenIdentity();
-                infiltrator.def.comps.Add(compProps);
+                Messages.Message($"Visitor group from {faction.Name} spawned with guaranteed infiltrator!", MessageTypeDefOf.TaskCompletion, false);
             }
-
-            // Find spawn location at map edge
-            IntVec3 spawnPos;
-            if (!CellFinder.TryFindRandomEdgeCellWith(c => c.Standable(map) && !c.Fogged(map), map, CellFinder.EdgeRoadChance_Neutral, out spawnPos))
+            else
             {
-                spawnPos = CellFinder.RandomClosewalkCellNear(map.Center, map, 20);
-            }
-
-            GenSpawn.Spawn(infiltrator, spawnPos, map);
-
-            // Initialize hidden identity AFTER spawning
-            CompHiddenIdentity comp = infiltrator.GetComp<CompHiddenIdentity>();
-            if (comp == null)
-            {
-                // Create and add comp manually if still missing
-                comp = new CompHiddenIdentity();
-                comp.parent = infiltrator;
-                var compPropsInDef = infiltrator.def.comps.FirstOrDefault(cp => cp is CompProperties_HiddenIdentity);
-                if (compPropsInDef != null)
-                {
-                    comp.Initialize(compPropsInDef);
-                }
-                infiltrator.AllComps.Add(comp);
-            }
-
-            string originalName = infiltrator.Name.ToStringShort;
-            comp.InitializeHiddenIdentity(infiltrator);
-
-            // Store real faction AFTER initialization
-            var hediff = comp.Hediff;
-            if (hediff != null)
-            {
-                hediff.realFaction = hostileFaction;
-                string fakeName = infiltrator.Name.ToStringShort;
-
-                // Make them a "guest" visitor who can be recruited
-                infiltrator.guest.SetGuestStatus(Faction.OfPlayer, GuestStatus.Guest);
-
-                Messages.Message($"Infiltrator spawned as visitor!\nReal Faction: {hostileFaction.Name}\nOriginal: {originalName}\nFake Name: {fakeName}\nIntelligence: {hediff.intelligenceStat:F2}\n\nThey appear as a neutral visitor. You can recruit them to test intelligence gathering.",
-                    MessageTypeDefOf.TaskCompletion, false);
-                ModLog.Info($"Debug: Spawned infiltrator from {hostileFaction.Name}: Fake={fakeName}, Intel={hediff.intelligenceStat:F2}");
+                Messages.Message("Failed to spawn visitor group.", MessageTypeDefOf.RejectInput, false);
+                InfiltratorSpawnPatches.forceNextVisitorGroupInfiltrator = false;
             }
         }
 
@@ -640,75 +596,22 @@ namespace Law_and_Order.Source.Debug
                 return;
             }
 
-            // Get a hostile faction
-            Faction hostileFaction = Find.FactionManager.AllFactionsVisible
-                .Where(f => f.HostileTo(Faction.OfPlayer) && !f.def.hidden && !f.IsPlayer)
-                .RandomElementWithFallback();
+            // Set flag to guarantee infiltrator in next wanderer join
+            InfiltratorSpawnPatches.forceNextWandererInfiltrator = true;
 
-            if (hostileFaction == null)
+            // Trigger vanilla wanderer join incident
+            IncidentDef wandererJoinDef = IncidentDefOf.WandererJoin;
+            IncidentParms parms = StorytellerUtility.DefaultParmsNow(IncidentCategoryDefOf.Misc, map);
+            parms.forced = true;
+
+            if (wandererJoinDef.Worker.TryExecute(parms))
             {
-                Messages.Message("No hostile faction available.", MessageTypeDefOf.RejectInput, false);
-                return;
+                Messages.Message("Wanderer spawned with guaranteed infiltrator!", MessageTypeDefOf.TaskCompletion, false);
             }
-
-            // Generate a refugee/wanderer that will immediately join
-            PawnKindDef pawnKind = PawnKindDefOf.Villager;
-
-            Pawn infiltrator = PawnGenerator.GeneratePawn(new PawnGenerationRequest(
-                pawnKind,
-                Faction.OfPlayer, // Will join as colonist
-                PawnGenerationContext.NonPlayer,
-                -1,
-                forceGenerateNewPawn: true,
-                allowDead: false,
-                allowDowned: false,
-                canGeneratePawnRelations: true,
-                mustBeCapableOfViolence: false,
-                relationWithExtraPawnChanceFactor: 0f
-            ));
-
-            // Add CompHiddenIdentity comp
-            if (!infiltrator.def.comps.Any(cp => cp is CompProperties_HiddenIdentity))
+            else
             {
-                CompProperties_HiddenIdentity compProps = new CompProperties_HiddenIdentity();
-                infiltrator.def.comps.Add(compProps);
-            }
-
-            // Find spawn location at map edge
-            IntVec3 spawnPos;
-            if (!CellFinder.TryFindRandomEdgeCellWith(c => c.Standable(map) && !c.Fogged(map), map, CellFinder.EdgeRoadChance_Neutral, out spawnPos))
-            {
-                spawnPos = CellFinder.RandomClosewalkCellNear(map.Center, map, 20);
-            }
-
-            GenSpawn.Spawn(infiltrator, spawnPos, map);
-
-            // Initialize hidden identity
-            CompHiddenIdentity comp = infiltrator.GetComp<CompHiddenIdentity>();
-            if (comp == null)
-            {
-                comp = new CompHiddenIdentity();
-                comp.parent = infiltrator;
-                var compPropsInDef = infiltrator.def.comps.FirstOrDefault(cp => cp is CompProperties_HiddenIdentity);
-                if (compPropsInDef != null)
-                {
-                    comp.Initialize(compPropsInDef);
-                }
-                infiltrator.AllComps.Add(comp);
-            }
-
-            string originalName = infiltrator.Name.ToStringShort;
-            comp.InitializeHiddenIdentity(infiltrator);
-
-            var hediff = comp.Hediff;
-            if (hediff != null)
-            {
-                hediff.realFaction = hostileFaction;
-                string fakeName = infiltrator.Name.ToStringShort;
-
-                Messages.Message($"Infiltrator joined as wanderer!\nReal Faction: {hostileFaction.Name}\nOriginal: {originalName}\nFake Name: {fakeName}\nIntelligence: {hediff.intelligenceStat:F2}\n\nThey've joined your colony and will start gathering intel.",
-                    MessageTypeDefOf.TaskCompletion, false);
-                ModLog.Info($"Debug: Spawned wanderer infiltrator from {hostileFaction.Name}: Fake={fakeName}, Intel={hediff.intelligenceStat:F2}");
+                Messages.Message("Failed to spawn wanderer.", MessageTypeDefOf.RejectInput, false);
+                InfiltratorSpawnPatches.forceNextWandererInfiltrator = false;
             }
         }
 
