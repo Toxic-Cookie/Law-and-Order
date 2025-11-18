@@ -1285,5 +1285,319 @@ namespace Law_and_Order.Source.Debug
 
             Messages.Message($"Found {totalAccomplices} accomplice(s). Check console for details.", MessageTypeDefOf.TaskCompletion, false);
         }
+
+        // ==================== PHASE 6.7: WITNESS RELIABILITY & SOCIAL IMPACT ====================
+
+        [DebugAction("Law & Order - Social Impact", "Test Witness Reliability Calculation", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void TestWitnessReliability(Pawn witness)
+        {
+            if (witness == null || witness.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Create a test crime to calculate witness reliability for
+            Pawn criminal = map.mapPawns.FreeColonists.FirstOrDefault(p => p != witness);
+            if (criminal == null)
+            {
+                Messages.Message("Need at least 2 colonists for test.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"=== WITNESS RELIABILITY TEST for {witness.LabelShort} ===");
+            Log.Message($"Criminal: {criminal.LabelShort}");
+            Log.Message($"");
+
+            // Test at current locations
+            var reliability = WitnessReliabilityUtils.CalculateWitnessReliability(witness, criminal, criminal.Position, map);
+
+            Log.Message($"Overall Reliability: {reliability.reliabilityScore:P0} ({reliability.GetCategory()})");
+            Log.Message($"  Distance: {reliability.distanceInTiles:F1} tiles ({reliability.distanceFactor:P0})");
+            Log.Message($"  Lighting: {reliability.lightLevel:P0} ({reliability.lightingFactor:P0})");
+            Log.Message($"  Sight: {reliability.sightCapacityFactor:P0}{(reliability.hasSightImpairment ? " (impaired)" : "")}");
+            Log.Message($"  Relationship Bias: {reliability.relationshipBiasFactor:P0} (opinion: {reliability.opinion})");
+            Log.Message($"  Intelligence: {reliability.intelligenceFactor:P0}");
+
+            Messages.Message($"Witness reliability test completed for {witness.NameShortColored}. Check console for results.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Social Impact", "Log Social Thoughts", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void LogSocialThoughts(Pawn pawn)
+        {
+            if (pawn == null || pawn.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"=== SOCIAL THOUGHTS for {pawn.LabelShort} ===");
+
+            if (pawn.needs?.mood?.thoughts?.memories != null)
+            {
+                var lawAndOrderThoughts = pawn.needs.mood.thoughts.memories.Memories
+                    .Where(t => t.def.defName.StartsWith("LawAndOrder_"));
+
+                if (lawAndOrderThoughts.Any())
+                {
+                    foreach (var thought in lawAndOrderThoughts)
+                    {
+                        Log.Message($"  - {thought.def.defName}: {thought.CurStage.description} (Mood: {thought.MoodOffset()})");
+                    }
+                }
+                else
+                {
+                    Log.Message("  No Law & Order memory thoughts found.");
+                }
+            }
+
+            Messages.Message($"Logged social thoughts for {pawn.NameShortColored}. Check console.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        // ==================== PHASE 6.8: PERFORMANCE & TESTING ====================
+
+        [DebugAction("Law & Order - Performance", "Profile Periodic Systems (10 ticks)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ProfilePeriodicSystems()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"=== LAW AND ORDER PERFORMANCE PROFILE ===");
+
+            WorldComponent_JusticeManager justiceManager = Find.World.GetComponent<WorldComponent_JusticeManager>();
+            if (justiceManager == null)
+            {
+                Messages.Message("JusticeManager not found!", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Profile 10 ticks
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            long totalTicks = 0;
+
+            for (int i = 0; i < 10; i++)
+            {
+                stopwatch.Restart();
+                justiceManager.WorldComponentTick();
+                stopwatch.Stop();
+                totalTicks += stopwatch.ElapsedTicks;
+            }
+
+            double averageMs = (totalTicks / 10.0) / (System.Diagnostics.Stopwatch.Frequency / 1000.0);
+
+            Log.Message($"JusticeManager WorldComponentTick:");
+            Log.Message($"  Average: {averageMs:F3} ms");
+            Log.Message($"  Target: < 5 ms");
+            Log.Message($"  Status: {(averageMs < 5.0 ? "✓ PASS" : "✗ FAIL")}");
+
+            Messages.Message($"Performance profile completed. Average tick time: {averageMs:F3} ms (Target: < 5 ms). Check console.",
+                averageMs < 5.0 ? MessageTypeDefOf.PositiveEvent : MessageTypeDefOf.NegativeEvent, false);
+        }
+
+        [DebugAction("Law & Order - Performance", "Profile Evidence Manager", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ProfileEvidenceManager()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var evidenceManager = map.GetComponent<MapComponent_EvidenceManager>();
+            if (evidenceManager == null)
+            {
+                Messages.Message("EvidenceManager not found!", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"=== EVIDENCE MANAGER PROFILE ===");
+
+            // Profile 10 ticks
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            long totalTicks = 0;
+
+            for (int i = 0; i < 10; i++)
+            {
+                stopwatch.Restart();
+                evidenceManager.MapComponentTick();
+                stopwatch.Stop();
+                totalTicks += stopwatch.ElapsedTicks;
+            }
+
+            double averageMs = (totalTicks / 10.0) / (System.Diagnostics.Stopwatch.Frequency / 1000.0);
+
+            Log.Message($"EvidenceManager MapComponentTick:");
+            Log.Message($"  Average: {averageMs:F3} ms");
+            Log.Message($"  Clues on map: {map.listerThings.AllThings.Count(t => t is CrimeSceneClue)}");
+            Log.Message($"  Status: {(averageMs < 1.0 ? "✓ PASS" : averageMs < 5.0 ? "⚠ ACCEPTABLE" : "✗ FAIL")}");
+
+            Messages.Message($"Evidence Manager profile: {averageMs:F3} ms. Check console.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Performance", "Profile Intelligence Network", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ProfileIntelligenceNetwork()
+        {
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            if (network == null)
+            {
+                Messages.Message("IntelligenceNetwork not found!", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"=== INTELLIGENCE NETWORK PROFILE ===");
+
+            // Profile 10 ticks
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            long totalTicks = 0;
+
+            for (int i = 0; i < 10; i++)
+            {
+                stopwatch.Restart();
+                network.WorldComponentTick();
+                stopwatch.Stop();
+                totalTicks += stopwatch.ElapsedTicks;
+            }
+
+            double averageMs = (totalTicks / 10.0) / (System.Diagnostics.Stopwatch.Frequency / 1000.0);
+
+            // Count total intel
+            int totalIntel = 0;
+            foreach (var faction in Find.FactionManager.AllFactionsVisible)
+            {
+                totalIntel += network.GetFactionIntelligence(faction).Count;
+            }
+
+            Log.Message($"IntelligenceNetwork WorldComponentTick:");
+            Log.Message($"  Average: {averageMs:F3} ms");
+            Log.Message($"  Total intel reports: {totalIntel}");
+            Log.Message($"  Status: {(averageMs < 1.0 ? "✓ PASS" : averageMs < 5.0 ? "⚠ ACCEPTABLE" : "✗ FAIL")}");
+
+            Messages.Message($"Intelligence Network profile: {averageMs:F3} ms ({totalIntel} reports). Check console.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Performance", "Full Performance Benchmark", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void FullPerformanceBenchmark()
+        {
+            Log.Message($"=== FULL LAW AND ORDER PERFORMANCE BENCHMARK ===");
+            Log.Message($"Testing all Phase 6 systems for 100 ticks...");
+            Log.Message($"");
+
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Benchmark justice manager
+            var justiceManager = Find.World.GetComponent<WorldComponent_JusticeManager>();
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            long totalJustice = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                sw.Restart();
+                justiceManager?.WorldComponentTick();
+                sw.Stop();
+                totalJustice += sw.ElapsedTicks;
+            }
+
+            // Benchmark evidence manager
+            var evidenceManager = map.GetComponent<MapComponent_EvidenceManager>();
+            long totalEvidence = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                sw.Restart();
+                evidenceManager?.MapComponentTick();
+                sw.Stop();
+                totalEvidence += sw.ElapsedTicks;
+            }
+
+            // Benchmark intelligence network
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            long totalIntel = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                sw.Restart();
+                network?.WorldComponentTick();
+                sw.Stop();
+                totalIntel += sw.ElapsedTicks;
+            }
+
+            double justiceMs = (totalJustice / 100.0) / (System.Diagnostics.Stopwatch.Frequency / 1000.0);
+            double evidenceMs = (totalEvidence / 100.0) / (System.Diagnostics.Stopwatch.Frequency / 1000.0);
+            double intelMs = (totalIntel / 100.0) / (System.Diagnostics.Stopwatch.Frequency / 1000.0);
+            double totalMs = justiceMs + evidenceMs + intelMs;
+
+            Log.Message($"Results (100 tick average):");
+            Log.Message($"  JusticeManager:      {justiceMs:F3} ms {(justiceMs < 3.0 ? "✓" : justiceMs < 5.0 ? "⚠" : "✗")}");
+            Log.Message($"  EvidenceManager:     {evidenceMs:F3} ms {(evidenceMs < 1.0 ? "✓" : evidenceMs < 2.0 ? "⚠" : "✗")}");
+            Log.Message($"  IntelligenceNetwork: {intelMs:F3} ms {(intelMs < 1.0 ? "✓" : intelMs < 2.0 ? "⚠" : "✗")}");
+            Log.Message($"  ─────────────────────────────");
+            Log.Message($"  TOTAL per tick:      {totalMs:F3} ms {(totalMs < 5.0 ? "✓ PASS" : "✗ FAIL - TARGET: < 5ms")}");
+            Log.Message($"");
+
+            Messages.Message($"Full benchmark complete! Total: {totalMs:F3} ms/tick (Target: < 5 ms). Check console.",
+                totalMs < 5.0 ? MessageTypeDefOf.PositiveEvent : MessageTypeDefOf.NegativeEvent, false);
+        }
+
+        [DebugAction("Law & Order - Testing", "Stress Test Save/Load", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void StressTestSaveLoad()
+        {
+            Log.Message($"=== SAVE/LOAD STRESS TEST ===");
+            Log.Message($"This will test save/load persistence of all Phase 6 data structures.");
+            Log.Message($"");
+
+            // Count current state before save
+            int crimeCount = 0;
+            int caseCount = 0;
+            int clueCount = 0;
+            int accompliceCount = 0;
+            int infiltratorCount = 0;
+
+            foreach (var pawn in Find.CurrentMap.mapPawns.AllPawns)
+            {
+                var crimes = pawn.health.hediffSet.GetFirstHediffOfDef(LawAndOrder_HediffDefOf.LawAndOrder_CriminalRecord) as Hediff_Crimes;
+                if (crimes != null) crimeCount += crimes.TotalCrimeCount;
+
+                if (pawn.TryGetComp<CompAccomplice>()?.IsRecruited == true) accompliceCount++;
+                if (pawn.TryGetComp<CompHiddenIdentity>()?.HasHiddenIdentity == true) infiltratorCount++;
+            }
+
+            var justiceManager = Find.World.GetComponent<WorldComponent_JusticeManager>();
+            caseCount = justiceManager.GetOpenCases().Count + justiceManager.GetConvictedCases().Count;
+
+            clueCount = Find.CurrentMap.listerThings.AllThings.Count(t => t is CrimeSceneClue);
+
+            var network = WorldComponent_IntelligenceNetwork.Instance;
+            int intelCount = 0;
+            foreach (var faction in Find.FactionManager.AllFactionsVisible)
+            {
+                intelCount += network.GetFactionIntelligence(faction).Count;
+            }
+
+            Log.Message($"State BEFORE save:");
+            Log.Message($"  Crimes: {crimeCount}");
+            Log.Message($"  Cases: {caseCount}");
+            Log.Message($"  Clues: {clueCount}");
+            Log.Message($"  Accomplices: {accompliceCount}");
+            Log.Message($"  Infiltrators: {infiltratorCount}");
+            Log.Message($"  Intel Reports: {intelCount}");
+            Log.Message($"");
+            Log.Message($"Please save and load the game, then run this test again to verify data persistence.");
+
+            Messages.Message($"Stress test logged current state. Save & load game, then run again to verify.", MessageTypeDefOf.TaskCompletion, false);
+        }
     }
 }

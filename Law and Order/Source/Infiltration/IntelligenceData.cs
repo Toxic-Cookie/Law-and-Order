@@ -388,6 +388,7 @@ namespace LawAndOrder
 
         /// <summary>
         /// Calculate raid point modifier based on intelligence quality and category.
+        /// Target: +30-50% raid points total with multiple intel types
         /// </summary>
         public static float GetRaidPointModifier(List<IntelligenceData> intel)
         {
@@ -400,19 +401,19 @@ namespace LawAndOrder
                 switch (data.Quality)
                 {
                     case IntelQuality.Low:
-                        modifier += 0.1f; // +10% raid points
+                        modifier += 0.08f; // +8% raid points
                         break;
                     case IntelQuality.Moderate:
-                        modifier += 0.25f; // +25% raid points
+                        modifier += 0.15f; // +15% raid points
                         break;
                     case IntelQuality.High:
-                        modifier += 0.4f; // +40% raid points
+                        modifier += 0.20f; // +20% raid points
                         break;
                 }
             }
 
-            // Cap at +100% raid points (2x)
-            return Mathf.Min(modifier, 2.0f);
+            // Cap at +60% raid points (1.6x) to stay within target range
+            return Mathf.Min(modifier, 1.6f);
         }
     }
 }
