@@ -954,5 +954,336 @@ namespace Law_and_Order.Source.Debug
 
             Messages.Message($"Logged crime statistics to console (Total: {totalCrimes})", MessageTypeDefOf.TaskCompletion, false);
         }
+
+        // ==================== PHASE 6.6: ACCOMPLICE SYSTEM ====================
+
+        [DebugAction("Law & Order - Accomplice", "Recruit Selected as Accomplice", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void RecruitAsAccomplice(Pawn target)
+        {
+            if (target == null || target.Dead || !target.IsColonist)
+            {
+                Messages.Message("Invalid target. Select a living colonist.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Find an infiltrator on the map
+            var infiltrators = Find.CurrentMap.mapPawns.FreeColonistsSpawned
+                .Where(p => p.TryGetComp<CompHiddenIdentity>()?.HasHiddenIdentity == true)
+                .ToList();
+
+            if (infiltrators.Count == 0)
+            {
+                Messages.Message("No infiltrators on map. Create one first with 'Make Infiltrator'.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Pawn infiltrator = infiltrators.First();
+
+            // Force recruitment
+            if (AccompliceUtils.TryRecruitAccomplice(infiltrator, target, out var comp))
+            {
+                Messages.Message($"{target.NameShortColored} recruited as accomplice by {infiltrator.NameShortColored} (Loyalty: {comp.LoyaltyToRecruiter:P0})", MessageTypeDefOf.TaskCompletion, false);
+            }
+            else
+            {
+                Messages.Message($"Failed to recruit {target.NameShortColored}. Check max accomplices or vulnerability.", MessageTypeDefOf.RejectInput, false);
+            }
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Show Accomplices for Selected Infiltrator", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ShowAccomplices(Pawn infiltrator)
+        {
+            if (infiltrator == null || infiltrator.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var comp = infiltrator.TryGetComp<CompHiddenIdentity>();
+            if (comp == null || !comp.HasHiddenIdentity)
+            {
+                Messages.Message($"{infiltrator.NameShortColored} is not an infiltrator.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var accomplices = AccompliceUtils.GetAccomplicesForInfiltrator(infiltrator);
+
+            if (accomplices.Count == 0)
+            {
+                Log.Message($"[Accomplice Debug] {infiltrator.LabelShort} has NO accomplices");
+                Messages.Message($"{infiltrator.NameShortColored} has no accomplices.", MessageTypeDefOf.TaskCompletion, false);
+                return;
+            }
+
+            Log.Message($"=== ACCOMPLICES for {infiltrator.LabelShort} ===");
+            foreach (var accomplice in accomplices)
+            {
+                var accompliceComp = accomplice.TryGetComp<CompAccomplice>();
+                if (accompliceComp != null)
+                {
+                    Log.Message($"  - {accomplice.LabelShort}:");
+                    Log.Message($"      Loyalty: {accompliceComp.LoyaltyToRecruiter:P0}");
+                    Log.Message($"      Days since recruitment: {accompliceComp.DaysSinceRecruitment}");
+                    Log.Message($"      Discovered: {accompliceComp.Discovered}");
+                    Log.Message($"      Pending sabotage tasks: {accompliceComp.GetPendingSabotage().Count}");
+                }
+            }
+
+            Messages.Message($"{infiltrator.NameShortColored} has {accomplices.Count} accomplice(s). Check console for details.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Trigger Sabotage (Raid Simulation)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void TriggerSabotage()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Count accomplices who will sabotage
+            int accompliceCount = 0;
+            foreach (var pawn in map.mapPawns.FreeColonistsSpawned)
+            {
+                var comp = pawn.TryGetComp<CompAccomplice>();
+                if (comp != null && comp.IsRecruited && comp.ShouldPerformSabotage())
+                {
+                    accompliceCount++;
+                }
+            }
+
+            if (accompliceCount == 0)
+            {
+                Messages.Message("No active accomplices on map to sabotage. Recruit some first.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Log.Message($"[Sabotage Debug] Triggering sabotage for {accompliceCount} accomplice(s)");
+
+            // Trigger sabotage
+            SabotageExecutor.AssignSabotageForRaid(map);
+
+            Messages.Message($"Sabotage triggered! {accompliceCount} accomplice(s) performing sabotage. Check console for details.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Discover Selected Accomplice", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void DiscoverAccomplice(Pawn accomplice)
+        {
+            if (accomplice == null || accomplice.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var comp = accomplice.TryGetComp<CompAccomplice>();
+            if (comp == null || !comp.IsRecruited)
+            {
+                Messages.Message($"{accomplice.NameShortColored} is not an accomplice.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            if (comp.Discovered)
+            {
+                Messages.Message($"{accomplice.NameShortColored} is already discovered.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Discover the accomplice
+            comp.DiscoverAccomplice();
+
+            Messages.Message($"{accomplice.NameShortColored} discovered as accomplice! Check for dramatic letter.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Set Accomplice Loyalty (High)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SetAccompliceLoyaltyHigh(Pawn accomplice)
+        {
+            if (accomplice == null || accomplice.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var comp = accomplice.TryGetComp<CompAccomplice>();
+            if (comp == null || !comp.IsRecruited)
+            {
+                Messages.Message($"{accomplice.NameShortColored} is not an accomplice.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Use reflection to set loyalty since it's a private field
+            var loyaltyField = typeof(CompAccomplice).GetField("loyaltyToRecruiter", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (loyaltyField != null)
+            {
+                loyaltyField.SetValue(comp, 0.9f);
+                Messages.Message($"{accomplice.NameShortColored} loyalty set to 90% (High)", MessageTypeDefOf.TaskCompletion, false);
+            }
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Set Accomplice Loyalty (Low)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SetAccompliceLoyaltyLow(Pawn accomplice)
+        {
+            if (accomplice == null || accomplice.Dead)
+            {
+                Messages.Message("Invalid pawn selected.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var comp = accomplice.TryGetComp<CompAccomplice>();
+            if (comp == null || !comp.IsRecruited)
+            {
+                Messages.Message($"{accomplice.NameShortColored} is not an accomplice.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Use reflection to set loyalty
+            var loyaltyField = typeof(CompAccomplice).GetField("loyaltyToRecruiter", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (loyaltyField != null)
+            {
+                loyaltyField.SetValue(comp, 0.15f);
+                Messages.Message($"{accomplice.NameShortColored} loyalty set to 15% (Low, may refuse sabotage)", MessageTypeDefOf.TaskCompletion, false);
+            }
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Show Vulnerability for Selected", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void ShowVulnerability(Pawn colonist)
+        {
+            if (colonist == null || colonist.Dead || !colonist.IsColonist)
+            {
+                Messages.Message("Invalid pawn selected. Select a living colonist.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Find an infiltrator to test against
+            var infiltrators = Find.CurrentMap.mapPawns.FreeColonistsSpawned
+                .Where(p => p.TryGetComp<CompHiddenIdentity>()?.HasHiddenIdentity == true)
+                .ToList();
+
+            Pawn infiltrator = infiltrators.FirstOrDefault();
+
+            float vulnerability = AccompliceUtils.CalculateVulnerability(colonist, infiltrator);
+
+            Log.Message($"=== VULNERABILITY for {colonist.LabelShort} ===");
+            Log.Message($"Total Vulnerability: {vulnerability:P0}");
+
+            // Break down factors
+            if (colonist.needs?.mood != null)
+            {
+                float moodLevel = colonist.needs.mood.CurLevelPercentage;
+                Log.Message($"  Mood: {moodLevel:P0}" + (moodLevel < 0.3f ? " (+20% vulnerability)" : (moodLevel < 0.5f ? " (+10% vulnerability)" : "")));
+            }
+
+            if (colonist.story?.traits != null)
+            {
+                Log.Message($"  Traits:");
+                var traits = colonist.story.traits.allTraits;
+                foreach (var trait in traits)
+                {
+                    Log.Message($"    - {trait.Label}");
+                }
+            }
+
+            if (infiltrator != null && colonist.relations != null)
+            {
+                float opinion = colonist.relations.OpinionOf(infiltrator);
+                Log.Message($"  Opinion of infiltrator: {opinion}" + (opinion >= 20 ? " (+15% vulnerability)" : ""));
+            }
+
+            Messages.Message($"{colonist.NameShortColored} vulnerability: {vulnerability:P0}. Check console for breakdown.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Create Test Scenario (Infiltrator + 2 Accomplices)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void CreateAccompliceTestScenario()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var colonists = map.mapPawns.FreeColonistsSpawned.Where(p => !p.Dead).ToList();
+            if (colonists.Count < 3)
+            {
+                Messages.Message("Need at least 3 colonists for test scenario.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            // Pick random colonist to be infiltrator
+            Pawn infiltrator = colonists.RandomElement();
+            colonists.Remove(infiltrator);
+
+            // Make them an infiltrator
+            var hiddenComp = infiltrator.TryGetComp<CompHiddenIdentity>();
+            if (hiddenComp == null)
+            {
+                hiddenComp = new CompHiddenIdentity();
+                hiddenComp.parent = infiltrator;
+                infiltrator.AllComps.Add(hiddenComp);
+                hiddenComp.Initialize(new CompProperties_HiddenIdentity());
+            }
+            hiddenComp.InitializeHiddenIdentity(infiltrator);
+
+            Log.Message($"=== ACCOMPLICE TEST SCENARIO ===");
+            Log.Message($"Infiltrator: {infiltrator.LabelShort}");
+
+            // Recruit 2 accomplices
+            int recruited = 0;
+            foreach (var target in colonists.InRandomOrder().Take(2))
+            {
+                if (AccompliceUtils.TryRecruitAccomplice(infiltrator, target, out var comp))
+                {
+                    recruited++;
+                    Log.Message($"Accomplice {recruited}: {target.LabelShort} (Loyalty: {comp.LoyaltyToRecruiter:P0})");
+                }
+            }
+
+            Messages.Message($"Test scenario created! Infiltrator: {infiltrator.NameShortColored}, Accomplices: {recruited}. Check console.", MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        [DebugAction("Law & Order - Accomplice", "Log All Accomplices", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void LogAllAccomplices()
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                Messages.Message("No map available.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            int totalAccomplices = 0;
+            int discoveredAccomplices = 0;
+
+            Log.Message($"=== ALL ACCOMPLICES ===");
+
+            foreach (var pawn in map.mapPawns.FreeColonistsSpawned)
+            {
+                var comp = pawn.TryGetComp<CompAccomplice>();
+                if (comp != null && comp.IsRecruited)
+                {
+                    totalAccomplices++;
+                    if (comp.Discovered)
+                        discoveredAccomplices++;
+
+                    Log.Message($"{pawn.LabelShort}:");
+                    Log.Message($"  Recruiter: {comp.Recruiter?.LabelShort ?? "Unknown"}");
+                    Log.Message($"  Loyalty: {comp.LoyaltyToRecruiter:P0}");
+                    Log.Message($"  Days since recruitment: {comp.DaysSinceRecruitment}");
+                    Log.Message($"  Discovered: {comp.Discovered}");
+                    Log.Message($"  Pending sabotage: {comp.GetPendingSabotage().Count}");
+                }
+            }
+
+            if (totalAccomplices == 0)
+            {
+                Log.Message("No accomplices found on map.");
+            }
+            else
+            {
+                Log.Message($"Total: {totalAccomplices} accomplice(s), {discoveredAccomplices} discovered");
+            }
+
+            Messages.Message($"Found {totalAccomplices} accomplice(s). Check console for details.", MessageTypeDefOf.TaskCompletion, false);
+        }
     }
 }
