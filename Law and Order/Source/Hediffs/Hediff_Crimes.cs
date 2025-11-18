@@ -32,6 +32,9 @@ namespace Law_and_Order.Source.Hediffs
         public Pawn falselyAccused;                  // If false, who was blamed?
         public IntVec3 location;                     // Where crime occurred (for clue spawning)
 
+        // Phase 6.7: Witness Reliability fields
+        public List<Investigation.WitnessReliability> witnessReliabilities = new List<Investigation.WitnessReliability>();
+
         public Crime()
         {
         }
@@ -72,6 +75,17 @@ namespace Law_and_Order.Source.Hediffs
             Scribe_References.Look(ref actualPerpetrator, "actualPerpetrator");
             Scribe_References.Look(ref falselyAccused, "falselyAccused");
             Scribe_Values.Look(ref location, "location");
+
+            // Phase 6.7: Witness Reliability ExposeData
+            Scribe_Collections.Look(ref witnessReliabilities, "witnessReliabilities", LookMode.Deep);
+
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (witnessReliabilities == null)
+                {
+                    witnessReliabilities = new List<Investigation.WitnessReliability>();
+                }
+            }
         }
 
         public int DaysAgo => (Find.TickManager.TicksGame - tickCommitted) / GenDate.TicksPerDay;
@@ -190,6 +204,37 @@ namespace Law_and_Order.Source.Hediffs
                 evidenceStrength = evidence;
 
                 Mod.Log?.Message($"Crime {crimeType} transitioned to Suspected (evidence: {evidence:F2}, witnesses: {witnesses.Count})");
+            }
+        }
+
+        /// <summary>
+        /// Transition this crime from Hidden to Suspected state with witness reliability calculation.
+        /// Phase 6.7 version with reliability tracking.
+        /// </summary>
+        public void TransitionToSuspectedWithReliability(List<Pawn> newWitnesses, float evidence, Pawn accused, Map map)
+        {
+            if (visibilityState == CrimeVisibilityState.Hidden)
+            {
+                visibilityState = CrimeVisibilityState.Suspected;
+                witnesses = newWitnesses ?? new List<Pawn>();
+                evidenceStrength = evidence;
+
+                // Phase 6.7: Calculate witness reliabilities
+                if (witnesses.Count > 0 && location != IntVec3.Invalid && map != null)
+                {
+                    witnessReliabilities = Investigation.WitnessReliabilityUtils.CalculateWitnessReliabilities(
+                        witnesses, accused, location, map);
+
+                    // Adjust evidence strength based on witness reliability
+                    float avgReliability = Investigation.WitnessReliabilityUtils.GetAverageReliability(witnessReliabilities);
+                    evidenceStrength = evidence * avgReliability;
+
+                    Mod.Log?.Message($"Crime {crimeType} transitioned to Suspected (evidence: {evidence:F2} → {evidenceStrength:F2}, avg reliability: {avgReliability:F2}, witnesses: {witnesses.Count})");
+                }
+                else
+                {
+                    Mod.Log?.Message($"Crime {crimeType} transitioned to Suspected (evidence: {evidence:F2}, witnesses: {witnesses.Count})");
+                }
             }
         }
 

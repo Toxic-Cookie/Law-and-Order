@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+    <!-- Phase 6.7: Social Impact Thoughts -->
+
+    <!-- Victim of Crime - Opinion penalty toward criminal -->
+    <ThoughtDef>
+        <defName>LawAndOrder_VictimOfCrime</defName>
+        <thoughtClass>Thought_MemorySocial</thoughtClass>
+        <durationDays>60</durationDays>
+        <stackLimit>5</stackLimit>
+        <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>victimized me</label>
+                <baseOpinionOffset>-40</baseOpinionOffset>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Witnessed Crime - Opinion penalty toward criminal -->
+    <ThoughtDef>
+        <defName>LawAndOrder_WitnessedCrime</defName>
+        <thoughtClass>Thought_MemorySocial</thoughtClass>
+        <durationDays>45</durationDays>
+        <stackLimit>5</stackLimit>
+        <stackedEffectMultiplier>0.7</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>witnessed crime</label>
+                <baseOpinionOffset>-25</baseOpinionOffset>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Friend Victimized - Opinion penalty toward criminal (friend was victim) -->
+    <ThoughtDef>
+        <defName>LawAndOrder_FriendVictimized</defName>
+        <thoughtClass>Thought_MemorySocial</thoughtClass>
+        <durationDays>50</durationDays>
+        <stackLimit>3</stackLimit>
+        <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>hurt my friend</label>
+                <baseOpinionOffset>-30</baseOpinionOffset>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Friend Accused - Opinion penalty toward accuser (friend was accused) -->
+    <ThoughtDef>
+        <defName>LawAndOrder_FriendAccused</defName>
+        <thoughtClass>Thought_MemorySocial</thoughtClass>
+        <durationDays>40</durationDays>
+        <stackLimit>3</stackLimit>
+        <stackedEffectMultiplier>0.85</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>accused my friend</label>
+                <baseOpinionOffset>-15</baseOpinionOffset>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Unjust Conviction - Colony-wide mood penalty -->
+    <ThoughtDef>
+        <defName>LawAndOrder_UnjustConviction</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>30</durationDays>
+        <stackLimit>3</stackLimit>
+        <stackedEffectMultiplier>0.8</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>unjust conviction</label>
+                <description>Someone innocent was convicted of a crime. Justice has failed us.</description>
+                <baseMoodEffect>-8</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Innocently Accused - Sympathy for wrongly accused -->
+    <ThoughtDef>
+        <defName>LawAndOrder_InnocentlyAccused</defName>
+        <thoughtClass>Thought_MemorySocial</thoughtClass>
+        <durationDays>40</durationDays>
+        <stackLimit>2</stackLimit>
+        <stackedEffectMultiplier>0.9</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>falsely accused</label>
+                <baseOpinionOffset>20</baseOpinionOffset>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Executed Innocent - Devastating colony mood penalty -->
+    <ThoughtDef>
+        <defName>LawAndOrder_ExecutedInnocent</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>60</durationDays>
+        <stackLimit>2</stackLimit>
+        <stackedEffectMultiplier>0.9</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>innocent executed</label>
+                <description>An innocent colonist was executed for a crime they didn't commit. This is a grave injustice.</description>
+                <baseMoodEffect>-15</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Framed Innocent - Anger at the real criminal who framed someone -->
+    <ThoughtDef>
+        <defName>LawAndOrder_FramedInnocent</defName>
+        <thoughtClass>Thought_MemorySocial</thoughtClass>
+        <durationDays>60</durationDays>
+        <stackLimit>3</stackLimit>
+        <stackedEffectMultiplier>0.85</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>framed innocent</label>
+                <baseOpinionOffset>-50</baseOpinionOffset>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Witnessed False Accusation - General colony thought when false accusation discovered -->
+    <ThoughtDef>
+        <defName>LawAndOrder_WitnessedFalseAccusation</defName>
+        <thoughtClass>Thought_Memory</thoughtClass>
+        <durationDays>20</durationDays>
+        <stackLimit>3</stackLimit>
+        <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+        <stages>
+            <li>
+                <label>false accusation revealed</label>
+                <description>A false accusation was uncovered. Makes you wonder what else isn't as it seems.</description>
+                <baseMoodEffect>-4</baseMoodEffect>
+            </li>
+        </stages>
+    </ThoughtDef>
+
+    <!-- Note: LawAndOrder_JusticeRestored is already defined in Thoughts_FalseAccusation.xml from Phase 6.3 -->
+
+</Defs>

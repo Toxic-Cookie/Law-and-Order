@@ -1013,4 +1013,34 @@
   <LawAndOrder_RaidSabotageTriggered>Accomplices are sabotaging during the raid!</LawAndOrder_RaidSabotageTriggered>
   <LawAndOrder_RaidSabotageComplete>{0} accomplice(s) completed their sabotage</LawAndOrder_RaidSabotageComplete>
 
+  <!-- Phase 6.7: Witness Reliability System -->
+  <LawAndOrder_WitnessReliability_Overall>Witness Reliability</LawAndOrder_WitnessReliability_Overall>
+  <LawAndOrder_WitnessReliability_Category>Category</LawAndOrder_WitnessReliability_Category>
+
+  <!-- Reliability Categories -->
+  <LawAndOrder_ReliabilityCategory_HighlyReliable>Highly Reliable</LawAndOrder_ReliabilityCategory_HighlyReliable>
+  <LawAndOrder_ReliabilityCategory_Reliable>Reliable</LawAndOrder_ReliabilityCategory_Reliable>
+  <LawAndOrder_ReliabilityCategory_Questionable>Questionable</LawAndOrder_ReliabilityCategory_Questionable>
+  <LawAndOrder_ReliabilityCategory_Unreliable>Unreliable</LawAndOrder_ReliabilityCategory_Unreliable>
+  <LawAndOrder_ReliabilityCategory_VeryUnreliable>Very Unreliable</LawAndOrder_ReliabilityCategory_VeryUnreliable>
+
+  <!-- Reliability Factors -->
+  <LawAndOrder_ReliabilityFactor_Distance>Distance to Crime</LawAndOrder_ReliabilityFactor_Distance>
+  <LawAndOrder_ReliabilityFactor_Lighting>Lighting Conditions</LawAndOrder_ReliabilityFactor_Lighting>
+  <LawAndOrder_ReliabilityFactor_SightCapacity>Sight Capacity</LawAndOrder_ReliabilityFactor_SightCapacity>
+  <LawAndOrder_ReliabilityFactor_RelationshipBias>Relationship Bias</LawAndOrder_ReliabilityFactor_RelationshipBias>
+  <LawAndOrder_ReliabilityFactor_Intelligence>Intelligence/Perception</LawAndOrder_ReliabilityFactor_Intelligence>
+
+  <!-- Reliability UI -->
+  <LawAndOrder_Tiles>tiles</LawAndOrder_Tiles>
+  <LawAndOrder_LightLevel>light</LawAndOrder_LightLevel>
+  <LawAndOrder_HasSightImpairment>Has sight impairment</LawAndOrder_HasSightImpairment>
+  <LawAndOrder_NegativeOpinion>Negative opinion</LawAndOrder_NegativeOpinion>
+  <LawAndOrder_PositiveOpinion>Positive opinion</LawAndOrder_PositiveOpinion>
+
+  <!-- Witness Reliability Labels for Case Details -->
+  <LawAndOrder_WitnessReliabilityScore>Reliability: {0}%</LawAndOrder_WitnessReliabilityScore>
+  <LawAndOrder_WitnessDetails>Witness Details</LawAndOrder_WitnessDetails>
+  <LawAndOrder_AverageWitnessReliability>Average Witness Reliability</LawAndOrder_AverageWitnessReliability>
+
 </LanguageData>

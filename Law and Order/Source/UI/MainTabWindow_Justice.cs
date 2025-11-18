@@ -690,6 +690,10 @@ namespace Law_and_Order.Source.UI
                 foreach (var crime in crimesToConvict)
                 {
                     crime.TransitionToConvicted();
+
+                    // Phase 6.7: Apply social impact for conviction
+                    bool isJust = !crime.isFalseAccusation;
+                    Justice.SocialImpactManager.OnPawnConvicted(selectedCase.accused, crime, Find.CurrentMap, isJust);
                 }
 
                 // If all crimes in case are convicted, mark case as convicted

@@ -136,35 +136,14 @@ namespace Law_and_Order.Source.Investigation
             if (exonerated?.needs?.mood?.thoughts?.memories == null)
                 return;
 
-            // Add positive thought: JusticeRestored
-            var justiceRestoredThought = DefDatabase<ThoughtDef>.GetNamedSilentFail("LawAndOrder_JusticeRestored");
-            if (justiceRestoredThought != null)
-            {
-                exonerated.needs.mood.thoughts.memories.TryGainMemory(justiceRestoredThought);
-            }
+            // Phase 6.7: Use SocialImpactManager for comprehensive social impact
+            Justice.SocialImpactManager.OnTruthRevealed(exonerated, falseAccusationCrime, exonerated.Map);
 
             // Remove negative thoughts from false accusation
             var falselyAccusedThought = DefDatabase<ThoughtDef>.GetNamedSilentFail("LawAndOrder_FalselyAccused");
             if (falselyAccusedThought != null)
             {
                 exonerated.needs.mood.thoughts.memories.RemoveMemoriesOfDef(falselyAccusedThought);
-            }
-
-            // Restore opinion with other colonists
-            if (exonerated.Map != null)
-            {
-                foreach (var colonist in exonerated.Map.mapPawns.FreeColonistsSpawned)
-                {
-                    if (colonist == exonerated || colonist.relations == null)
-                        continue;
-
-                    // Small opinion boost for being proven innocent
-                    if (colonist.needs?.mood?.thoughts?.memories != null)
-                    {
-                        // Use a generic positive social thought
-                        colonist.needs.mood.thoughts.memories.TryGainMemory(ThoughtDefOf.RescuedMe, exonerated);
-                    }
-                }
             }
 
             Mod.Log?.Message($"[Exoneration] Social restoration applied for {exonerated.LabelShort}");

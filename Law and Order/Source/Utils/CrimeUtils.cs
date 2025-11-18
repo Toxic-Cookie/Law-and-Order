@@ -121,8 +121,8 @@ namespace Law_and_Order.Source.Utils
                 // Phase 1: Determine visibility state based on witnesses
                 if (witnesses.Count > 0 && evidenceStrength >= 0.3f)
                 {
-                    // Crime was witnessed - transition to Suspected
-                    crime.TransitionToSuspected(witnesses, evidenceStrength);
+                    // Crime was witnessed - transition to Suspected with reliability calculation
+                    crime.TransitionToSuspectedWithReliability(witnesses, evidenceStrength, criminal, crimeMap);
 
                     // Create or update criminal case
                     var justiceManager = Components.WorldComponent_JusticeManager.Instance;
@@ -133,6 +133,9 @@ namespace Law_and_Order.Source.Utils
 
                         Mod.Log?.Message($"Crime {crimeType} witnessed - added to case #{criminalCase.caseId}");
                     }
+
+                    // Phase 6.7: Apply social impact when crime is witnessed
+                    Justice.SocialImpactManager.OnCrimeWitnessed(crime, criminal, crimeMap);
                 }
                 else
                 {
