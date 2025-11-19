@@ -28,6 +28,18 @@ namespace Law_and_Order.Source.UI
             this.labelKey = "LawAndOrder_TabJudiciary";
         }
 
+        /// <summary>
+        /// Always show this tab for pawns - displays "No criminal record" if none exists
+        /// </summary>
+        public override bool IsVisible
+        {
+            get
+            {
+                // Always show the tab if we have a valid pawn
+                return this.SelPawn != null;
+            }
+        }
+
         protected override void FillTab()
         {
             Rect mainRect = new Rect(0f, 0f, this.size.x, this.size.y).ContractedBy(PADDING);
